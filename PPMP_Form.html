@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROJECT PROCUREMENT MANAGEMENT PLAN (PPMP)</title>
+<style>
+/* ========================================
+   Philippine Navy Dashboard - Unified Styles
+   ======================================== */
+
+/* ============= BASE STYLES ============= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  line-height: 1.6;
+  padding: 1rem;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  color-adjust: exact;
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ============= BUTTONS ============= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #0b1a3a;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #1e3a8a;
+  box-shadow: 0 4px 6px -1px rgba(11, 26, 58, 0.3);
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+.btn-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.btn-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: #d97706;
+}
+
+.btn-info {
+  background-color: #06b6d4;
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background-color: #0891b2;
+}
+
+.btn-group {
+  display: inline-flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* ============= ALERTS ============= */
+.alert {
+  position: relative;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.alert-success {
+  color: #065f46;
+  background-color: #d1fae5;
+  border-color: #a7f3d0;
+}
+
+.alert-info {
+  color: #0c4a6e;
+  background-color: #e0f2fe;
+  border-color: #bae6fd;
+}
+
+.alert-warning {
+  color: #92400e;
+  background-color: #fef3c7;
+  border-color: #fde68a;
+}
+
+/* ============= PPMP SPECIFIC STYLES ============= */
+.ppmp-box {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  border: 2px solid #0b1a3a;
+}
+
+.ppmp-header {
+  text-align: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+  color: white;
+  border-radius: 0.375rem;
+  margin-bottom: 1.5rem;
+}
+
+.ppmp-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.ppmp-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+}
+
+.ppmp-info p {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.ppmp-info strong {
+  color: #0b1a3a;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 140px;
+}
+
+.ppmp-info span[contenteditable="true"] {
+  border-bottom: 1px dotted #9ca3af;
+  padding: 0.125rem 0.5rem;
+  min-width: 150px;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.ppmp-info span[contenteditable="true"]:focus {
+  outline: none;
+  border-bottom: 2px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  background: white;
+}
+
+th, td {
+  border: 1px solid #d1d5db;
+  text-align: center;
+  padding: 0.5rem 0.25rem;
+  vertical-align: middle;
+}
+
+th {
+  font-weight: 600;
+  background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+  color: white;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+td[contenteditable="true"] {
+  cursor: text;
+  transition: background-color 0.15s ease;
+}
+
+td[contenteditable="true"]:hover {
+  background-color: #f9fafb;
+}
+
+td[contenteditable="true"]:focus {
+  outline: 2px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+.month-cell {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 40px;
+}
+
+.month-cell:hover {
+  background-color: #f3f4f6;
+}
+
+.month-active {
+  background-color: #86efac !important;
+  font-weight: 600;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+  color-adjust: exact !important;
+}
+
+tfoot td {
+  font-weight: 700;
+  background-color: #f9fafb;
+  font-size: 0.875rem;
+}
+
+#grandTotal {
+  color: #0b1a3a;
+  font-size: 1rem;
+}
+
+.signature-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e5e7eb;
+  align-items: start;
+}
+
+.signature-box {
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+}
+
+.signature-box p {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.signature-box .label {
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.signature-name {
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #0b1a3a;
+  font-size: 1rem;
+  margin: 1rem 0 0.5rem 0;
+  border-bottom: 2px solid #0b1a3a;
+  padding-bottom: 0.5rem;
+  display: inline-block;
+  min-width: 200px;
+}
+
+.signature-rank {
+  color: #4b5563;
+  font-size: 0.8125rem;
+  margin: 0.25rem 0;
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+@media print {
+  body {
+    background: white;
+    padding: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  .controls {
+    display: none !important;
+  }
+  
+  .container {
+    padding: 0;
+  }
+  
+  .ppmp-box {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .signature-section {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2rem !important;
+    page-break-inside: avoid;
+  }
+  
+  .signature-box {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .month-active {
+    background-color: #86efac !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  table, th, td {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .ppmp-box {
+    padding: 1rem;
+  }
+  
+  table {
+    font-size: 0.75rem;
+  }
+  
+  th, td {
+    padding: 0.25rem;
+  }
+  
+  .signature-section {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div id="alertContainer"></div>
+
+  <div class="controls no-print">
+    <button class="btn btn-secondary" onclick="addRow()">➕ Add Row</button>
+    <button class="btn btn-info" onclick="downloadTemplate()">📊 Download Excel Template</button>
+    <button class="btn btn-success" onclick="document.getElementById('excelUpload').click()">📤 Import from Excel</button>
+    <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
+    <button class="btn btn-success" onclick="loadFromUPR()">🔄 Load from UPR</button>
+    <button class="btn btn-info" onclick="downloadCSV()">📥 Export CSV</button>
+    <button class="btn btn-primary" onclick="printA4()">🖨️ Print</button>
+    <button class="btn btn-danger" onclick="clearForm()">🗑️ Clear Form</button>
+  </div>
+
+  <div class="ppmp-box">
+    <div class="ppmp-header">
+      <h3>PROJECT PROCUREMENT MANAGEMENT PLAN (PPMP)</h3>
+    </div>
+
+    <div class="ppmp-info">
+      <p><strong>PPMP Nr:</strong> <span contenteditable="true"></span></p>
+      <p><strong>IMPLEMENTING UNIT:</strong> <span contenteditable="true">HPN & HSG</span></p>
+      <p><strong>END-USER/UNIT:</strong> <span contenteditable="true">HPN & HSG</span></p>
+      <p><strong>Chargeability:</strong> <span contenteditable="true"></span></p>
+      <p style="grid-column: 1 / -1;"><strong>PAPs Title:</strong> <span id="papsTitle" contenteditable="true" style="min-width: 400px;"></span></p>
+    </div>
+
+    <div class="table-responsive">
+      <table id="ppmpTable">
+        <thead>
+          <tr>
+            <th rowspan="2" style="width:8%;">CODE</th>
+            <th rowspan="2" style="width:17%;">GENERAL DESCRIPTION</th>
+            <th colspan="3" style="width:15%;">QUANTITY/SIZE</th>
+            <th colspan="1" style="width:10%;">ESTIMATED BUDGET</th>
+            <th rowspan="2" style="width:10%;">Mode of<br>Procurement</th>
+            <th colspan="12" style="width:40%;">SCHEDULE/MILESTONE OF ACTIVITIES</th>
+          </tr>
+          <tr>
+            <th>Qty</th>
+            <th>Unit Cost</th>
+            <th>Unit</th>
+            <th>Total Cost</th>
+            <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
+            <th>Jul</th><th>Aug</th><th>Sept</th><th>Oct</th><th>Nov</th><th>Dec</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5" style="text-align:right; padding-right: 1rem;">TOTAL ---</td>
+            <td id="grandTotal">0.00</td>
+            <td colspan="13"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="signature-section">
+      <div class="signature-box">
+        <p class="label">Prepared By:</p>
+        <p class="signature-name">KARL LOU A TORIBIO</p>
+        <p class="signature-rank">LCDR                      PN</p>
+        <p>AC of S for Logistics, S4</p>
+      </div>
+      <div class="signature-box">
+        <p class="label">Submitted By:</p>
+        <p class="signature-name">OLIVER B REFORBA</p>
+        <p class="signature-rank">CAPT           PN(MNSA)</p>
+        <p>Commander, HPN & HSG</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const tbody = document.querySelector("#ppmpTable tbody");
+const alertContainer = document.getElementById('alertContainer');
+
+function showAlert(message, type = 'success') {
+  const alert = document.createElement('div');
+  alert.className = `alert alert-${type}`;
+  alert.textContent = message;
+  alert.style.animation = 'slideIn 0.3s ease';
+  alertContainer.appendChild(alert);
+  
+  setTimeout(() => {
+    alert.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => alert.remove(), 300);
+  }, 3000);
+}
+
+function addRow() {
+  const newRow = document.createElement("tr");
+  newRow.innerHTML = `
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true" oninput="updateTotal(this)"></td>
+    <td contenteditable="true" oninput="updateTotal(this)"></td>
+    <td contenteditable="true"></td>
+    <td class="total">0.00</td>
+    <td contenteditable="true"></td>
+  `;
+  for (let i=0; i<12; i++) {
+    const td = document.createElement("td");
+    td.className = "month-cell";
+    td.onclick = () => td.classList.toggle("month-active");
+    newRow.appendChild(td);
+  }
+  tbody.appendChild(newRow);
+  savePPMPData();
+}
+
+function initRows() {
+  if (tbody.querySelectorAll('tr').length === 0) {
+    for (let i = 0; i < 2; i++) {
+      addRow();
+    }
+  }
+}
+
+function updateTotal(cell) {
+  const row = cell.parentElement;
+  const qty = parseFloat(row.cells[2].textContent) || 0;
+  const cost = parseFloat(row.cells[3].textContent) || 0;
+  row.querySelector(".total").textContent = (qty*cost).toFixed(2);
+  updateGrandTotal();
+  savePPMPData();
+}
+
+function updateGrandTotal() {
+  let grand = 0;
+  document.querySelectorAll(".total").forEach(td => { 
+    grand += parseFloat(td.textContent) || 0; 
+  });
+  document.getElementById("grandTotal").textContent = grand.toFixed(2);
+}
+
+/* ---------------------------
+   EXCEL TEMPLATE DOWNLOAD
+----------------------------- */
+function downloadTemplate() {
+  const template = [
+    ['CODE', 'GENERAL DESCRIPTION', 'Qty', 'Unit Cost', 'Unit', 'Total Cost', 'Mode of Procurement', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'],
+    ['PN-001', 'Sample Item - Office Equipment', '10', '2500.00', 'pcs', '25000.00', 'Public Bidding', 'X', '', '', '', '', '', '', '', '', '', '', ''],
+    ['PN-002', 'Sample Item - IT Equipment', '5', '5000.00', 'units', '25000.00', 'Shopping', '', 'X', '', '', '', '', '', '', '', '', '', ''],
+    ['', '(Add more rows as needed)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+  ];
+  
+  const csvContent = template.map(row => 
+    row.map(cell => `"${cell}"`).join(',')
+  ).join('\r\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'PPMP_Items_Template.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  showAlert('📊 Excel template downloaded! Open in Excel, fill in your items, and import back.', 'info');
+}
+
+/* ---------------------------
+   EXCEL IMPORT FUNCTION
+----------------------------- */
+function importExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const rows = text.split('\n').map(row => {
+      const cells = [];
+      let cell = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          cells.push(cell.trim());
+          cell = '';
+        } else {
+          cell += char;
+        }
+      }
+      cells.push(cell.trim());
+      return cells;
+    });
+    
+    const dataRows = rows.slice(1).filter(row => 
+      row.length > 1 && row[1] && row[1].trim() !== '' && !row[1].includes('Sample Item')
+    );
+    
+    if (dataRows.length === 0) {
+      showAlert('❌ No valid data found in the file.', 'warning');
+      event.target.value = '';
+      return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    dataRows.forEach((row) => {
+      const tr = document.createElement("tr");
+      
+      // Columns 0-6
+      for (let i = 0; i < 7; i++) {
+        const td = document.createElement("td");
+        if (i === 5) {
+          td.className = "total";
+          td.textContent = row[i]?.replace(/^"|"$/g, '') || '0.00';
+        } else {
+          td.contentEditable = "true";
+          td.textContent = row[i]?.replace(/^"|"$/g, '') || '';
+          if (i === 2 || i === 3) {
+            td.setAttribute('oninput', 'updateTotal(this)');
+          }
+        }
+        tr.appendChild(td);
+      }
+      
+      // Month columns (7-18)
+      for (let i = 7; i < 19; i++) {
+        const td = document.createElement("td");
+        td.className = "month-cell";
+        const val = row[i]?.replace(/^"|"$/g, '').trim().toUpperCase();
+        if (val === 'X' || val === '✓' || val === '1') {
+          td.classList.add('month-active');
+        }
+        td.onclick = () => td.classList.toggle("month-active");
+        tr.appendChild(td);
+      }
+      
+      tbody.appendChild(tr);
+    });
+    
+    updateGrandTotal();
+    savePPMPData();
+    showAlert(`✅ Successfully imported ${dataRows.length} items from Excel!`, 'success');
+    event.target.value = '';
+  };
+  
+  reader.readAsText(file);
+}
+
+function downloadCSV() {
+  const table = document.getElementById("ppmpTable");
+  let csv = [];
+  for (let row of table.rows) {
+    const cols = Array.from(row.cells).map(cell => {
+      let text = cell.innerText.replace(/"/g,'""');
+      if (cell.classList.contains('month-active')) {
+        text = 'X';
+      }
+      return `"${text}"`;
+    });
+    csv.push(cols.join(","));
+  }
+  const blob = new Blob([csv.join("\n")], {type:'text/csv'});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "PPMP_Table.csv";
+  a.click();
+  
+  showAlert('📥 CSV exported successfully!', 'success');
+}
+
+function printA4() { 
+  window.print(); 
+}
+
+/* ---------------------------
+   LOAD FROM UPR
+----------------------------- */
+function loadFromUPR() {
+  const rawData = sessionStorage.getItem("UPR_DATA");
+  
+  if (!rawData) {
+    showAlert('⚠️ No UPR data found. Please create a UPR first.', 'warning');
+    return;
+  }
+
+  let data;
+  try { 
+    data = JSON.parse(rawData); 
+  } catch(e) { 
+    showAlert('❌ Invalid UPR data format.', 'warning');
+    return; 
+  }
+
+  const items = data.items || [];
+  const papsTitle = document.getElementById("papsTitle");
+  
+  if (items.length === 0) {
+    showAlert('⚠️ UPR has no items to import.', 'warning');
+    return;
+  }
+
+  tbody.innerHTML = "";
+
+  // Set PAPs Title from purpose
+  const purposeVal = (data.purposeBox || data.purpose || "").toString();
+  if (purposeVal) {
+    papsTitle.innerText = purposeVal;
+  }
+
+  items.forEach(item => {
+    const description = item.desc || "";
+    const qty = parseFloat(item.qty) || 0;
+    const unit = item.unit || "";
+    const unitCost = parseFloat(item.price) || 0;
+    const mode = data.modeProc || "";
+
+    if (!description && !qty && !unit && !unitCost) return;
+
+    const total = qty * unitCost;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td contenteditable="true"></td>
+      <td contenteditable="true">${description}</td>
+      <td contenteditable="true" oninput="updateTotal(this)">${qty||""}</td>
+      <td contenteditable="true" oninput="updateTotal(this)">${unitCost||""}</td>
+      <td contenteditable="true">${unit}</td>
+      <td class="total">${total.toFixed(2)}</td>
+      <td contenteditable="true">${mode}</td>
+    `;
+    
+    for (let i=0; i<12; i++) {
+      const td = document.createElement("td");
+      td.className = "month-cell";
+      td.onclick = () => td.classList.toggle("month-active");
+      tr.appendChild(td);
+    }
+    
+    tbody.appendChild(tr);
+  });
+
+  updateGrandTotal();
+  savePPMPData();
+  showAlert(`✅ Successfully loaded ${items.length} items from UPR!`, 'success');
+}
+
+/* ---------------------------
+   AUTO SAVE / RESTORE
+----------------------------- */
+function savePPMPData() {
+  const items = Array.from(tbody.querySelectorAll('tr')).map(row => {
+    const cells = row.querySelectorAll('td');
+    const months = [];
+    for (let i = 7; i < 19; i++) {
+      months.push(cells[i]?.classList.contains('month-active') || false);
+    }
+    return {
+      code: cells[0]?.innerText || '',
+      desc: cells[1]?.innerText || '',
+      qty: cells[2]?.innerText || '',
+      unitCost: cells[3]?.innerText || '',
+      unit: cells[4]?.innerText || '',
+      total: cells[5]?.innerText || '',
+      mode: cells[6]?.innerText || '',
+      months
+    };
+  });
+
+  const data = {
+    papsTitle: document.getElementById('papsTitle').innerText,
+    items
+  };
+
+  sessionStorage.setItem('PPMP_DATA', JSON.stringify(data));
+}
+
+function loadPPMPData() {
+  const saved = sessionStorage.getItem('PPMP_DATA');
+  if (!saved) {
+    initRows();
+    return;
+  }
+
+  const data = JSON.parse(saved);
+  
+  if (data.papsTitle) {
+    document.getElementById('papsTitle').innerText = data.papsTitle;
+  }
+
+  tbody.innerHTML = '';
+  (data.items || []).forEach((item) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td contenteditable="true">${item.code}</td>
+      <td contenteditable="true">${item.desc}</td>
+      <td contenteditable="true" oninput="updateTotal(this)">${item.qty}</td>
+      <td contenteditable="true" oninput="updateTotal(this)">${item.unitCost}</td>
+      <td contenteditable="true">${item.unit}</td>
+      <td class="total">${item.total}</td>
+      <td contenteditable="true">${item.mode}</td>
+    `;
+    
+    for (let i = 0; i < 12; i++) {
+      const td = document.createElement("td");
+      td.className = "month-cell";
+      if (item.months && item.months[i]) {
+        td.classList.add('month-active');
+      }
+      td.onclick = () => td.classList.toggle("month-active");
+      tr.appendChild(td);
+    }
+    
+    tbody.appendChild(tr);
+  });
+
+  updateGrandTotal();
+}
+
+function clearForm() {
+  if (confirm('Are you sure you want to clear all PPMP data?')) {
+    sessionStorage.removeItem('PPMP_DATA');
+    tbody.innerHTML = '';
+    document.getElementById('papsTitle').innerText = '';
+    document.getElementById('grandTotal').textContent = '0.00';
+    initRows();
+    showAlert('✅ Form cleared successfully.', 'success');
+  }
+}
+
+// Event listeners
+document.addEventListener('input', savePPMPData);
+document.addEventListener('change', savePPMPData);
+window.addEventListener('DOMContentLoaded', loadPPMPData);
+
+// Initialize
+initRows();
+</script>
+
+</body>
+</html>

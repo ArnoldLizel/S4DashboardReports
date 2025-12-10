@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Communication Inventory</title>
+
+<link rel="stylesheet" href="navy-dashboard-styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+  /* Additional custom styles for this page */
+  body {
+    padding: 1rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    color: #0b1a3a;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+  /* Office selector styling */
+  .office-selector {
+    background: #f9fafb;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+  }
+
+  .office-selector label {
+    font-weight: 600;
+    color: #374151;
+    margin-right: 0.75rem;
+  }
+
+  .office-selector select {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #1f2937;
+  }
+
+  /* Auto-save toggle */
+  .autosave-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+  }
+
+  .autosave-section input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+    accent-color: #0b1a3a;
+  }
+
+  /* Table specific styles */
+  .table th {
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  .table td {
+    text-align: center;
+  }
+
+  .table td.item-name {
+    text-align: left;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  /* Sub-header rows */
+  .sub-header-row td {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+    font-weight: 700;
+    color: #374151;
+    text-align: left !important;
+    padding-left: 1.5rem;
+    border-left: 4px solid #f1c232;
+  }
+
+  /* Quantity inputs */
+  input.qty-input {
+    width: 100px;
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+  }
+
+  input.qty-input:focus {
+    border-color: #2563eb;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  input.qty-input:hover {
+    border-color: #9ca3af;
+  }
+
+  /* Toast notifications */
+  .toast-container {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    min-width: 300px;
+  }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+  }
+
+  .loading-overlay.show {
+    display: flex;
+  }
+
+  /* Action buttons group */
+  .action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* Stats cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+    color: white;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .office-selector select {
+      max-width: 100%;
+    }
+    
+    input.qty-input {
+      width: 80px;
+    }
+
+    .action-buttons {
+      width: 100%;
+    }
+
+    .action-buttons .btn {
+      flex: 1;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loader">
+  <div class="spinner spinner-lg"></div>
+</div>
+
+<div class="container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-broadcast-tower"></i> COMMUNICATION INVENTORY</h1>
+    <p>Manage office communications equipment and assets</p>
+  </div>
+
+  <!-- Office Selector Card -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-building"></i> Select Office
+    </div>
+    <div class="card-body">
+      <div class="office-selector">
+        <label for="office"><i class="fas fa-map-marker-alt"></i> Office:</label>
+        <select id="office" class="form-select">
+          <option value="">-- Select an Office --</option>
+        </select>
+      </div>
+
+      <!-- Auto-save Section -->
+      <div class="autosave-section">
+        <i class="fas fa-sync-alt"></i>
+        <label for="autosaveToggle" style="margin: 0; cursor: pointer;">
+          <strong>Auto-save enabled</strong>
+        </label>
+        <input type="checkbox" id="autosaveToggle" checked />
+        <span class="text-muted" style="font-size: 0.875rem;">(saves automatically after 1.2s)</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-success" id="saveBtn">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+        <button class="btn btn-info" id="exportBtn">
+          <i class="fas fa-file-csv"></i> Export CSV
+        </button>
+        <button class="btn btn-danger" id="clearBtn">
+          <i class="fas fa-trash-alt"></i> Clear All Data
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid" id="statsGrid" style="display: none;">
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-box"></i> Total Items</div>
+      <div class="stat-value" id="totalItems">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-calendar-alt"></i> TE 2019 Total</div>
+      <div class="stat-value" id="te2019Total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-warehouse"></i> On Hand Total</div>
+      <div class="stat-value" id="onHandTotal">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-chart-line"></i> TE 2025 Total</div>
+      <div class="stat-value" id="te2025Total">0</div>
+    </div>
+  </div>
+
+  <!-- Main Data Card -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-table"></i> Inventory Data
+    </div>
+    <div class="card-body">
+      
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="table table-striped" id="inventoryTable">
+          <thead>
+            <tr>
+              <th style="width: 40%;">Item Description</th>
+              <th style="width: 20%;">TE 2019</th>
+              <th style="width: 20%;">On Hand</th>
+              <th style="width: 20%;">TE 2025</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <i class="fas fa-inbox"></i>
+                  <p>Select an office to view and manage inventory</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span><i class="fas fa-info-circle"></i> Enter quantities and save changes</span>
+          <span id="lastSaved" class="text-muted" style="font-size: 0.875rem;"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ---------- CONFIG ---------- */
+const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+
+const TABLE_ITEMS = "office_items";
+const TABLE_OFFICES = "offices";
+const TABLE_COMM = "office_communications";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ---------- STATE ---------- */
+const MASTER_ITEMS = [];
+const itemNameToId = {};
+const officeNameToId = {};
+let valuesStore = {};
+let currentOfficeId = null;
+let autoSaveTimer = null;
+
+/* ---------- UI refs ---------- */
+const officeSelect = document.getElementById("office");
+const tableBody = document.getElementById("tableBody");
+const saveBtn = document.getElementById("saveBtn");
+const exportBtn = document.getElementById("exportBtn");
+const clearBtn = document.getElementById("clearBtn");
+const autosaveToggle = document.getElementById("autosaveToggle");
+const loader = document.getElementById("loader");
+const toastContainer = document.getElementById("toastContainer");
+const statsGrid = document.getElementById("statsGrid");
+const lastSaved = document.getElementById("lastSaved");
+
+/* ---------- Helpers ---------- */
+function showLoader(on = true) { 
+  if (on) loader.classList.add('show');
+  else loader.classList.remove('show');
+}
+
+function showToast(message, type = 'success') {
+  const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+  toastContainer.innerHTML = `
+    <div class="alert ${alertClass} alert-dismissible">
+      ${message}
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  `;
+  setTimeout(() => { toastContainer.innerHTML = ''; }, 3000);
+}
+
+function esc(s) { 
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c])); 
+}
+
+function updateStats() {
+  let totalItems = 0;
+  let te2019Total = 0;
+  let onHandTotal = 0;
+  let te2025Total = 0;
+
+  Object.values(valuesStore).forEach(v => {
+    totalItems++;
+    te2019Total += v.te_2019 || 0;
+    onHandTotal += v.onhand || 0;
+    te2025Total += v.proposed_te_2025 || 0;
+  });
+
+  document.getElementById('totalItems').textContent = totalItems;
+  document.getElementById('te2019Total').textContent = te2019Total;
+  document.getElementById('onHandTotal').textContent = onHandTotal;
+  document.getElementById('te2025Total').textContent = te2025Total;
+}
+
+/* ---------- DB helpers ---------- */
+async function ensureMasterItemsLocal() {
+  try {
+    const { data, error } = await supabase.from(TABLE_ITEMS).select("id,item_name,colspan").order("id");
+    if(error) throw error;
+    (data||[]).forEach(r=>{
+      itemNameToId[r.item_name] = r.id;
+      MASTER_ITEMS.push({ item_name: r.item_name, colspan: r.colspan, id: r.id });
+    });
+  } catch(err){
+    console.error("ensureMasterItemsLocal:", err);
+    showToast("Failed to load master items", 'error');
+  }
+}
+
+async function ensureOfficesLocal(){
+  try {
+    const { data, error } = await supabase.from(TABLE_OFFICES).select("id,office_name").order("id");
+    if(error) throw error;
+    (data||[]).forEach(r => { officeNameToId[r.office_name] = r.id; });
+    populateOfficeSelect();
+  } catch(err){
+    console.error("ensureOfficesLocal:", err);
+    showToast("Failed to load offices", 'error');
+  }
+}
+
+function populateOfficeSelect(){
+  officeSelect.innerHTML = '<option value="">-- Select an Office --</option>';
+  Object.keys(officeNameToId).forEach(name=>{
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    officeSelect.appendChild(opt);
+  });
+}
+
+/* ---------- Render Table ---------- */
+function renderTable(){
+  if (!currentOfficeId) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>Select an office to view and manage inventory</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    statsGrid.style.display = 'none';
+    return;
+  }
+
+  tableBody.innerHTML = "";
+  statsGrid.style.display = 'grid';
+
+  MASTER_ITEMS.forEach(it=>{
+    if(it.colspan){
+      const tr = document.createElement("tr");
+      tr.className = "sub-header-row";
+      tr.innerHTML = `<td colspan="4"><i class="fas fa-folder"></i> ${esc(it.item_name)}</td>`;
+      tableBody.appendChild(tr);
+    } else {
+      const id = it.id;
+      const te2019 = valuesStore[id]?.te_2019 ?? "";
+      const onhand = valuesStore[id]?.onhand ?? "";
+      const te2025 = valuesStore[id]?.proposed_te_2025 ?? "";
+
+      const tr = document.createElement("tr");
+      tr.dataset.itemId = id;
+      tr.innerHTML = `
+        <td class="item-name">${esc(it.item_name)}</td>
+        <td>
+          <input class="qty-input" type="number" min="0" value="${te2019}"
+                 data-item-id="${id}" data-field="te_2019">
+        </td>
+        <td>
+          <input class="qty-input" type="number" min="0" value="${onhand}"
+                 data-item-id="${id}" data-field="onhand">
+        </td>
+        <td>
+          <input class="qty-input" type="number" min="0" value="${te2025}"
+                 data-item-id="${id}" data-field="proposed_te_2025">
+        </td>`;
+      tableBody.appendChild(tr);
+    }
+  });
+
+  // Attach input listeners
+  tableBody.querySelectorAll("input.qty-input").forEach(inp=>{
+    inp.addEventListener("input", onQuantityInput);
+    inp.addEventListener("blur", ()=>{
+      const id = Number(inp.dataset.itemId);
+      const field = inp.dataset.field;
+      if(!valuesStore[id]) valuesStore[id] = {};
+      valuesStore[id][field] = Number(inp.value) || 0;
+      updateStats();
+    });
+  });
+
+  updateStats();
+}
+
+/* ---------- Load office data ---------- */
+async function loadOfficeByName(officeName){
+  if(!officeName){ 
+    valuesStore = {}; 
+    currentOfficeId = null; 
+    renderTable(); 
+    return; 
+  }
+  
+  const officeId = officeNameToId[officeName];
+  if(!officeId){ 
+    showToast("Office not found in database", 'error'); 
+    return; 
+  }
+  
+  currentOfficeId = officeId;
+  showLoader(true);
+  
+  try {
+    const { data, error } = await supabase
+      .from(TABLE_COMM)
+      .select("item_id,te_2019,onhand,proposed_te_2025")
+      .eq("office_id", officeId)
+      .order("item_id");
+      
+    if(error) throw error;
+    
+    valuesStore = {};
+    (data||[]).forEach(r => {
+      valuesStore[r.item_id] = {
+        te_2019: r.te_2019 ?? 0,
+        onhand: r.onhand ?? 0,
+        proposed_te_2025: r.proposed_te_2025 ?? 0
+      };
+    });
+    
+    renderTable();
+    showToast(`Loaded data for ${officeName}`, 'info');
+  } catch(err){
+    console.error("loadOfficeByName:", err);
+    showToast("Failed to load office data", 'error');
+  } finally {
+    showLoader(false);
+  }
+}
+
+/* ---------- Save logic ---------- */
+async function saveAllForOffice(){
+  const officeName = officeSelect.value;
+  if(!officeName){ 
+    showToast("Please select an office before saving", 'error'); 
+    return; 
+  }
+  
+  const officeId = officeNameToId[officeName];
+  if(!officeId){ 
+    showToast("Office mapping missing", 'error'); 
+    return; 
+  }
+
+  // Sync valuesStore with DOM
+  tableBody.querySelectorAll("input.qty-input").forEach(inp=>{
+    const itemId = Number(inp.dataset.itemId);
+    const field = inp.dataset.field;
+    if(!valuesStore[itemId]) valuesStore[itemId] = {};
+    valuesStore[itemId][field] = Number(inp.value) || 0;
+  });
+
+  // Prepare records
+  const records = [];
+  Object.keys(valuesStore).forEach(key => {
+    const itemId = Number(key);
+    const v = valuesStore[itemId] || {};
+    records.push({
+      office_id: officeId,
+      item_id: itemId,
+      te_2019: v.te_2019 ?? 0,
+      onhand: v.onhand ?? 0,
+      proposed_te_2025: v.proposed_te_2025 ?? 0
+    });
+  });
+
+  showLoader(true);
+  
+  try {
+    // Delete existing
+    const { error: delErr } = await supabase.from(TABLE_COMM).delete().eq("office_id", officeId);
+    if(delErr) throw delErr;
+
+    // Insert new
+    if(records.length > 0){
+      const { error: insErr } = await supabase.from(TABLE_COMM).insert(records);
+      if(insErr) throw insErr;
+    }
+
+    const now = new Date().toLocaleString();
+    lastSaved.textContent = `Last saved: ${now}`;
+    showToast("✅ Data saved successfully!", 'success');
+  } catch(err){
+    console.error("saveAllForOffice:", err);
+    showToast("Save failed - check console", 'error');
+  } finally {
+    showLoader(false);
+  }
+}
+
+/* ---------- Clear data ---------- */
+async function clearOfficeData(){
+  const officeName = officeSelect.value;
+  if(!officeName) {
+    showToast("Select an office first", 'error');
+    return;
+  }
+  
+  const officeId = officeNameToId[officeName];
+  if(!confirm(`Delete all saved records for ${officeName}?`)) return;
+  
+  showLoader(true);
+  
+  try {
+    const { error } = await supabase.from(TABLE_COMM).delete().eq("office_id", officeId);
+    if(error) throw error;
+    
+    valuesStore = {};
+    renderTable();
+    showToast("All data cleared successfully", 'success');
+  } catch(err){
+    console.error("clearOfficeData:", err);
+    showToast("Failed to clear data", 'error');
+  } finally {
+    showLoader(false);
+  }
+}
+
+/* ---------- Export CSV ---------- */
+function exportToCSV(){
+  const officeName = officeSelect.value || "office";
+  const rows = [["Item Description","TE 2019","On Hand","TE 2025"]];
+  
+  MASTER_ITEMS.forEach(it=>{
+    if(it.colspan){
+      rows.push([it.item_name,"","",""]);
+    } else {
+      const v = valuesStore[it.id] || {};
+      rows.push([
+        it.item_name, 
+        v.te_2019 ?? "", 
+        v.onhand ?? "", 
+        v.proposed_te_2025 ?? ""
+      ]);
+    }
+  });
+
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${officeName.replace(/\s+/g,'_')}_communication_inventory.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast("CSV exported successfully!", 'success');
+}
+
+/* ---------- Auto-save handler ---------- */
+function onQuantityInput(e){
+  const input = e.target;
+  const id = Number(input.dataset.itemId);
+  const field = input.dataset.field;
+  if(!valuesStore[id]) valuesStore[id] = {};
+  valuesStore[id][field] = Number(input.value) || 0;
+
+  if(autosaveToggle.checked){
+    if(autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(()=>{
+      saveAllForOffice();
+      autoSaveTimer = null;
+    }, 1200);
+  }
+}
+
+/* ---------- INIT ---------- */
+async function init(){
+  showLoader(true);
+  
+  try {
+    await ensureMasterItemsLocal();
+    await ensureOfficesLocal();
+    renderTable();
+    
+    // Event listeners
+    officeSelect.addEventListener("change", (e)=> loadOfficeByName(e.target.value));
+    saveBtn.addEventListener("click", saveAllForOffice);
+    exportBtn.addEventListener("click", exportToCSV);
+    clearBtn.addEventListener("click", clearOfficeData);
+    
+    showToast("System ready", 'info');
+  } catch(err){
+    console.error("init err", err);
+    showToast("Initialization error", 'error');
+  } finally {
+    showLoader(false);
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>

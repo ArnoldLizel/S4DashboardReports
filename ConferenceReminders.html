@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conference Reminders</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold flex items-center gap-2">Conference Reminders</h1>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- My Conferences -->
+      <div class="md:col-span-2 bg-white rounded-xl shadow p-6">
+        <h2 class="font-semibold text-lg mb-4">My Conferences</h2>
+        <div id="conferenceList"></div>
+      </div>
+
+      <!-- Add/Edit Conference -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="font-semibold text-lg mb-4">Add / Edit Conference</h2>
+        <form id="conferenceForm" class="flex flex-col gap-4">
+          <input type="text" id="title" placeholder="Title" class="px-3 py-2 border border-gray-300 rounded-lg">
+          <input type="datetime-local" id="datetime" class="px-3 py-2 border border-gray-300 rounded-lg">
+          <input type="text" id="location" placeholder="Location" class="px-3 py-2 border border-gray-300 rounded-lg">
+          <textarea id="agenda" placeholder="Agenda / Notes" class="px-3 py-2 border border-gray-300 rounded-lg resize-none"></textarea>
+          <button type="submit" id="submitBtn" class="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-800">Save Event</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -------------------------------
+    // Supabase Setup
+    // -------------------------------
+    const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+    
+    // Fixed: Use the correct variable name from the imported library
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const conferenceForm = document.getElementById('conferenceForm');
+    const conferenceList = document.getElementById('conferenceList');
+    const submitBtn = document.getElementById('submitBtn');
+    let editingId = null;
+
+    // -------------------------------
+    // Render Conference Card
+    // -------------------------------
+    function renderConferenceCard(conf) {
+      const card = document.createElement('div');
+      card.className = 'border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50';
+      
+      const displayDate = new Date(conf.datetime).toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      });
+      
+      card.innerHTML = `
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="font-medium text-blue-900">${escapeHtml(conf.title)}</h3>
+            <p class="text-sm text-gray-600">${displayDate}</p>
+            <p class="text-sm text-gray-600">${escapeHtml(conf.location)}</p>
+            <p class="text-sm text-gray-500 mt-1">${escapeHtml(conf.agenda || '')}</p>
+          </div>
+          <div class="flex flex-col gap-2 ml-4">
+            <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100" 
+              onclick="editConference('${conf.id}')">Edit</button>
+            <button class="px-3 py-1 border border-red-300 text-red-600 rounded hover:bg-red-50" 
+              onclick="deleteConference('${conf.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+      conferenceList.appendChild(card);
+    }
+
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // -------------------------------
+    // Load Conferences
+    // -------------------------------
+    async function loadConferences() {
+      const { data, error } = await supabaseClient.from('conferences').select('*').order('datetime');
+      if (error) { 
+        console.error('Load error:', error); 
+        alert('Failed to load conferences: ' + error.message);
+        return; 
+      }
+      conferenceList.innerHTML = '';
+      if (data && data.length > 0) {
+        data.forEach(renderConferenceCard);
+      } else {
+        conferenceList.innerHTML = '<p class="text-gray-500 text-sm">No conferences yet. Add one to get started!</p>';
+      }
+    }
+
+    // -------------------------------
+    // Edit Conference
+    // -------------------------------
+    window.editConference = async function(id) {
+      const { data, error } = await supabaseClient.from('conferences').select('*').eq('id', id).single();
+      if (error) { 
+        console.error('Edit load error:', error); 
+        alert('Failed to load conference for editing');
+        return; 
+      }
+      editingId = id;
+      document.getElementById('title').value = data.title;
+      
+      // Convert timestamp to datetime-local format (YYYY-MM-DDTHH:MM)
+      const dt = new Date(data.datetime);
+      const year = dt.getFullYear();
+      const month = String(dt.getMonth() + 1).padStart(2, '0');
+      const day = String(dt.getDate()).padStart(2, '0');
+      const hours = String(dt.getHours()).padStart(2, '0');
+      const minutes = String(dt.getMinutes()).padStart(2, '0');
+      document.getElementById('datetime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+      
+      document.getElementById('location').value = data.location;
+      document.getElementById('agenda').value = data.agenda || '';
+      submitBtn.textContent = "Update Event";
+    }
+
+    // -------------------------------
+    // Save / Update Conference
+    // -------------------------------
+    conferenceForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const title = document.getElementById('title').value.trim();
+      const datetimeInput = document.getElementById('datetime').value;
+      const location = document.getElementById('location').value.trim();
+      const agenda = document.getElementById('agenda').value.trim();
+
+      if (!title || !datetimeInput || !location) {
+        alert("Please fill in Title, Date/Time, and Location");
+        return;
+      }
+
+      // Convert datetime-local to ISO format for PostgreSQL
+      const datetime = new Date(datetimeInput).toISOString();
+
+      try {
+        if (editingId) {
+          const { error } = await supabaseClient
+            .from('conferences')
+            .update({ title, datetime, location, agenda })
+            .eq('id', editingId);
+          
+          if (error) throw error;
+          
+          editingId = null;
+          submitBtn.textContent = "Save Event";
+          alert('Conference updated successfully!');
+        } else {
+          const { error } = await supabaseClient
+            .from('conferences')
+            .insert([{ title, datetime, location, agenda }]);
+          
+          if (error) throw error;
+          
+          alert('Conference added successfully!');
+        }
+
+        conferenceForm.reset();
+        loadConferences();
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('Failed to save: ' + error.message);
+      }
+    });
+
+    // -------------------------------
+    // Delete Conference
+    // -------------------------------
+    window.deleteConference = async function(id) {
+      if (!confirm('Are you sure you want to delete this conference?')) {
+        return;
+      }
+      
+      const { error } = await supabaseClient.from('conferences').delete().eq('id', id);
+      if (error) { 
+        console.error('Delete error:', error); 
+        alert('Failed to delete: ' + error.message);
+        return; 
+      }
+      loadConferences();
+    }
+
+    // -------------------------------
+    // Initialize
+    // -------------------------------
+    loadConferences();
+  </script>
+</body>
+</html>

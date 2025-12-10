@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Branch Compliances - Philippine Navy</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ===================================
+   Philippine Navy Dashboard - Kanban Board Style
+   =================================== */
+
+/* ============= BASE STYLES ============= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  line-height: 1.6;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: #0b1a3a;
+  font-weight: 700;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ============= HEADER ============= */
+.header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-print {
+  background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+  color: white;
+}
+
+.btn-print:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(11, 26, 58, 0.4);
+}
+
+/* ============= NOTIFICATION ============= */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notification.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.notification.error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ============= KANBAN BOARD ============= */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.kanban-column {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 220px);
+}
+
+/* Branch Colors */
+.kanban-column.branch-1 { border-top: 4px solid #10b981; }
+.kanban-column.branch-2 { border-top: 4px solid #f59e0b; }
+.kanban-column.branch-3 { border-top: 4px solid #ef4444; }
+.kanban-column.branch-4 { border-top: 4px solid #3b82f6; }
+
+.column-header {
+  padding: 1rem 1.25rem;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #f3f4f6;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.column-header.branch-1 { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); color: #065f46; }
+.column-header.branch-2 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #92400e; }
+.column-header.branch-3 { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #991b1b; }
+.column-header.branch-4 { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1e3a8a; }
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.branch-avatar-container {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.branch-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.branch-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.branch-avatar.has-image {
+  background: transparent;
+}
+
+.branch-avatar.no-image {
+  background: white;
+}
+
+.avatar-upload-btn {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: #3b82f6;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.avatar-upload-btn:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+.avatar-upload-btn i {
+  font-size: 0.625rem;
+  color: white;
+}
+
+.file-input {
+  display: none;
+}
+
+.task-count {
+  background: white;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.column-body {
+  padding: 1rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.column-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.column-body::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.column-body::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+/* ============= TASK CARDS ============= */
+.task-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.task-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.task-card:last-child {
+  margin-bottom: 0;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.task-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1f2937;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.task-content {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.task-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.task-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.task-status.completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.task-status.not-completed {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.task-actions {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-edit {
+  background: #fbbf24;
+  color: #78350f;
+}
+
+.btn-edit:hover {
+  background: #f59e0b;
+}
+
+.btn-delete {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #dc2626;
+}
+
+.btn-save-task {
+  background: #10b981;
+  color: white;
+}
+
+.btn-save-task:hover {
+  background: #059669;
+}
+
+.btn-cancel {
+  background: #9ca3af;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #6b7280;
+}
+
+/* ============= ADD TASK BUTTON ============= */
+.add-task-btn {
+  width: 100%;
+  padding: 0.625rem;
+  background: transparent;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.add-task-btn:hover {
+  border-color: #9ca3af;
+  color: #374151;
+  background: #f9fafb;
+}
+
+/* ============= TASK EDITOR ============= */
+.task-editor {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-group {
+  margin-bottom: 0.75rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.375rem;
+  font-size: 0.8125rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+textarea.form-control {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+}
+
+.empty-column {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+/* ============= RESPONSIVE ============= */
+@media (max-width: 768px) {
+  .kanban-board {
+    grid-template-columns: 1fr;
+  }
+  
+  .kanban-column {
+    max-height: 400px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* ============= PRINT STYLES ============= */
+@media print {
+  body {
+    background-color: white;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .kanban-board {
+    display: block;
+  }
+  
+  .kanban-column {
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-wrapper">
+    <h1>📋 Branch Compliances</h1>
+    <div class="action-buttons no-print">
+      <button class="btn btn-save" id="saveBtn">
+        <span>💾</span>
+        <span>Save All Data</span>
+      </button>
+      <button class="btn btn-print" id="printBtn">
+        <span>🖨️</span>
+        <span>Print</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="kanban-board" id="kanbanBoard">
+    <!-- Columns will be generated here -->
+  </div>
+</div>
+
+<script>
+(() => {
+  // ============= SUPABASE CONFIGURATION =============
+  const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+  
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
+  const branches = [
+    { name: "Admin and Supply Branch", color: "branch-1", avatar: "AS", image: null },
+    { name: "Facility and Maintenance Branch", color: "branch-2", avatar: "FM", image: null },
+    { name: "Budget and Fiscal Branch", color: "branch-3", avatar: "BF", image: null },
+    { name: "Mobility and POL Branch", color: "branch-4", avatar: "MP", image: null }
+  ];
+
+  const saveBtn = document.getElementById("saveBtn");
+  const printBtn = document.getElementById("printBtn");
+  const kanbanBoard = document.getElementById("kanbanBoard");
+
+  let currentYear = new Date().getFullYear().toString();
+  let notes = {};
+  
+  // Initialize notes structure
+  const initializeNotes = () => {
+    notes = {};
+    branches.forEach(b => { 
+      notes[b.name] = []; 
+    });
+  };
+  initializeNotes();
+
+  // Show notification
+  function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideIn 0.3s ease reverse';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+
+  // Render Kanban Board
+  const renderKanbanBoard = () => {
+    kanbanBoard.innerHTML = branches.map(branch => {
+      const branchNotes = notes[branch.name] || [];
+      const completedCount = branchNotes.filter(n => n.status === "Completed").length;
+      const totalCount = branchNotes.length;
+      
+      return `
+        <div class="kanban-column ${branch.color}">
+          <div class="column-header ${branch.color}">
+            <div class="header-left">
+              <div class="branch-avatar-container">
+                ${branch.image ? 
+                  `<img src="${branch.image}" class="branch-avatar has-image" alt="${branch.name}" onclick="triggerUpload('${branch.name}')">` :
+                  `<div class="branch-avatar no-image" onclick="triggerUpload('${branch.name}')">${branch.avatar}</div>`
+                }
+                <div class="avatar-upload-btn no-print" onclick="triggerUpload('${branch.name}')">
+                  <i class="fas fa-camera"></i>
+                </div>
+                <input type="file" id="upload-${branch.name.replace(/\s+/g, '-')}" class="file-input" accept="image/*" onchange="handleImageUpload(event, '${branch.name}')">
+              </div>
+              <span>${branch.name}</span>
+            </div>
+            <span class="task-count">${totalCount}</span>
+          </div>
+          <div class="column-body" id="column-${branch.name.replace(/\s+/g, '-')}">
+            ${branchNotes.length === 0 ? `
+              <div class="empty-column">No tasks yet</div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Render tasks for each branch
+    branches.forEach(branch => {
+      const columnBody = document.getElementById(`column-${branch.name.replace(/\s+/g, '-')}`);
+      const branchNotes = notes[branch.name] || [];
+      
+      branchNotes.forEach((note, index) => {
+        const taskCard = createTaskCard(note, branch, index);
+        if (branchNotes.length === 0) {
+          columnBody.innerHTML = '';
+        }
+        columnBody.insertAdjacentHTML('beforeend', taskCard);
+      });
+
+      // Add "Add Task" button
+      columnBody.insertAdjacentHTML('beforeend', `
+        <button class="add-task-btn no-print" onclick="addNewTask('${branch.name}')">
+          <span>+</span>
+          <span>Add Task</span>
+        </button>
+      `);
+    });
+  };
+
+  // Create task card HTML
+  const createTaskCard = (note, branch, index) => {
+    if (note.editing) {
+      return `
+        <div class="task-editor">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" id="edit-title-${branch.name}-${index}" value="${note.title}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Content</label>
+            <textarea class="form-control" id="edit-content-${branch.name}-${index}">${note.content}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="edit-status-${branch.name}-${index}">
+              <option value="Not Completed" ${note.status === "Not Completed" ? "selected" : ""}>Not Completed</option>
+              <option value="Completed" ${note.status === "Completed" ? "selected" : ""}>Completed</option>
+            </select>
+          </div>
+          <div class="task-actions">
+            <button class="btn-sm btn-save-task" onclick="saveEdit('${branch.name}', ${index})">💾 Save</button>
+            <button class="btn-sm btn-cancel" onclick="cancelEdit('${branch.name}', ${index})">✖️ Cancel</button>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-title">${note.title}</div>
+        </div>
+        <div class="task-content">${note.content}</div>
+        <div class="task-footer">
+          <div class="task-avatar">${branch.avatar}</div>
+          <div class="task-status ${note.status === 'Completed' ? 'completed' : 'not-completed'}">
+            ${note.status === 'Completed' ? '✓ Done' : '⏳ Pending'}
+          </div>
+        </div>
+        <div class="task-actions no-print">
+          <button class="btn-sm btn-edit" onclick="editTask('${branch.name}', ${index})">✏️ Edit</button>
+          <button class="btn-sm btn-delete" onclick="deleteTask('${branch.name}', ${index})">🗑️ Delete</button>
+        </div>
+      </div>
+    `;
+  };
+
+  // Add new task
+  window.addNewTask = (branchName) => {
+    notes[branchName].push({
+      id: Math.random().toString(36).substring(2, 9),
+      title: "New Task",
+      content: "Task description...",
+      status: "Not Completed",
+      editing: true
+    });
+    renderKanbanBoard();
+  };
+
+  // Edit task
+  window.editTask = (branchName, index) => {
+    notes[branchName][index].editing = true;
+    renderKanbanBoard();
+  };
+
+  // Save edit
+  window.saveEdit = (branchName, index) => {
+    const title = document.getElementById(`edit-title-${branchName}-${index}`).value.trim();
+    const content = document.getElementById(`edit-content-${branchName}-${index}`).value.trim();
+    const status = document.getElementById(`edit-status-${branchName}-${index}`).value;
+    
+    if (!title || !content) {
+      showNotification("Please fill out all fields.", 'error');
+      return;
+    }
+    
+    notes[branchName][index] = {
+      ...notes[branchName][index],
+      title,
+      content,
+      status,
+      editing: false
+    };
+    renderKanbanBoard();
+  };
+
+  // Cancel edit
+  window.cancelEdit = (branchName, index) => {
+    notes[branchName][index].editing = false;
+    renderKanbanBoard();
+  };
+
+  // Delete task
+  window.deleteTask = (branchName, index) => {
+    if (confirm("Are you sure you want to delete this task?")) {
+      notes[branchName].splice(index, 1);
+      renderKanbanBoard();
+    }
+  };
+
+  // Trigger file upload
+  window.triggerUpload = (branchName) => {
+    const fileInput = document.getElementById(`upload-${branchName.replace(/\s+/g, '-')}`);
+    fileInput.click();
+  };
+
+  // Handle image upload
+  window.handleImageUpload = (event, branchName) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        showNotification('⚠️ Image size should be less than 5MB', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const branch = branches.find(b => b.name === branchName);
+        if (branch) {
+          branch.image = e.target.result;
+          renderKanbanBoard();
+          
+          // Save to localStorage immediately
+          saveBranchImages();
+          
+          // Save to Supabase immediately
+          try {
+            await saveBranchImagesToSupabase();
+            showNotification('✅ Image uploaded and saved successfully!', 'success');
+          } catch (err) {
+            console.error('Error saving to Supabase:', err);
+            showNotification('✅ Image uploaded (saved locally)', 'success');
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Save branch images to localStorage
+  function saveBranchImages() {
+    const branchImages = {};
+    branches.forEach(branch => {
+      if (branch.image) {
+        branchImages[branch.name] = branch.image;
+      }
+    });
+    try {
+      const key = 'branchImages_' + currentYear;
+      localStorage.setItem(key, JSON.stringify(branchImages));
+      console.log('Images saved to localStorage:', key, Object.keys(branchImages));
+    } catch (e) {
+      console.error('Error saving to localStorage:', e);
+    }
+  }
+
+  // Load branch images from localStorage
+  function loadBranchImages() {
+    try {
+      const key = 'branchImages_' + currentYear;
+      const savedImages = localStorage.getItem(key);
+      console.log('Loading images from localStorage:', key);
+      
+      if (savedImages) {
+        const branchImages = JSON.parse(savedImages);
+        console.log('Images found in localStorage:', Object.keys(branchImages));
+        branches.forEach(branch => {
+          if (branchImages[branch.name]) {
+            branch.image = branchImages[branch.name];
+          }
+        });
+      } else {
+        console.log('No images found in localStorage');
+      }
+    } catch (e) {
+      console.error('Error loading from localStorage:', e);
+    }
+  }
+
+  // Save branch images to Supabase
+  async function saveBranchImagesToSupabase() {
+    try {
+      const branchImages = {};
+      branches.forEach(branch => {
+        if (branch.image) {
+          branchImages[branch.name] = branch.image;
+        }
+      });
+
+      console.log('Saving images to Supabase:', Object.keys(branchImages));
+
+      // First, try to delete existing record
+      await supabase
+        .from('branch_settings')
+        .delete()
+        .eq('id', 'branch_images')
+        .eq('year', currentYear);
+
+      // Then insert new record
+      const { data, error } = await supabase
+        .from('branch_settings')
+        .insert({
+          id: 'branch_images',
+          year: currentYear,
+          data: branchImages,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) {
+        console.error('Supabase save error:', error);
+        throw error;
+      }
+
+      console.log('Images saved successfully to Supabase');
+    } catch (err) {
+      console.error('Error saving images to Supabase:', err);
+      throw err;
+    }
+  }
+
+  // Load branch images from Supabase
+  async function loadBranchImagesFromSupabase() {
+    try {
+      console.log('Loading images from Supabase for year:', currentYear);
+      
+      const { data, error } = await supabase
+        .from('branch_settings')
+        .select('data')
+        .eq('id', 'branch_images')
+        .eq('year', currentYear)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Supabase load error:', error);
+        // If no data in Supabase, load from localStorage
+        loadBranchImages();
+        return;
+      }
+
+      if (data && data.data) {
+        console.log('Images loaded from Supabase:', Object.keys(data.data));
+        const branchImages = data.data;
+        branches.forEach(branch => {
+          if (branchImages[branch.name]) {
+            branch.image = branchImages[branch.name];
+          }
+        });
+        // Also save to localStorage as backup
+        localStorage.setItem('branchImages_' + currentYear, JSON.stringify(branchImages));
+      } else {
+        console.log('No images in Supabase, loading from localStorage');
+        // Load from localStorage if no Supabase data
+        loadBranchImages();
+      }
+    } catch (err) {
+      console.error('Error loading images from Supabase:', err);
+      // Fall back to localStorage
+      loadBranchImages();
+    }
+  }
+
+  // Save all data to Supabase
+  saveBtn.onclick = async () => {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span>⏳</span><span>Saving...</span>';
+    
+    try {
+      const allNotesToSave = [];
+      branches.forEach(branch => {
+        notes[branch.name].forEach(note => {
+          allNotesToSave.push({
+            year: currentYear,
+            branch: branch.name,
+            title: note.title,
+            content: note.content,
+            status: note.status,
+            updated_at: new Date().toISOString()
+          });
+        });
+      });
+      
+      const { error: deleteError } = await supabase
+        .from('branch_compliances')
+        .delete()
+        .eq('year', currentYear);
+        
+      if (deleteError) throw deleteError;
+      
+      if (allNotesToSave.length > 0) {
+        const { error: insertError } = await supabase
+          .from('branch_compliances')
+          .insert(allNotesToSave);
+        
+        if (insertError) throw insertError;
+      }
+      
+      // Save branch images to Supabase
+      await saveBranchImagesToSupabase();
+      
+      showNotification('✅ All compliance notes saved successfully!', 'success');
+      await loadDataFromSupabase(currentYear);
+      
+    } catch (err) {
+      console.error('Error saving data:', err);
+      showNotification('❌ Error saving data: ' + (err.message || 'Check console for details.'), 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<span>💾</span><span>Save All Data</span>';
+    }
+  };
+
+  // Print functionality
+  printBtn.onclick = () => {
+    window.print();
+  };
+
+  // Load data from Supabase
+  async function loadDataFromSupabase(year) {
+    try {
+      const { data, error } = await supabase
+        .from('branch_compliances')
+        .select('*')
+        .eq('year', year)
+        .order('created_at', { ascending: true });
+      
+      if (error) {
+        showNotification('⚠️ Could not load data from Supabase. Working offline.', 'error');
+        console.error('Error loading data:', error);
+        return;
+      }
+      
+      if (data) {
+        initializeNotes();
+        
+        data.forEach(record => {
+          if (notes[record.branch]) {
+            notes[record.branch].push({
+              id: record.id,
+              title: record.title,
+              content: record.content,
+              status: record.status,
+              editing: false
+            });
+          }
+        });
+        
+        // Load branch images
+        await loadBranchImagesFromSupabase();
+        
+        renderKanbanBoard();
+      }
+    } catch (err) {
+      console.error('Exception loading data:', err);
+      showNotification('⚠️ Failed to connect to Supabase. Check console.', 'error');
+    }
+  }
+
+  // Listen for year changes
+  window.addEventListener("message", event => {
+    if (event.data && event.data.year) {
+      currentYear = event.data.year;
+      loadDataFromSupabase(currentYear);
+    }
+  });
+
+  // Initialize
+  loadBranchImages(); // Load saved images from localStorage first
+  renderKanbanBoard();
+  loadDataFromSupabase(currentYear).then(() => {
+    // Render again after loading from Supabase
+    renderKanbanBoard();
+  });
+
+})();
+</script>
+</body>
+</html>
