@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSG UPR Monitoring</title>
+<link rel="stylesheet" href="navy-dashboard-styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+    body {
+        background-image: url('image/bg2.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed; /* Keeps background still while scrolling */
+        background-repeat: no-repeat;
+        min-height: 100vh;
+    }
+
+    /* Optional: If the background makes text hard to read, 
+       this adds a subtle white overlay to the container */
+    .container {
+        background-color: rgba(255, 255, 255, 0.9); 
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+</style>
+
+<style>
+  /* Additional custom styles for this page */
+  body {
+    padding: 1rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    color: #0b1a3a;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+  /* Table column widths */
+  .table th:nth-child(1), .table td:nth-child(1) { width: 3%; }
+  .table th:nth-child(2), .table td:nth-child(2) { width: 10%; }
+  .table th:nth-child(3), .table td:nth-child(3) { width: 18%; }
+  .table th:nth-child(4), .table td:nth-child(4) { width: 12%; }
+  .table th:nth-child(5), .table td:nth-child(5) { width: 7%; }
+  .table th:nth-child(6), .table td:nth-child(6) { width: 7%; }
+  .table th:nth-child(7), .table td:nth-child(7) { width: 15%; }
+  .table th:nth-child(8), .table td:nth-child(8) { width: 18%; }
+  .table th:nth-child(9), .table td:nth-child(9) { width: 10%; }
+
+  /* Editable cells */
+  td[contenteditable="true"] {
+    white-space: normal;
+    word-wrap: break-word;
+    cursor: text;
+    min-height: 2rem;
+  }
+
+  td[contenteditable="true"]:hover {
+    background-color: #fef3c7;
+  }
+
+  td[contenteditable="true"]:focus {
+    outline: 2px solid #2563eb;
+    background-color: #fff;
+  }
+
+  /* Input fields in table */
+  .table td input, .table td select {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+  }
+
+  .table td input:focus, .table td select:focus {
+    border-color: #2563eb;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  /* Action buttons in table */
+  .btn-table {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  /* Alert/success messages */
+  .toast {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    min-width: 300px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-project-diagram"></i> HSG PROJECTS MONITORING</h1>
+    <p>Manage and track HSG project records</p>
+  </div>
+
+  <!-- Main Card -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-table"></i> Project Records
+    </div>
+    <div class="card-body">
+      
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2 mb-3">
+        <button id="addEmptyRowBtn" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add Empty Row
+        </button>
+        <button id="addRowBtn" class="btn btn-success">
+          <i class="fas fa-save"></i> Save New Records
+        </button>
+        <button id="updateRowBtn" class="btn btn-info">
+          <i class="fas fa-sync-alt"></i> Update All Records
+        </button>
+        <button id="refreshBtn" class="btn btn-secondary">
+          <i class="fas fa-redo"></i> Refresh
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="table table-striped" id="projectTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>DATE OUT ORS</th>
+              <th>ITEM DESCRIPTION</th>
+              <th>MODE OF PROCUREMENT</th>
+              <th>ABC</th>
+              <th>BID AMOUNT</th>
+              <th>PROPONENT</th>
+              <th>REMARKS</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="9" class="text-center">
+                <div class="spinner"></div> Loading data...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Footer Info -->
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+          <span><i class="fas fa-info-circle"></i> Click on cells to edit. Use buttons above to save changes.</span>
+          <span id="recordCount" class="badge badge-primary">0 records</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast Container for Notifications -->
+<div id="toastContainer" class="toast"></div>
+
+<script>
+const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+// ✅ FIXED: Changed variable name from 'supabase' to 'supabaseHSG' to avoid conflict with parent window
+const supabaseHSG = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const tableBody = document.getElementById("tableBody");
+const addRowBtn = document.getElementById("addRowBtn");
+const updateRowBtn = document.getElementById("updateRowBtn");
+const addEmptyRowBtn = document.getElementById("addEmptyRowBtn");
+const refreshBtn = document.getElementById("refreshBtn");
+const recordCount = document.getElementById("recordCount");
+const toastContainer = document.getElementById("toastContainer");
+
+// Show toast notification
+function showToast(message, type = 'success') {
+  const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+  toastContainer.innerHTML = `
+    <div class="alert ${alertClass} alert-dismissible">
+      ${message}
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  `;
+  setTimeout(() => { toastContainer.innerHTML = ''; }, 4000);
+}
+
+// Load data from database
+async function loadData() {
+  try {
+    const { data, error } = await supabaseHSG
+      .from("hsg_project_monitoring")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (error) throw error;
+
+    tableBody.innerHTML = "";
+
+    if (data.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center text-muted">
+            <i class="fas fa-inbox"></i> No records found. Click "Add Empty Row" to start.
+          </td>
+        </tr>
+      `;
+      recordCount.textContent = "0 records";
+      return;
+    }
+
+    data.forEach((row, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td><input type="date" value="${row.date_out || ""}"></td>
+        <td contenteditable="true">${row.item_description || ""}</td>
+        <td>
+          <select>
+            <option value="">-- Select Mode --</option>
+            <option ${row.mode_of_procurement === "Small Value Procurement" ? "selected" : ""}>Small Value Procurement</option>
+            <option ${row.mode_of_procurement === "Shopping" ? "selected" : ""}>Shopping</option>
+            <option ${row.mode_of_procurement === "Negotiated" ? "selected" : ""}>Negotiated</option>
+          </select>
+        </td>
+        <td contenteditable="true">${row.abc || ""}</td>
+        <td contenteditable="true">${row.bid_amount || ""}</td>
+        <td contenteditable="true">${row.proponent || ""}</td>
+        <td contenteditable="true">${row.remarks || ""}</td>
+        <td class="actions">
+          <button class="btn btn-sm btn-danger delete-btn" data-id="${row.id}">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      `;
+      tableBody.appendChild(tr);
+    });
+
+    recordCount.textContent = `${data.length} record${data.length !== 1 ? 's' : ''}`;
+    renumberRows();
+  } catch (error) {
+    console.error("Error loading data:", error);
+    showToast("Error loading data: " + error.message, 'error');
+  }
+}
+
+// Renumber table rows
+function renumberRows() {
+  const rows = tableBody.querySelectorAll("tr");
+  rows.forEach((row, index) => { 
+    const firstCell = row.querySelector("td");
+    if (firstCell) firstCell.textContent = index + 1; 
+  });
+}
+
+// Add empty row
+addEmptyRowBtn.addEventListener("click", () => {
+  const newRow = document.createElement("tr");
+  newRow.innerHTML = `
+    <td>—</td>
+    <td><input type="date"></td>
+    <td contenteditable="true"></td>
+    <td>
+      <select>
+        <option value="">-- Select Mode --</option>
+        <option>Small Value Procurement</option>
+        <option>Shopping</option>
+        <option>Negotiated</option>
+      </select>
+    </td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td class="actions">
+      <button class="btn btn-sm btn-danger delete-btn">
+        <i class="fas fa-trash"></i>
+      </button>
+    </td>
+  `;
+  tableBody.appendChild(newRow);
+  renumberRows();
+  showToast("Empty row added. Fill in the data and click 'Save New Records'.", 'info');
+});
+
+// Add new records to database
+addRowBtn.addEventListener("click", async () => {
+  const newRows = Array.from(tableBody.querySelectorAll("tr")).filter(r => !r.querySelector(".delete-btn").dataset.id);
+  
+  if (newRows.length === 0) {
+    showToast("No new rows to add.", 'error');
+    return;
+  }
+
+  try {
+    for (let row of newRows) {
+      const cells = row.querySelectorAll("td");
+      const record = {
+        date_out: cells[1].querySelector("input").value || null,
+        item_description: cells[2].innerText.trim() || null,
+        mode_of_procurement: cells[3].querySelector("select").value || null,
+        abc: parseFloat(cells[4].innerText.trim()) || null,
+        bid_amount: parseFloat(cells[5].innerText.trim()) || null,
+        proponent: cells[6].innerText.trim() || null,
+        remarks: cells[7].innerText.trim() || null,
+      };
+      const { error } = await supabaseHSG.from("hsg_project_monitoring").insert([record]);
+      if (error) throw error;
+    }
+    showToast(`${newRows.length} record${newRows.length !== 1 ? 's' : ''} added successfully!`, 'success');
+    loadData();
+  } catch (error) {
+    console.error("Error adding records:", error);
+    showToast("Error adding records: " + error.message, 'error');
+  }
+});
+
+// Update existing records
+updateRowBtn.addEventListener("click", async () => {
+  const rows = tableBody.querySelectorAll("tr");
+  let updateCount = 0;
+
+  try {
+    for (let row of rows) {
+      const id = row.querySelector(".delete-btn")?.dataset.id;
+      if (!id) continue;
+      
+      const cells = row.querySelectorAll("td");
+      const updatedRecord = {
+        date_out: cells[1].querySelector("input").value || null,
+        item_description: cells[2].innerText.trim() || null,
+        mode_of_procurement: cells[3].querySelector("select").value || null,
+        abc: parseFloat(cells[4].innerText.trim()) || null,
+        bid_amount: parseFloat(cells[5].innerText.trim()) || null,
+        proponent: cells[6].innerText.trim() || null,
+        remarks: cells[7].innerText.trim() || null,
+      };
+      
+      const { error } = await supabaseHSG.from("hsg_project_monitoring").update(updatedRecord).eq("id", id);
+      if (error) throw error;
+      updateCount++;
+    }
+    showToast(`${updateCount} record${updateCount !== 1 ? 's' : ''} updated successfully!`, 'success');
+    loadData();
+  } catch (error) {
+    console.error("Error updating records:", error);
+    showToast("Error updating records: " + error.message, 'error');
+  }
+});
+
+// Delete record
+tableBody.addEventListener("click", async (e) => {
+  if (e.target.closest(".delete-btn")) {
+    const btn = e.target.closest(".delete-btn");
+    const id = btn.getAttribute("data-id");
+    
+    if (!confirm("Are you sure you want to delete this record?")) return;
+    
+    if (!id) {
+      btn.closest("tr").remove();
+      renumberRows();
+      showToast("Row removed.", 'info');
+      return;
+    }
+
+    try {
+      const { error } = await supabaseHSG.from("hsg_project_monitoring").delete().eq("id", id);
+      if (error) throw error;
+      
+      btn.closest("tr").remove();
+      renumberRows();
+      showToast("Record deleted successfully!", 'success');
+      
+      // Update record count
+      const currentCount = parseInt(recordCount.textContent);
+      recordCount.textContent = `${currentCount - 1} record${currentCount - 1 !== 1 ? 's' : ''}`;
+    } catch (error) {
+      console.error("Error deleting record:", error);
+      showToast("Error deleting record: " + error.message, 'error');
+    }
+  }
+});
+
+// Refresh button
+refreshBtn.addEventListener("click", () => {
+  loadData();
+  showToast("Data refreshed!", 'info');
+});
+
+// Initial load
+loadData();
+</script>
+
+</body>
+</html>

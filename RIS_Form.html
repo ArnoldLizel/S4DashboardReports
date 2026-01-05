@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>REQUISITION AND ISSUE SLIP (RIS)</title>
+<style>
+/* ========================================
+   Philippine Navy Dashboard - Unified Styles
+   ======================================== */
+
+/* ============= BASE STYLES ============= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ============= BUTTONS ============= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #0b1a3a;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #1e3a8a;
+  box-shadow: 0 4px 6px -1px rgba(11, 26, 58, 0.3);
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+.btn-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.btn-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: #d97706;
+}
+
+.btn-info {
+  background-color: #06b6d4;
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background-color: #0891b2;
+}
+
+.btn-group {
+  display: inline-flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ============= CARDS ============= */
+.card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.3s ease;
+}
+
+/* ============= ALERTS ============= */
+.alert {
+  position: relative;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.alert-success {
+  color: #065f46;
+  background-color: #d1fae5;
+  border-color: #a7f3d0;
+}
+
+.alert-info {
+  color: #0c4a6e;
+  background-color: #e0f2fe;
+  border-color: #bae6fd;
+}
+
+.alert-warning {
+  color: #92400e;
+  background-color: #fef3c7;
+  border-color: #fde68a;
+}
+
+/* ============= RIS SPECIFIC STYLES ============= */
+.page { 
+  width: 210mm; 
+  max-width: 100%; 
+  margin: 0 auto; 
+  background: white;
+  position: relative;
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.ris-box { 
+  width: 100%; 
+  border: 2px solid #0b1a3a; 
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.header { 
+  text-align: center; 
+  line-height: 1.3; 
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+  color: white;
+  border-radius: 0.375rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.header .small { 
+  font-size: 0.75rem; 
+  font-style: italic; 
+  font-weight: 400;
+  color: #e5e7eb;
+}
+
+.info { 
+  width: 100%; 
+  border-collapse: collapse; 
+  margin-bottom: 1rem; 
+  table-layout: fixed; 
+}
+
+.info td { 
+  border: 1px solid #d1d5db; 
+  padding: 0.5rem 0.75rem; 
+  vertical-align: middle; 
+  font-size: 0.875rem; 
+}
+
+.info .label { 
+  font-weight: 600; 
+  text-align: left;
+  background-color: #f3f4f6;
+  color: #0b1a3a;
+}
+
+.info span[contenteditable="true"] {
+  font-weight: 400;
+  color: #1f2937;
+  display: inline-block;
+  min-width: 100px;
+  padding: 0.125rem 0.25rem;
+  border-bottom: 1px dotted #9ca3af;
+}
+
+.info span[contenteditable="true"]:focus {
+  outline: none;
+  border-bottom: 2px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+table.items { 
+  width: 100%; 
+  border-collapse: collapse; 
+  table-layout: fixed;
+  margin-bottom: 1rem;
+}
+
+table.items th, table.items td { 
+  border: 1px solid #d1d5db; 
+  padding: 0.5rem 0.375rem; 
+  vertical-align: middle; 
+  font-size: 0.875rem; 
+  text-align: center; 
+}
+
+table.items th { 
+  font-weight: 600;
+  background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+  color: white;
+}
+
+table.items td[contenteditable="true"] { 
+  text-align: left;
+  cursor: text;
+}
+
+table.items td[contenteditable="true"]:focus {
+  outline: 2px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+table.items input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+  accent-color: #0b1a3a;
+}
+
+.nothing { 
+  text-align: center; 
+  margin: 1rem 0; 
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.purpose {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #f9fafb;
+}
+
+.purpose strong {
+  color: #0b1a3a;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+#purposeBox {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  background: white;
+  resize: vertical;
+  overflow-y: auto;
+  min-height: 60px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  line-height: 1.5;
+}
+
+#purposeBox:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.sign-grid { 
+  width: 100%; 
+  border-collapse: collapse; 
+  margin-top: 1rem; 
+  table-layout: fixed; 
+}
+
+.sign-grid td { 
+  border: 1px solid #d1d5db; 
+  padding: 1rem; 
+  vertical-align: bottom; 
+  text-align: center; 
+  font-size: 0.875rem; 
+  height: 120px;
+}
+
+.sign-grid td:first-child {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.sig-name { 
+  font-weight: 700; 
+  text-transform: uppercase;
+  color: #0b1a3a;
+  margin-bottom: 0.25rem;
+}
+
+.sig-rank { 
+  margin-top: 0.25rem;
+  color: #6b7280;
+}
+
+.sig-role { 
+  font-size: 0.8125rem; 
+  margin-top: 0.5rem;
+  color: #4b5563;
+}
+
+/* ============= PRINT OPTIMIZATION ============= */
+@media print {
+  .controls { display: none !important; }
+  #alertContainer { display: none !important; }
+  
+  body { 
+    padding: 0; 
+    background: white;
+    font-size: 7pt;
+    line-height: 1.1;
+  }
+  
+  .container { 
+    padding: 0; 
+    max-width: 100%;
+  }
+  
+  .page { 
+    margin: 0; 
+    padding: 0;
+    width: 100%;
+  }
+  
+  .ris-box { 
+    border-width: 1px;
+    padding: 0.3rem;
+  }
+  
+  .header {
+    padding: 0.3rem;
+    margin-bottom: 0.3rem;
+    font-size: 9pt;
+    line-height: 1;
+  }
+  
+  .header .small {
+    font-size: 6pt;
+  }
+  
+  .info {
+    margin-bottom: 0.3rem;
+    font-size: 6.5pt;
+  }
+  
+  .info td {
+    padding: 0.15rem 0.25rem;
+    line-height: 1.1;
+  }
+  
+  .info .label {
+    font-size: 6.5pt;
+  }
+  
+  .info span[contenteditable="true"] {
+    font-size: 6.5pt;
+    padding: 0.05rem 0.1rem;
+    border-bottom: none;
+  }
+  
+  table.items {
+    margin-bottom: 0.3rem;
+    font-size: 6pt;
+  }
+  
+  table.items th, table.items td {
+    padding: 0.15rem 0.2rem;
+    line-height: 1.1;
+    font-size: 6pt;
+  }
+  
+  table.items th {
+    font-size: 6pt;
+  }
+  
+  table.items td[contenteditable="true"] {
+    font-size: 6pt;
+  }
+  
+  table.items input[type="checkbox"] {
+    width: 0.75rem;
+    height: 0.75rem;
+    transform: scale(0.8);
+  }
+  
+  .nothing {
+    margin: 0.2rem 0;
+    font-size: 6pt;
+  }
+  
+  .purpose {
+    margin: 0.3rem 0;
+    padding: 0.25rem;
+  }
+  
+  .purpose strong {
+    font-size: 6.5pt;
+    margin-bottom: 0.2rem;
+  }
+  
+  #purposeBox {
+    font-size: 6pt;
+    padding: 0.2rem;
+    min-height: 30px;
+    line-height: 1.1;
+  }
+  
+  .sign-grid {
+    margin-top: 0.3rem;
+  }
+  
+  .sign-grid td {
+    padding: 0.3rem 0.2rem;
+    height: 60px;
+    font-size: 6pt;
+  }
+  
+  .sign-grid td:first-child {
+    font-size: 6pt;
+  }
+  
+  .sig-name {
+    font-size: 6.5pt;
+    margin-bottom: 0.1rem;
+  }
+  
+  .sig-rank {
+    font-size: 6pt;
+    margin-top: 0.1rem;
+  }
+  
+  .sig-role {
+    font-size: 5.5pt;
+    margin-top: 0.2rem;
+  }
+  
+  .sign-grid div[style*="margin-top: 1rem"],
+  .sign-grid div[style*="margin-top: 2rem"] {
+    margin-top: 0.3rem !important;
+  }
+  
+  .sign-grid div[style*="margin-top: 0.5rem"] {
+    margin-top: 0.2rem !important;
+  }
+  
+  .sign-grid div[style*="font-size: 0.75rem"],
+  .sign-grid div[style*="font-size: 0.8125rem"] {
+    font-size: 5.5pt !important;
+  }
+  
+  /* Force content to fit on pages */
+  @page {
+    size: A4;
+    margin: 0.4cm;
+  }
+  
+  /* Prevent page breaks inside important elements */
+  .info, .sign-grid, .purpose {
+    page-break-inside: avoid;
+  }
+  
+  /* Allow page break after items table if needed */
+  table.items {
+    page-break-after: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .ris-box {
+    padding: 1rem;
+  }
+  
+  .controls {
+    justify-content: center;
+  }
+  
+  .btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+  
+  table.items {
+    font-size: 0.75rem;
+  }
+  
+  table.items th,
+  table.items td {
+    padding: 0.25rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="controls no-print">
+    <button class="btn btn-secondary" onclick="addRow()">➕ Add Row</button>
+    <button class="btn btn-info" onclick="downloadTemplate()">📊 Download Excel Template</button>
+    <button class="btn btn-success" onclick="document.getElementById('excelUpload').click()">📤 Import from Excel</button>
+    <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
+    <button class="btn btn-success" onclick="loadFromUPR()">🔄 Load from UPR</button>
+    <button class="btn btn-info" onclick="downloadCSV()">📥 Export CSV</button>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+    <button class="btn btn-danger" onclick="clearForm()">🗑️ Clear Form</button>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <div class="page">
+    <div class="ris-box">
+      <div class="header">
+        <div>REQUISITION AND ISSUE SLIP</div>
+      </div>
+
+      <table class="info">
+        <tr>
+          <td class="label" colspan="3">Entity Name: <span contenteditable="true">HEADQUARTERS PHILIPPINE NAVY</span></td>
+          <td class="label">Fund Cluster: <span contenteditable="true">01</span></td>
+        </tr>
+        <tr>
+          <td class="label" style="width:30%;">Division: <span contenteditable="true">HPN & HSG</span></td>
+          <td class="label" style="width:30%;">Office: <span contenteditable="true">O/S4</span></td>
+          <td class="label" style="width:20%;">Responsibility Center Code:</td>
+          <td class="label" style="width:20%;">RIS No.: <span contenteditable="true"></span></td>
+        </tr>
+      </table>
+
+      <table class="items" id="itemsTable">
+        <thead>
+          <tr>
+            <th style="width:10%;">Stock No.</th>
+            <th style="width:8%;">Unit</th>
+            <th style="width:32%;">Description</th>
+            <th style="width:10%;">Quantity</th>
+            <th colspan="2" style="width:12%;">Stock Available?</th>
+            <th style="width:10%;">Issue Quantity</th>
+            <th style="width:18%;">Remarks</th>
+          </tr>
+          <tr>
+            <th colspan="4"></th>
+            <th style="width:6%;">Yes</th>
+            <th style="width:6%;">No</th>
+            <th colspan="2"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="nothing">x-x-x-x-x NOTHING TO FOLLOWS x-x-x-x-x</div>
+
+      <div class="purpose">
+        <strong>Purpose:</strong>
+        <textarea id="purposeBox" rows="3" placeholder="Enter purpose..."></textarea>
+      </div>
+
+      <table class="sign-grid">
+        <tr>
+          <td><strong>Requested by:</strong></td>
+          <td><strong>Approved by:</strong></td>
+          <td><strong>Issued by:</strong></td>
+          <td><strong>Received by:</strong></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="sig-name">AUDIE E BAZAR</div>
+            <div class="sig-rank">LCDR          PN</div>
+            <div style="margin-top: 1rem;">______________________</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Signature Over Printed Name</div>
+            <div class="sig-role">Supply Officer, HPN & HSG</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Designation</div>
+            <div style="margin-top: 0.5rem; font-size: 0.8125rem;">Date: ____________</div>
+          </td>
+          <td>
+            <div class="sig-name">OLIVER B REFORBA</div>
+            <div class="sig-rank">CAPT         PN(MNSA)</div>
+            <div style="margin-top: 1rem;">______________________</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Signature Over Printed Name</div>
+            <div class="sig-role">Commander, HPN & HSG</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Designation</div>
+            <div style="margin-top: 0.5rem; font-size: 0.8125rem;">Date: ____________</div>
+          </td>
+          <td>
+            <div style="margin-top: 2rem;">______________________</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Signature Over Printed Name</div>
+            <div style="margin-top: 0.5rem;">______________________</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Designation</div>
+            <div style="margin-top: 0.5rem; font-size: 0.8125rem;">Date: ____________</div>
+          </td>
+          <td>
+            <div style="margin-top: 2rem;">______________________</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Signature Over Printed Name</div>
+            <div style="margin-top: 0.5rem;">______________________</div>
+            <div style="font-size: 0.75rem; color: #6b7280;">Designation</div>
+            <div style="margin-top: 0.5rem; font-size: 0.8125rem;">Date: ____________</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const tbody = document.querySelector('#itemsTable tbody');
+const alertContainer = document.getElementById('alertContainer');
+
+function showAlert(message, type = 'success') {
+  const alert = document.createElement('div');
+  alert.className = `alert alert-${type}`;
+  alert.textContent = message;
+  alert.style.animation = 'slideIn 0.3s ease';
+  alertContainer.appendChild(alert);
+  
+  setTimeout(() => {
+    alert.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => alert.remove(), 300);
+  }, 3000);
+}
+
+function createRow(index, stockNo='', unit='', desc='', qty='', issueQty='', remarks='') {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td contenteditable="true">${stockNo}</td>
+    <td contenteditable="true">${unit}</td>
+    <td contenteditable="true">${desc}</td>
+    <td contenteditable="true">${qty}</td>
+    <td><input type="checkbox"></td>
+    <td><input type="checkbox"></td>
+    <td contenteditable="true">${issueQty}</td>
+    <td contenteditable="true">${remarks}</td>
+  `;
+  return tr;
+}
+
+function addRow() {
+  tbody.appendChild(createRow(tbody.querySelectorAll('tr').length + 1));
+  saveRISData();
+}
+
+function initRows() {
+  if (tbody.querySelectorAll('tr').length === 0) {
+    for (let i = 0; i < 2; i++) {
+      tbody.appendChild(createRow(i + 1));
+    }
+  }
+}
+
+function downloadTemplate() {
+  const template = [
+    ['Stock No.', 'Unit', 'Description', 'Quantity', 'Stock Available Yes', 'Stock Available No', 'Issue Quantity', 'Remarks'],
+    ['PN-001', 'pcs', 'Sample Item - Office Supplies', '10', 'Yes', '', '10', ''],
+    ['PN-002', 'units', 'Sample Item - Equipment', '5', '', 'No', '0', 'Out of stock'],
+    ['', '', '(Add more rows as needed)', '', '', '', '', '']
+  ];
+  
+  const csvContent = template.map(row => 
+    row.map(cell => `"${cell}"`).join(',')
+  ).join('\r\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'RIS_Items_Template.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  showAlert('📊 Excel template downloaded! Open in Excel, fill in your items, and import back.', 'info');
+}
+
+function importExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const rows = text.split('\n').map(row => {
+      const cells = [];
+      let cell = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          cells.push(cell.trim());
+          cell = '';
+        } else {
+          cell += char;
+        }
+      }
+      cells.push(cell.trim());
+      return cells;
+    });
+    
+    const dataRows = rows.slice(1).filter(row => 
+      row.length > 2 && row[2] && row[2].trim() !== '' && !row[2].includes('Sample Item')
+    );
+    
+    if (dataRows.length === 0) {
+      showAlert('❌ No valid data found in the file.', 'warning');
+      event.target.value = '';
+      return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    dataRows.forEach((row, index) => {
+      const tr = createRow(
+        index + 1,
+        row[0]?.replace(/^"|"$/g, '') || '',
+        row[1]?.replace(/^"|"$/g, '') || '',
+        row[2]?.replace(/^"|"$/g, '') || '',
+        row[3]?.replace(/^"|"$/g, '') || '',
+        row[6]?.replace(/^"|"$/g, '') || '',
+        row[7]?.replace(/^"|"$/g, '') || ''
+      );
+      
+      const yesCheck = row[4]?.toLowerCase().includes('yes');
+      const noCheck = row[5]?.toLowerCase().includes('no');
+      
+      if (yesCheck) tr.querySelectorAll('input[type="checkbox"]')[0].checked = true;
+      if (noCheck) tr.querySelectorAll('input[type="checkbox"]')[1].checked = true;
+      
+      tbody.appendChild(tr);
+    });
+    
+    saveRISData();
+    showAlert(`✅ Successfully imported ${dataRows.length} items from Excel!`, 'success');
+    event.target.value = '';
+  };
+  
+  reader.readAsText(file);
+}
+
+function downloadCSV() {
+  const headers = ['Stock No.','Unit','Description','Quantity','Stock Available Yes','Stock Available No','Issue Quantity','Remarks'];
+  const lines = [headers.join(',')];
+  tbody.querySelectorAll('tr').forEach(row => {
+    const cells = row.querySelectorAll('td');
+    const data = [
+      cells[0].innerText.trim(),
+      cells[1].innerText.trim(),
+      cells[2].innerText.trim(),
+      cells[3].innerText.trim(),
+      cells[4].querySelector('input')?.checked ? 'Yes' : '',
+      cells[5].querySelector('input')?.checked ? 'No' : '',
+      cells[6].innerText.trim(),
+      cells[7].innerText.trim()
+    ];
+    lines.push(data.map(v => `"${v}"`).join(','));
+  });
+  const blob = new Blob([lines.join('\r\n')], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'Requisition_and_Issue_Slip.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  showAlert('📥 CSV exported successfully!', 'success');
+}
+
+const purposeBox = document.getElementById('purposeBox');
+purposeBox.addEventListener('input', () => {
+  purposeBox.style.height = 'auto';
+  purposeBox.style.height = purposeBox.scrollHeight + 'px';
+  saveRISData();
+});
+
+function loadFromUPR() {
+  const savedData = sessionStorage.getItem("UPR_DATA");
+  
+  if (!savedData) {
+    showAlert('⚠️ No UPR data found. Please create a UPR first.', 'warning');
+    return;
+  }
+
+  const parsed = JSON.parse(savedData);
+  const items = parsed.items || [];
+  const purpose = parsed.purposeBox || '';
+
+  if (items.length === 0) {
+    showAlert('⚠️ UPR has no items to import.', 'warning');
+    return;
+  }
+
+  tbody.innerHTML = '';
+  items.forEach((item, index) => {
+    tbody.appendChild(createRow(
+      index + 1,
+      '',
+      item.unit || '',
+      item.desc || '',
+      item.qty || '',
+      item.qty || '',
+      ''
+    ));
+  });
+
+  purposeBox.value = purpose;
+  purposeBox.style.height = 'auto';
+  purposeBox.style.height = purposeBox.scrollHeight + 'px';
+
+  saveRISData();
+  showAlert(`✅ Successfully loaded ${items.length} items from UPR!`, 'success');
+}
+
+function saveRISData() {
+  const items = Array.from(tbody.querySelectorAll('tr')).map(row => {
+    const cells = row.querySelectorAll('td');
+    return {
+      stockNo: cells[0]?.innerText || '',
+      unit: cells[1]?.innerText || '',
+      desc: cells[2]?.innerText || '',
+      qty: cells[3]?.innerText || '',
+      yesCheck: cells[4]?.querySelector('input')?.checked || false,
+      noCheck: cells[5]?.querySelector('input')?.checked || false,
+      issueQty: cells[6]?.innerText || '',
+      remarks: cells[7]?.innerText || ''
+    };
+  });
+
+  const data = {
+    purpose: purposeBox.value,
+    items
+  };
+
+  sessionStorage.setItem('RIS_DATA', JSON.stringify(data));
+}
+
+function loadRISData() {
+  const saved = sessionStorage.getItem('RIS_DATA');
+  if (!saved) {
+    initRows();
+    return;
+  }
+
+  const data = JSON.parse(saved);
+  
+  tbody.innerHTML = '';
+  (data.items || []).forEach((item, index) => {
+    const tr = createRow(
+      index + 1,
+      item.stockNo,
+      item.unit,
+      item.desc,
+      item.qty,
+      item.issueQty,
+      item.remarks
+    );
+    
+    if (item.yesCheck) tr.querySelectorAll('input[type="checkbox"]')[0].checked = true;
+    if (item.noCheck) tr.querySelectorAll('input[type="checkbox"]')[1].checked = true;
+    
+    tbody.appendChild(tr);
+  });
+
+  if (data.purpose) {
+    purposeBox.value = data.purpose;
+    purposeBox.style.height = 'auto';
+    purposeBox.style.height = purposeBox.scrollHeight + 'px';
+  }
+}
+
+function clearForm() {
+  if (confirm('Are you sure you want to clear all RIS data?')) {
+    sessionStorage.removeItem('RIS_DATA');
+    tbody.innerHTML = '';
+    purposeBox.value = '';
+    initRows();
+    showAlert('✅ Form cleared successfully.', 'success');
+  }
+}
+
+document.addEventListener('input', saveRISData);
+document.addEventListener('change', saveRISData);
+window.addEventListener('DOMContentLoaded', loadRISData);
+
+initRows();
+</script>
+
+<style>
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+</style>
+
+</body>
+</html>

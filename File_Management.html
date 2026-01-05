@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Management Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+        background-image: url('image/2.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        font-family: 'Montserrat', sans-serif;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #003366;
+      color: white;
+    }
+    .btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-weight: 600;
+    }
+    .btn-upload {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-upload:hover {
+      background-color: #0056b3;
+    }
+    .btn-download {
+      background-color: #28a745;
+      color: white;
+    }
+    .btn-download:hover {
+      background-color: #1e7e34;
+    }
+    .btn-remove {
+      background-color: #dc2626;
+      color: white;
+      margin-left: 5px;
+    }
+    .btn-remove:hover {
+      background-color: #b91c1c;
+    }
+    .btn-test {
+      background-color: #f59e0b;
+      color: white;
+      margin-bottom: 1rem;
+    }
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .error {
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+    .success {
+      color: #065f46;
+      background: #d1fae5;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .status-connected {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .status-error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h1 class="text-2xl font-bold">📁 File Management Dashboard</h1>
+      <button class="btn btn-test" onclick="testConnection()">🔧 Test Connection</button>
+    </div>
+
+    <div id="statusMessage"></div>
+
+    <!-- TRANSMITTAL TABLE -->
+    <section class="mb-10">
+      <h2 class="text-xl font-semibold mb-2 text-blue-700">Transmittal Files</h2>
+      <input type="file" id="transmittalInput" class="mb-2">
+      <button class="btn btn-upload" onclick="uploadFile('transmittal')">Upload</button>
+
+      <table id="transmittalTable" class="mt-4">
+        <thead>
+          <tr>
+            <th>Filename</th>
+            <th>Date Uploaded</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- DISPOSITION FORM TABLE -->
+    <section>
+      <h2 class="text-xl font-semibold mb-2 text-blue-700">Disposition Form Files</h2>
+      <input type="file" id="dispositionInput" class="mb-2">
+      <button class="btn btn-upload" onclick="uploadFile('disposition')">Upload</button>
+
+      <table id="dispositionTable" class="mt-4">
+        <thead>
+          <tr>
+            <th>Filename</th>
+            <th>Date Uploaded</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    (function() {
+      const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+
+      const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      window.showMessage = function(message, type) {
+        const statusDiv = document.getElementById('statusMessage');
+        statusDiv.className = type;
+        statusDiv.textContent = message;
+        statusDiv.style.display = 'block';
+        setTimeout(function() {
+          statusDiv.style.display = 'none';
+        }, 5000);
+      }
+
+      window.testConnection = async function() {
+        showMessage('Testing connection...', 'success');
+        try {
+          const result = await db.from('files').select('count', { count: 'exact', head: true });
+          if (result.error) throw result.error;
+          
+          const bucketResult = await db.storage.listBuckets();
+          const bucketExists = bucketResult.data && bucketResult.data.some(function(b) {
+            return b.name === 'file-management';
+          });
+          
+          if (!bucketExists) {
+            showMessage('⚠️ Bucket "file-management" not found. Please create it.', 'error');
+          } else {
+            showMessage('✅ Connection successful! Database and storage ready.', 'success');
+          }
+        } catch (error) {
+          console.error('Connection error:', error);
+          showMessage('❌ Connection failed: ' + error.message, 'error');
+        }
+      }
+
+      window.uploadFile = async function(type) {
+        const input = document.getElementById(type + 'Input');
+        const file = input.files[0];
+        
+        if (!file) {
+          showMessage("Please select a file to upload!", 'error');
+          return;
+        }
+
+        const uploadBtn = event.target;
+        
+        try {
+          uploadBtn.classList.add('loading');
+          uploadBtn.textContent = 'Uploading...';
+
+          const timestamp = Date.now();
+          const filePath = type + '/' + timestamp + '_' + file.name;
+
+          console.log('Uploading to:', filePath);
+
+          const uploadResult = await db.storage
+            .from('file-management')
+            .upload(filePath, file);
+
+          if (uploadResult.error) throw uploadResult.error;
+
+          const urlData = db.storage
+            .from('file-management')
+            .getPublicUrl(filePath);
+
+          const insertResult = await db
+            .from('files')
+            .insert([{
+              filename: file.name,
+              file_type: type,
+              file_path: filePath,
+              file_size: file.size,
+              mime_type: file.type
+            }])
+            .select()
+            .single();
+
+          if (insertResult.error) throw insertResult.error;
+
+          addFileRow(type, {
+            id: insertResult.data.id,
+            name: insertResult.data.filename,
+            date: new Date(insertResult.data.uploaded_at).toLocaleString(),
+            url: urlData.data.publicUrl,
+            path: insertResult.data.file_path
+          });
+
+          input.value = "";
+          showMessage('✅ File uploaded successfully!', 'success');
+          
+        } catch (error) {
+          console.error('Upload error:', error);
+          showMessage('❌ Upload failed: ' + error.message, 'error');
+        } finally {
+          uploadBtn.classList.remove('loading');
+          uploadBtn.textContent = 'Upload';
+        }
+      }
+
+      window.addFileRow = function(type, file) {
+        const tbody = document.querySelector('#' + type + 'Table tbody');
+        const row = document.createElement("tr");
+        row.dataset.id = file.id;
+
+        row.innerHTML = '<td>' + file.name + '</td>' +
+          '<td>' + file.date + '</td>' +
+          '<td>' +
+            '<a href="' + file.url + '" download="' + file.name + '" class="btn btn-download" target="_blank">Download</a>' +
+            '<button class="btn btn-remove" onclick="removeFile(\'' + type + '\', ' + file.id + ', \'' + file.path + '\')">Remove</button>' +
+          '</td>';
+
+        tbody.appendChild(row);
+      }
+
+      window.loadFiles = async function(type) {
+        try {
+          const result = await db
+            .from('files')
+            .select('*')
+            .eq('file_type', type)
+            .order('uploaded_at', { ascending: false });
+
+          if (result.error) throw result.error;
+
+          const data = result.data || [];
+          data.forEach(function(file) {
+            const urlData = db.storage
+              .from('file-management')
+              .getPublicUrl(file.file_path);
+
+            addFileRow(type, {
+              id: file.id,
+              name: file.filename,
+              date: new Date(file.uploaded_at).toLocaleString(),
+              url: urlData.data.publicUrl,
+              path: file.file_path
+            });
+          });
+
+        } catch (error) {
+          console.error('Load error:', error);
+          showMessage('❌ Failed to load ' + type + ' files: ' + error.message, 'error');
+        }
+      }
+
+      window.removeFile = async function(type, fileId, filePath) {
+        if (!confirm('Are you sure you want to delete this file?')) {
+          return;
+        }
+
+        try {
+          const storageResult = await db.storage
+            .from('file-management')
+            .remove([filePath]);
+
+          if (storageResult.error) {
+            console.warn('Storage delete warning:', storageResult.error);
+          }
+
+          const dbResult = await db
+            .from('files')
+            .delete()
+            .eq('id', fileId);
+
+          if (dbResult.error) throw dbResult.error;
+
+          const row = document.querySelector('#' + type + 'Table tr[data-id="' + fileId + '"]');
+          if (row) row.remove();
+
+          showMessage('✅ File deleted successfully!', 'success');
+
+        } catch (error) {
+          console.error('Delete error:', error);
+          showMessage('❌ Failed to delete file: ' + error.message, 'error');
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", async function() {
+        await testConnection();
+        await loadFiles('transmittal');
+        await loadFiles('disposition');
+      });
+    })();
+  </script>
+
+</body>
+</html>

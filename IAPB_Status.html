@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activities Monitoring</title>
+<link rel="stylesheet" href="navy-dashboard-styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+    body {
+        background-image: url('image/bg2.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed; /* Keeps background still while scrolling */
+        background-repeat: no-repeat;
+        min-height: 100vh;
+    }
+
+    /* Optional: If the background makes text hard to read, 
+       this adds a subtle white overlay to the container */
+    .container {
+        background-color: rgba(255, 255, 255, 0.9); 
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+</style>
+<style>
+  /* Additional custom styles for this page */
+  body {
+    padding: 1rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    color: #0b1a3a;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+  /* Table column widths */
+  .table th:nth-child(1), .table td:nth-child(1) { width: 5%; }
+  .table th:nth-child(2), .table td:nth-child(2) { width: 18%; }
+  .table th:nth-child(3), .table td:nth-child(3) { width: 18%; }
+  .table th:nth-child(4), .table td:nth-child(4) { width: 30%; }
+  .table th:nth-child(5), .table td:nth-child(5) { width: 12%; }
+  .table th:nth-child(6), .table td:nth-child(6) { width: 15%; }
+  .table th:nth-child(7), .table td:nth-child(7) { width: 8%; }
+
+  /* Textarea in table cells */
+  .table td textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    resize: vertical;
+    font-family: 'Segoe UI', sans-serif;
+    box-sizing: border-box;
+  }
+
+  .table td textarea:focus {
+    border-color: #2563eb;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  /* Month checkboxes styling */
+  .month-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-start;
+    padding: 0.5rem;
+  }
+
+  .month-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #4b5563;
+    white-space: nowrap;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s ease;
+  }
+
+  .month-checkboxes label:hover {
+    background-color: #f3f4f6;
+  }
+
+  .month-checkboxes input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    accent-color: #0b1a3a;
+  }
+
+  /* Quarter select in table */
+  .table td select.quarter {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .table td select.quarter:focus {
+    border-color: #2563eb;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  /* Toast notifications */
+  .toast {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    min-width: 300px;
+  }
+
+  /* Action column */
+  .table td.actions {
+    text-align: center;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-tasks"></i> ACTIVITIES MONITORING</h1>
+    <p>Track and manage implementation activities and timelines</p>
+  </div>
+
+  <!-- Main Card -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-list-check"></i> Activity Records
+    </div>
+    <div class="card-body">
+      
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2 mb-3 flex-wrap">
+        <button id="addRowBtn" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add Activity
+        </button>
+        <button id="updateBtn" class="btn btn-success">
+          <i class="fas fa-save"></i> Save/Update All
+        </button>
+        <button id="refreshBtn" class="btn btn-secondary">
+          <i class="fas fa-redo"></i> Refresh
+        </button>
+      </div>
+
+      <!-- Info Alert -->
+      <div class="alert alert-info mb-3">
+        <i class="fas fa-info-circle"></i> <strong>Tip:</strong> Select implementation months by checking the boxes. All changes are saved when you click "Save/Update All".
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Activity Title</th>
+              <th>Sub-Activity Title</th>
+              <th>Date of Implementation (Months)</th>
+              <th>Quarter Implementation</th>
+              <th>Remarks</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="7" class="text-center">
+                <div class="spinner"></div> Loading activities...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Footer Info -->
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span><i class="fas fa-calendar-alt"></i> Check boxes to select implementation months</span>
+          <span id="recordCount" class="badge badge-primary">0 activities</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast Container for Notifications -->
+<div id="toastContainer" class="toast"></div>
+
+<script>
+const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+// ✅ FIXED: Changed variable name from 'supabase' to 'supabaseIAPB' to avoid conflict with parent window
+const supabaseIAPB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const tableBody = document.getElementById("tableBody");
+const addRowBtn = document.getElementById("addRowBtn");
+const updateBtn = document.getElementById("updateBtn");
+const refreshBtn = document.getElementById("refreshBtn");
+const recordCount = document.getElementById("recordCount");
+const toastContainer = document.getElementById("toastContainer");
+const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+let activities = [];
+
+// Show toast notification
+function showToast(message, type = 'success') {
+  const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+  toastContainer.innerHTML = `
+    <div class="alert ${alertClass} alert-dismissible">
+      ${message}
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  `;
+  setTimeout(() => { toastContainer.innerHTML = ''; }, 4000);
+}
+
+// Auto-expand textarea
+function autoExpand(el){
+  if(!el) return;
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight+'px';
+}
+
+// Render table
+function renderTable(){
+  if (activities.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="7">
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No activities found. Click "Add Activity" to create your first record.</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    recordCount.textContent = "0 activities";
+    return;
+  }
+
+  tableBody.innerHTML = "";
+  activities.forEach((act, idx)=>{
+    const selectedMonths = (act.date_of_implementation||"").split(", ").map(m=>m.trim());
+    const monthCheckboxes = months.map(m=>`
+      <label>
+        <input type="checkbox" value="${m}" ${selectedMonths.includes(m)?"checked":""}>
+        ${m.slice(0,3)}
+      </label>
+    `).join("");
+    
+    const tr = document.createElement("tr");
+    tr.dataset.id = act.id || "";
+    tr.innerHTML = `
+      <td>${idx+1}</td>
+      <td>
+        <textarea oninput="autoExpand(this)" class="activity" placeholder="Enter activity title">${act.activity_title||""}</textarea>
+      </td>
+      <td>
+        <textarea oninput="autoExpand(this)" class="sub" placeholder="Enter sub-activity title">${act.sub_activity_title||""}</textarea>
+      </td>
+      <td>
+        <div class="month-checkboxes">${monthCheckboxes}</div>
+      </td>
+      <td>
+        <select class="quarter">
+          <option value="">Select Quarter</option>
+          <option ${act.quarter_implementation==="First Quarter"?"selected":""}>First Quarter</option>
+          <option ${act.quarter_implementation==="Second Quarter"?"selected":""}>Second Quarter</option>
+          <option ${act.quarter_implementation==="Third Quarter"?"selected":""}>Third Quarter</option>
+          <option ${act.quarter_implementation==="Fourth Quarter"?"selected":""}>Fourth Quarter</option>
+        </select>
+      </td>
+      <td>
+        <textarea oninput="autoExpand(this)" class="remarks" placeholder="Enter remarks">${act.remarks||""}</textarea>
+      </td>
+      <td class="actions">
+        <button class="btn btn-sm btn-danger delete-btn" data-index="${idx}">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    `;
+    tableBody.appendChild(tr);
+    
+    // Auto-expand all textareas on load
+    tr.querySelectorAll('textarea').forEach(ta => autoExpand(ta));
+  });
+
+  recordCount.textContent = `${activities.length} activit${activities.length !== 1 ? 'ies' : 'y'}`;
+
+  // Attach delete handlers
+  tableBody.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.onclick = async () => {
+      const index = parseInt(btn.dataset.index);
+      const tr = btn.closest("tr");
+      const id = tr.dataset.id;
+      
+      if(!confirm("Delete this activity permanently?")) return;
+      
+      if(id){
+        try {
+          const { error } = await supabaseIAPB.from("iapb").delete().eq("id", id);
+          if(error) throw error;
+          showToast("Activity deleted successfully!", 'success');
+        } catch(error) {
+          console.error("Delete error:", error);
+          showToast("Failed to delete activity: " + error.message, 'error');
+          return;
+        }
+      }
+      
+      activities.splice(index, 1);
+      renderTable();
+    };
+  });
+}
+
+// Load data from database
+async function loadData(){
+  try {
+    const { data, error } = await supabaseIAPB.from("iapb").select("*").order("id",{ascending:true});
+    if(error) throw error;
+    
+    activities = data || [];
+    renderTable();
+  } catch(error) {
+    console.error("Load error:", error);
+    showToast("Failed to load activities: " + error.message, 'error');
+  }
+}
+
+// Add new row
+addRowBtn.onclick = () => {
+  activities.push({
+    id: null, 
+    activity_title: "", 
+    sub_activity_title: "", 
+    date_of_implementation: "", 
+    quarter_implementation: "", 
+    remarks: ""
+  });
+  renderTable();
+  showToast("New activity row added. Fill in the details and click Save.", 'info');
+};
+
+// Save/Update all records
+updateBtn.onclick = async () => {
+  const failedRecords = [];
+  let successCount = 0;
+  
+  for (let tr of tableBody.querySelectorAll("tr")) {
+    const id = tr.dataset.id;
+    const selectedMonths = Array.from(tr.querySelectorAll('input[type="checkbox"]:checked'))
+      .map(cb => cb.value)
+      .join(", ");
+    
+    const activityTextarea = tr.querySelector(".activity");
+    if (!activityTextarea) continue;
+    
+    const title = activityTextarea.value.trim();
+    if (!title) { 
+      failedRecords.push({reason: `Row ${tr.querySelector('td').textContent}: Activity Title cannot be empty`}); 
+      continue; 
+    }
+    
+    const record = {
+      activity_title: title,
+      sub_activity_title: tr.querySelector(".sub").value.trim(),
+      date_of_implementation: selectedMonths,
+      quarter_implementation: tr.querySelector(".quarter").value || "",
+      remarks: tr.querySelector(".remarks").value.trim(),
+    };
+    
+    try {
+      if(id){
+        const { error } = await supabaseIAPB.from("iapb").update(record).eq("id", id);
+        if(error) throw error;
+        successCount++;
+      } else {
+        const { data, error } = await supabaseIAPB.from("iapb").insert([record]).select();
+        if(error) throw error;
+        if(data && data.length > 0) { 
+          tr.dataset.id = data[0].id;
+          successCount++;
+        }
+      }
+    } catch(err) { 
+      failedRecords.push({reason: `Row ${tr.querySelector('td').textContent}: ${err.message}`}); 
+      console.error(err); 
+    }
+  }
+  
+  await loadData();
+  
+  if(failedRecords.length > 0) { 
+    showToast(`⚠️ ${successCount} saved, ${failedRecords.length} failed. Check console for details.`, 'error');
+    console.error("Failed records:", failedRecords);
+  } else { 
+    showToast(`✅ All ${successCount} record${successCount !== 1 ? 's' : ''} saved successfully!`, 'success'); 
+  }
+};
+
+// Refresh button
+refreshBtn.onclick = () => {
+  loadData();
+  showToast("Data refreshed!", 'info');
+};
+
+// Initial load
+loadData();
+</script>
+
+</body>
+</html>

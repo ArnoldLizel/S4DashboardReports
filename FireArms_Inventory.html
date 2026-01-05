@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weapons Inventory</title>
+
+<link rel="stylesheet" href="navy-dashboard-styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+    body {
+        background-image: url('image/bg2.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed; /* Keeps background still while scrolling */
+        background-repeat: no-repeat;
+        min-height: 100vh;
+    }
+
+    /* Optional: If the background makes text hard to read, 
+       this adds a subtle white overlay to the container */
+    .container {
+        background-color: rgba(255, 255, 255, 0.9); 
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+</style>
+<style>
+  /* Additional custom styles for this page */
+  body {
+    padding: 1rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    color: #0b1a3a;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+  /* Section headers in table */
+  .section-header td {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%) !important;
+    color: white !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+    padding: 0.75rem 1rem !important;
+    border-left: 4px solid #f1c232 !important;
+    font-size: 0.9375rem;
+  }
+
+  /* Editable cells */
+  td[contenteditable="true"] {
+    background-color: #fffbeb;
+    cursor: text;
+    transition: background-color 0.15s ease;
+    min-height: 2rem;
+  }
+
+  td[contenteditable="true"]:hover {
+    background-color: #fef3c7;
+  }
+
+  td[contenteditable="true"]:focus {
+    outline: 2px solid #2563eb;
+    background-color: #fff;
+  }
+
+  /* Unit/Item select dropdown */
+  select.uicell {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  select.uicell:focus {
+    border-color: #2563eb;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  /* Total column styling */
+  td.total {
+    background-color: #dbeafe !important;
+    font-weight: 700;
+    color: #1e40af;
+  }
+
+  /* Stats cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+    color: white;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  /* Toast container */
+  .toast-container {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    min-width: 300px;
+  }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+  }
+
+  .loading-overlay.show {
+    display: flex;
+  }
+
+  /* Print styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    
+    body {
+      padding: 0;
+    }
+    
+    .card {
+      box-shadow: none;
+      border: 1px solid #ddd;
+    }
+    
+    .page-header h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Column widths */
+  .table th:nth-child(1), .table td:nth-child(1) { width: 5%; }
+  .table th:nth-child(2), .table td:nth-child(2) { width: 12%; }
+  .table th:nth-child(3), .table td:nth-child(3) { width: 15%; }
+  .table th:nth-child(4), .table td:nth-child(4) { width: 8%; }
+  .table th:nth-child(5), .table td:nth-child(5) { width: 10%; }
+  .table th:nth-child(6), .table td:nth-child(6) { width: 10%; }
+  .table th:nth-child(7), .table td:nth-child(7) { width: 10%; }
+  .table th:nth-child(8), .table td:nth-child(8) { width: 10%; }
+  .table th:nth-child(9), .table td:nth-child(9) { width: 10%; }
+  .table th:nth-child(10), .table td:nth-child(10) { width: 10%; }
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loader">
+  <div class="spinner spinner-lg"></div>
+</div>
+
+<div class="container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-crosshairs"></i> WEAPONS INVENTORY</h1>
+    <p>Manage and track firearms and weapons inventory</p>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-box"></i> Total Authorized</div>
+      <div class="stat-value" id="totalAuthorized">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-user-check"></i> Issued to Individual</div>
+      <div class="stat-value" id="totalIssued">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-warehouse"></i> Stock at Armory</div>
+      <div class="stat-value" id="totalStock">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-check-circle"></i> Serviceable</div>
+      <div class="stat-value" id="totalServiceable">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-exclamation-triangle"></i> Unserviceable</div>
+      <div class="stat-value" id="totalUnserviceable">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label"><i class="fas fa-calculator"></i> Total On-Hand</div>
+      <div class="stat-value" id="totalOnHand">0</div>
+    </div>
+  </div>
+
+  <!-- Main Data Card -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-table"></i> Weapons Inventory Data
+    </div>
+    <div class="card-body">
+      
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2 mb-3 flex-wrap no-print">
+        <button class="btn btn-success" onclick="saveTable()">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+        <button class="btn btn-info" onclick="updateTable()">
+          <i class="fas fa-sync-alt"></i> Update All
+        </button>
+        <button class="btn btn-secondary" onclick="refreshData()">
+          <i class="fas fa-redo"></i> Refresh
+        </button>
+        <button class="btn btn-primary" onclick="printPage()">
+          <i class="fas fa-print"></i> Print Report
+        </button>
+      </div>
+
+      <!-- Info Alert -->
+      <div class="alert alert-info mb-3 no-print">
+        <i class="fas fa-info-circle"></i> <strong>Tip:</strong> Click on yellow cells to edit. Total On-Hand is calculated automatically. Changes are saved when you click "Save Changes".
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="table table-striped" id="weaponTable">
+          <thead>
+            <tr>
+              <th>L/I</th>
+              <th>Category</th>
+              <th>Nomenclature</th>
+              <th>U/I</th>
+              <th>Authorized Allowance</th>
+              <th>Issued to Individual</th>
+              <th>Stock at Armory</th>
+              <th>Serviceable</th>
+              <th>Unserviceable</th>
+              <th>Total On-Hand</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+
+            <tr class="section-header">
+              <td colspan="10"><i class="fas fa-shield-alt"></i> Individual Weapons</td>
+            </tr>
+            <tr><td>1</td><td>9mm</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+            <tr><td>2</td><td>Cal.45</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+            <tr><td>3</td><td>R4</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+            <tr><td>4</td><td>M16(S)</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+            <tr><td>5</td><td>M16(L)</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+            <tr><td>6</td><td>M14</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+
+            <tr class="section-header">
+              <td colspan="10"><i class="fas fa-users-cog"></i> Crew-Served Weapons</td>
+            </tr>
+            <tr><td>1</td><td>M60 LMG</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+            <tr><td>2</td><td>Cal.30 LMG</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+            <tr><td>3</td><td>Cal.50 BMG</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span><i class="fas fa-calculator"></i> Total On-Hand = Issued + Stock at Armory</span>
+          <span id="lastUpdated" class="text-muted" style="font-size: 0.875rem;"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const loader = document.getElementById("loader");
+const toastContainer = document.getElementById("toastContainer");
+const lastUpdated = document.getElementById("lastUpdated");
+
+/* ---------- Helpers ---------- */
+function showLoader(on = true) { 
+  if (on) loader.classList.add('show');
+  else loader.classList.remove('show');
+}
+
+function showToast(message, type = 'success') {
+  const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+  toastContainer.innerHTML = `
+    <div class="alert ${alertClass} alert-dismissible">
+      ${message}
+      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  `;
+  setTimeout(() => { toastContainer.innerHTML = ''; }, 3000);
+}
+
+/* ---------- Initialize UI Dropdowns ---------- */
+const uiOptions = ["pcs","units","sets","box","pack","rounds","rifles","mags"];
+document.querySelectorAll('td[data-ui="true"]').forEach(td=>{
+    const select = document.createElement("select");
+    select.className="uicell";
+    const blank = document.createElement("option"); 
+    blank.value=""; 
+    blank.innerText="--"; 
+    select.appendChild(blank);
+    
+    uiOptions.forEach(opt=>{
+        const o = document.createElement("option"); 
+        o.value = o.innerText = opt; 
+        select.appendChild(o);
+    });
+    td.appendChild(select);
+});
+
+/* ---------- Compute Totals ---------- */
+function computeTotals(row){
+    const issued = parseFloat(row.querySelector(".issued")?.innerText || 0);
+    const stock = parseFloat(row.querySelector(".stock")?.innerText || 0);
+    const totalCell = row.querySelector(".total");
+    totalCell.innerText = (issued || stock) ? issued + stock : "";
+}
+
+function updateAllStats() {
+  let totalAuthorized = 0;
+  let totalIssued = 0;
+  let totalStock = 0;
+  let totalServiceable = 0;
+  let totalUnserviceable = 0;
+  let totalOnHand = 0;
+
+  document.querySelectorAll("#tableBody tr:not(.section-header)").forEach(row => {
+    totalAuthorized += parseFloat(row.cells[4]?.innerText || 0);
+    totalIssued += parseFloat(row.cells[5]?.innerText || 0);
+    totalStock += parseFloat(row.cells[6]?.innerText || 0);
+    totalServiceable += parseFloat(row.cells[7]?.innerText || 0);
+    totalUnserviceable += parseFloat(row.cells[8]?.innerText || 0);
+    totalOnHand += parseFloat(row.cells[9]?.innerText || 0);
+  });
+
+  document.getElementById('totalAuthorized').textContent = totalAuthorized;
+  document.getElementById('totalIssued').textContent = totalIssued;
+  document.getElementById('totalStock').textContent = totalStock;
+  document.getElementById('totalServiceable').textContent = totalServiceable;
+  document.getElementById('totalUnserviceable').textContent = totalUnserviceable;
+  document.getElementById('totalOnHand').textContent = totalOnHand;
+}
+
+/* ---------- Event Listeners for Editable Cells ---------- */
+document.querySelectorAll("td[contenteditable='true']").forEach(td=>{
+    td.addEventListener("input", e=>{
+        computeTotals(e.target.parentElement);
+        updateAllStats();
+    });
+});
+
+/* ---------- Collect Data from Table ---------- */
+function collectRows(){
+    const rows = [];
+    document.querySelectorAll("#tableBody tr:not(.section-header)").forEach(r=>{
+        const li = parseInt(r.cells[0].innerText.trim());
+        const category = r.cells[1].innerText.trim();
+        const nomenclature = r.cells[2].innerText.trim() || '';
+        const ui = r.querySelector("select.uicell")?.value || '';
+        const authorized_allowance = parseFloat(r.cells[4].innerText) || 0;
+        const issued_to_individual = parseFloat(r.cells[5].innerText) || 0;
+        const stock_at_armory = parseFloat(r.cells[6].innerText) || 0;
+        const serviceable = parseFloat(r.cells[7].innerText) || 0;
+        const unserviceable = parseFloat(r.cells[8].innerText) || 0;
+        const total_on_hand = issued_to_individual + stock_at_armory;
+        const year = 2025;
+        
+        if(!li || !category) return;
+        rows.push({
+          li, category, nomenclature, ui, authorized_allowance, 
+          issued_to_individual, stock_at_armory, serviceable, 
+          unserviceable, total_on_hand, year
+        });
+    });
+    return rows;
+}
+
+/* ---------- Save to Database ---------- */
+async function saveTable(){
+    const rows = collectRows();
+    if(rows.length === 0){ 
+      showToast("No valid rows to save", 'error'); 
+      return; 
+    }
+
+    showLoader(true);
+    
+    try {
+      const { error } = await sb
+          .from("weapons_inventory")
+          .upsert(rows, { onConflict:["li","category","year"] });
+
+      if(error) throw error;
+
+      const now = new Date().toLocaleString();
+      lastUpdated.textContent = `Last updated: ${now}`;
+      showToast("✅ Data saved successfully!", 'success');
+    } catch(err) {
+      console.error("Save error:", err);
+      showToast("Save failed - check console", 'error');
+    } finally {
+      showLoader(false);
+    }
+}
+
+async function updateTable() { 
+  await saveTable(); 
+}
+
+function printPage() { 
+  window.print(); 
+}
+
+async function refreshData() {
+  await loadTable();
+  showToast("Data refreshed!", 'info');
+}
+
+/* ---------- Load Data from Database ---------- */
+async function loadTable() {
+    showLoader(true);
+    
+    try {
+      const { data, error } = await sb
+          .from("weapons_inventory")
+          .select("*")
+          .order("li", { ascending: true });
+
+      if (error) throw error;
+
+      renderTable(data || []);
+      showToast("Data loaded successfully", 'info');
+    } catch(err) {
+      console.error("Load error:", err);
+      showToast("Failed to load data", 'error');
+    } finally {
+      showLoader(false);
+    }
+}
+
+/* ---------- Render Data into Table ---------- */
+function renderTable(data) {
+    const tableBody = document.getElementById("tableBody");
+    const rows = Array.from(tableBody.querySelectorAll("tr:not(.section-header)"));
+    
+    rows.forEach(row => {
+        const li = parseInt(row.cells[0].innerText.trim());
+        const category = row.cells[1].innerText.trim();
+
+        const match = data.find(d => d.li === li && d.category === category);
+
+        if (match) {
+            row.cells[2].innerText = match.nomenclature || "";
+            row.querySelector("select.uicell").value = match.ui || "";
+            row.cells[4].innerText = match.authorized_allowance || "";
+            row.cells[5].innerText = match.issued_to_individual || "";
+            row.cells[6].innerText = match.stock_at_armory || "";
+            row.cells[7].innerText = match.serviceable || "";
+            row.cells[8].innerText = match.unserviceable || "";
+
+            computeTotals(row);
+        }
+    });
+
+    updateAllStats();
+}
+
+/* ---------- Initialize on Load ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  loadTable();
+  updateAllStats();
+});
+</script>
+
+</body>
+</html>

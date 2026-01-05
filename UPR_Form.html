@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>UNIT PURCHASE REQUEST (UPR)</title>
+<style>
+/* ========================================
+   Philippine Navy Dashboard - Unified Styles
+   ======================================== */
+
+/* ============= BASE STYLES ============= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ============= BUTTONS ============= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #0b1a3a;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #1e3a8a;
+  box-shadow: 0 4px 6px -1px rgba(11, 26, 58, 0.3);
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+.btn-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.btn-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: #d97706;
+}
+
+.btn-info {
+  background-color: #06b6d4;
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background-color: #0891b2;
+}
+
+.btn-group {
+  display: inline-flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ============= CARDS ============= */
+.card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.3s ease;
+}
+
+/* ============= UPR SPECIFIC STYLES ============= */
+.page { 
+  width: 210mm; 
+  max-width: 100%; 
+  margin: 0 auto; 
+  background: white; 
+}
+
+.header { 
+  text-align: center; 
+  line-height: 1.3; 
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-bottom: 3px solid #0b1a3a;
+}
+
+.header .small { 
+  font-size: 0.75rem; 
+  font-style: italic; 
+  color: #6b7280;
+}
+
+.header .naval { 
+  font-weight: 700; 
+  margin-top: 0.5rem;
+  font-size: 1.25rem;
+  color: #0b1a3a;
+}
+
+.header .title { 
+  font-weight:700; 
+  letter-spacing:0.5px; 
+  margin-top:0.25rem;
+  color: #0b1a3a;
+}
+
+.upr-box { 
+  width: 100%; 
+  border: 2px solid #0b1a3a; 
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.info {
+  width:100%;
+  border-collapse: collapse;
+  margin-bottom:1rem;
+  table-layout: fixed;
+}
+
+.info td {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+}
+
+.info .label { 
+  width: 28%; 
+  font-weight:600; 
+  text-align:left; 
+  background-color: #f3f4f6;
+  color: #0b1a3a;
+}
+
+.info .value { 
+  width: 38%; 
+  padding-left:0.75rem; 
+  text-align:left; 
+}
+
+table.items {
+  width:100%;
+  border-collapse: collapse;
+  margin-top:1rem;
+  table-layout: fixed;
+}
+
+table.items th, table.items td {
+  border:1px solid #d1d5db;
+  padding: 0.5rem;
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+table.items th { 
+  font-weight:600; 
+  text-align:center;
+  background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+  color: white;
+}
+
+table.items td { 
+  text-align: left; 
+}
+
+table.items td.center { 
+  text-align:center; 
+}
+
+input.cell {
+  width:100%;
+  border:none;
+  padding:0.25rem;
+  margin:0;
+  background:transparent;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.nothing { 
+  text-align:center; 
+  margin:1rem 0; 
+  font-weight:600; 
+  font-size:0.875rem;
+  color: #6b7280;
+}
+
+#purposeBox {
+  min-height: 60px;
+  overflow-y: hidden;
+  resize: vertical;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  font-family: inherit;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+}
+
+.purpose-total { 
+  width:100%; 
+  border-collapse: collapse; 
+  margin-top:1rem; 
+}
+
+.purpose-total td { 
+  border:1px solid #d1d5db; 
+  padding:0.75rem; 
+  font-size:0.875rem; 
+  vertical-align:top; 
+}
+
+.purpose-total .purpose { 
+  width:70%; 
+}
+
+.purpose-total .total { 
+  width:30%; 
+  text-align:right; 
+  padding-right:1rem; 
+  font-weight:700;
+  background-color: #f3f4f6;
+}
+
+.sign-grid {
+  width:100%;
+  border-collapse: collapse;
+  margin-top:1rem;
+  table-layout: fixed;
+}
+
+.sign-grid td {
+  border:1px solid #d1d5db;
+  padding:1rem;
+  text-align:center;
+  vertical-align:bottom;
+  height:100px;
+  width:33.33%;
+  font-size:0.875rem;
+}
+
+.sign-grid .sig-name { 
+  font-weight:700; 
+  text-transform:uppercase;
+  color: #0b1a3a;
+}
+
+.sign-grid .sig-rank { 
+  margin-top:0.25rem;
+  color: #6b7280;
+}
+
+.sign-grid .sig-role { 
+  font-size:0.8125rem; 
+  margin-top:0.25rem;
+  color: #4b5563;
+}
+
+.controls { 
+  display:flex; 
+  justify-content:flex-end; 
+  gap:0.5rem; 
+  margin-bottom:1rem; 
+  flex-wrap: wrap; 
+}
+
+/* ============= PRINT OPTIMIZATION ============= */
+@media print {
+  .controls { display:none !important; }
+  
+  body { 
+    padding:0; 
+    background: white;
+    font-size: 7pt;
+    line-height: 1.1;
+  }
+  
+  .container { 
+    padding: 0; 
+    max-width: 100%;
+  }
+  
+  .page { 
+    margin: 0; 
+    padding: 0;
+    width: 100%;
+  }
+  
+  .upr-box { 
+    border-width: 1px;
+    padding: 0.3rem;
+  }
+  
+  .header {
+    padding: 0.2rem;
+    margin-bottom: 0.3rem;
+    border-bottom-width: 1px;
+  }
+  
+  .header .small {
+    font-size: 6pt;
+    line-height: 1;
+  }
+  
+  .header .naval {
+    font-size: 9pt;
+    margin-top: 0.1rem;
+    line-height: 1;
+  }
+  
+  .header .title {
+    font-size: 8pt;
+    margin-top: 0.1rem;
+    line-height: 1;
+  }
+  
+  .header div:last-child {
+    font-size: 7pt;
+    line-height: 1;
+  }
+  
+  .info {
+    margin-bottom: 0.3rem;
+    font-size: 7pt;
+  }
+  
+  .info td {
+    padding: 0.15rem 0.25rem;
+    line-height: 1.1;
+  }
+  
+  table.items {
+    margin-top: 0.3rem;
+    font-size: 6.5pt;
+  }
+  
+  table.items th, table.items td {
+    padding: 0.15rem 0.2rem;
+    line-height: 1.1;
+  }
+  
+  table.items th {
+    font-size: 6.5pt;
+  }
+  
+  table.items td {
+    font-size: 6.5pt;
+  }
+  
+  /* Specific styling for item number and description columns */
+  table.items td:first-child {
+    font-size: 6pt;
+  }
+  
+  table.items td:nth-child(2),
+  table.items .desc {
+    font-size: 6pt;
+    line-height: 1.1;
+  }
+  
+  input.cell { 
+    border: none;
+    font-size: 6.5pt;
+    padding: 0.05rem;
+    line-height: 1.1;
+  }
+  
+  .nothing {
+    margin: 0.2rem 0;
+    font-size: 6.5pt;
+  }
+  
+  .purpose-total {
+    margin-top: 0.3rem;
+  }
+  
+  .purpose-total td {
+    padding: 0.25rem;
+    font-size: 6.5pt;
+  }
+  
+  #purposeBox {
+    font-size: 6.5pt;
+    padding: 0.2rem;
+    min-height: 30px;
+    line-height: 1.1;
+  }
+  
+  .purpose-total .total {
+    padding-right: 0.3rem;
+  }
+  
+  #grandTotal {
+    font-size: 8pt !important;
+    margin-top: 0.15rem !important;
+  }
+  
+  .sign-grid {
+    margin-top: 0.3rem;
+  }
+  
+  .sign-grid td {
+    padding: 0.3rem 0.2rem;
+    height: 50px;
+    font-size: 6pt;
+  }
+  
+  .sign-grid td:first-child {
+    padding: 0.2rem;
+    font-size: 5.5pt;
+  }
+  
+  .sign-grid .sig-name {
+    font-size: 6.5pt;
+  }
+  
+  .sign-grid .sig-rank {
+    font-size: 6pt;
+    margin-top: 0.05rem;
+  }
+  
+  .sign-grid .sig-role {
+    font-size: 5.5pt;
+    margin-top: 0.05rem;
+  }
+  
+  /* Force content to fit on pages */
+  @page {
+    size: A4;
+    margin: 0.4cm;
+  }
+  
+  /* Prevent page breaks inside important elements */
+  .info, .sign-grid, .purpose-total {
+    page-break-inside: avoid;
+  }
+  
+  /* Allow page break after items table if needed */
+  table.items {
+    page-break-after: auto;
+  }
+  
+  /* Compact table rows */
+  table.items tbody tr {
+    height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .upr-box {
+    padding: 1rem;
+  }
+  
+  .controls {
+    justify-content: center;
+  }
+  
+  .btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="controls no-print">
+      <button class="btn btn-secondary" onclick="addRow()">➕ Add Row</button>
+      <button class="btn btn-info" onclick="downloadTemplate()">📊 Download Excel Template</button>
+      <button class="btn btn-success" onclick="document.getElementById('excelUpload').click()">📤 Import from Excel</button>
+      <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
+      <button class="btn btn-info" onclick="downloadCSV()">📥 Export CSV</button>
+      <button class="btn btn-success" onclick="saveToRIS()">💾 Save for RIS</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-danger" onclick="clearUPRData()">🗑️ Clear Form</button>
+    </div>
+
+    <div class="page">
+      <div class="upr-box">
+        <div class="header">
+          <div class="small">AFP Vision: A World-Class Armed Forces, Source of National Pride</div>
+          <div class="naval">PHILIPPINE NAVY</div>
+          <div class="title">PUNONGHIMPILAN HUKBONG DAGAT NG PILIPINAS</div>
+          <div>Naval Station Jose V Andrada</div>
+        </div>
+
+        <table class="info">
+          <tr>
+            <td class="label">UNIT PURCHASE REQUEST</td>
+            <td class="value" colspan="2"><span contenteditable="true" id="uprTitle" style="font-weight:700; display:block;">&nbsp;</span></td>
+            <td style="width:22%;">UPR NO: <input class="cell" id="uprNo" /></td>
+          </tr>
+          <tr>
+            <td class="label">PLACE OF DELIVERY</td>
+            <td class="value">: <input class="cell" id="placeDelivery" value="HPN & HSG" style="text-align:left;"></td>
+            <td class="label" style="width:18%;">AFPPS REF NO:</td>
+            <td style="width:22%;"><input class="cell" id="afppsRef" /></td>
+          </tr>
+          <tr>
+            <td class="label">MODE OF PROCUREMENT</td>
+            <td class="value">: <input class="cell" id="modeProc" style="text-align:left;"></td>
+            <td class="label">Date Prepared:</td>
+            <td><input class="cell" id="datePrepared" /></td>
+          </tr>
+          <tr>
+            <td class="label">CHARGEABILITY</td>
+            <td class="value">: <input class="cell" id="chargeability" style="text-align:left;"></td>
+            <td class="label">ACCOUNT CODE</td>
+            <td><input class="cell" id="accountCode" /></td>
+          </tr>
+          <tr>
+            <td class="label">FUND VALIDITY</td>
+            <td class="value">: <input class="cell" id="fundValidity" value="ONE (1) YEAR" style="text-align:left;"></td>
+            <td class="label">TERMS OF PAYMENT</td>
+            <td><input class="cell" id="termsPayment" value="ONE TIME PAYMENT" /></td>
+          </tr>
+          <tr>
+            <td class="label">OTHER ESSENTIAL INFO</td>
+            <td class="value">: <input class="cell" id="otherInfo" value="CY2025" style="text-align:left;"></td>
+            <td colspan="2"></td>
+          </tr>
+        </table>
+
+        <table class="items" id="itemsTable">
+          <thead>
+            <tr>
+              <th style="width:6%;">ITEM<br>NO</th>
+              <th style="width:46%;">ITEM DESCRIPTION</th>
+              <th style="width:8%;">QTY</th>
+              <th style="width:10%;">UNIT</th>
+              <th style="width:15%;">UNIT PRICE</th>
+              <th style="width:15%;">AMOUNT</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="nothing">x-x-x-x-x Nothing Follows x-x-x-x-x</div>
+
+        <table class="purpose-total">
+          <tr>
+            <td class="purpose">
+              <strong>Purpose:</strong><br>
+              <textarea id="purposeBox" placeholder="Enter purpose of purchase..."></textarea>
+            </td>
+            <td class="total">
+              <strong>Total Amount PhP</strong><br>
+              <div id="grandTotal" style="font-size:1.25rem; margin-top:0.5rem;">0.00</div>
+            </td>
+          </tr>
+        </table>
+
+        <table class="sign-grid">
+          <tr><td colspan="3" style="border:none; text-align:center; font-weight:400; padding:0.5rem;">NOTE: ALL SIGNATURES MUST BE OVER PRINTED NAME</td></tr>
+          <tr>
+            <td style="background-color: #f9fafb;"><strong>STOCK REQUESTED ARE CERTIFIED TO BE WITHIN APPROVED APP/PPMP</strong></td>
+            <td style="background-color: #f9fafb;"><strong>FUND CERTIFIED AVAILABLE:</strong></td>
+            <td style="background-color: #f9fafb;"><strong>APPROVED:</strong></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="sig-name">KARL LOU A TORIBIO</div>
+              <div class="sig-rank">LCDR PN</div>
+              <div class="sig-role">Logistics Officer, HPN & HSG</div>
+            </td>
+            <td>
+              <div class="sig-name">AUDIE E BAZAR</div>
+              <div class="sig-rank">LCDR PN</div>
+              <div class="sig-role">S10, HPN & HSG</div>
+            </td>
+            <td>
+              <div class="sig-name">OLIVER B REFORBA</div>
+              <div class="sig-rank">CAPT PN(MNSA)</div>
+              <div class="sig-role">Commander, HPN & HSG</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+const tbody = document.querySelector('#itemsTable tbody');
+
+function createRow(i) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="center">${i}</td>
+    <td contenteditable="true" class="desc"></td>
+    <td class="center"><input class="cell qty" type="number" min="0" step="1" /></td>
+    <td class="center"><input class="cell unit" type="text" /></td>
+    <td class="center"><input class="cell price" type="number" min="0" step="0.01" /></td>
+    <td class="center"><input class="cell amount" readonly /></td>
+  `;
+  const qty = tr.querySelector('.qty');
+  const price = tr.querySelector('.price');
+  qty.addEventListener('input', recalc);
+  price.addEventListener('input', recalc);
+  return tr;
+}
+
+function initRows() {
+  tbody.innerHTML = '';
+  for (let i = 1; i <= 2; i++) tbody.appendChild(createRow(i));
+  recalc();
+}
+
+function addRow() {
+  const count = tbody.querySelectorAll('tr').length;
+  tbody.appendChild(createRow(count + 1));
+  recalc();
+}
+
+function recalc() {
+  let grand = 0;
+  document.querySelectorAll('#itemsTable tbody tr').forEach((row, index) => {
+    row.cells[0].innerText = index + 1;
+    const qty = parseFloat(row.querySelector('.qty')?.value || 0);
+    const price = parseFloat(row.querySelector('.price')?.value || 0);
+    const amount = qty * price;
+    row.querySelector('.amount').value = amount ? amount.toFixed(2) : '';
+    grand += amount;
+  });
+  document.getElementById('grandTotal').innerText = grand.toFixed(2);
+}
+
+function downloadCSV() {
+  const headers = ['ITEM NO','ITEM DESCRIPTION','QTY','UNIT','UNIT PRICE','AMOUNT'];
+  const lines = [ headers.join(',') ];
+  document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
+    const no = row.cells[0].innerText.trim();
+    const desc = (row.cells[1].innerText || '').replace(/\n/g,' ').replace(/"/g,'""');
+    const qty = row.querySelector('.qty')?.value || '';
+    const unit = row.querySelector('.unit')?.value || '';
+    const price = row.querySelector('.price')?.value || '';
+    const amount = row.querySelector('.amount')?.value || '';
+    lines.push(`"${no}","${desc}","${qty}","${unit}","${price}","${amount}"`);
+  });
+  const csv = lines.join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'Unit_Purchase_Request.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function downloadTemplate() {
+  const template = [
+    ['ITEM NO', 'ITEM DESCRIPTION', 'QTY', 'UNIT', 'UNIT PRICE', 'AMOUNT'],
+    ['1', 'Sample Item - Office Supplies', '10', 'pcs', '150.00', '1500.00'],
+    ['2', 'Sample Item - Equipment', '5', 'units', '2500.00', '12500.00'],
+    ['', '(Add more rows as needed)', '', '', '', '']
+  ];
+  
+  const csvContent = template.map(row => 
+    row.map(cell => `"${cell}"`).join(',')
+  ).join('\r\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'UPR_Items_Template.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  alert('📊 Excel template downloaded!\n\nInstructions:\n1. Open the CSV file in Excel\n2. Fill in your items (keep the same column order)\n3. Delete sample rows\n4. Save and import back using "Import from Excel" button');
+}
+
+function importExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const rows = text.split('\n').map(row => {
+      const cells = [];
+      let cell = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          cells.push(cell.trim());
+          cell = '';
+        } else {
+          cell += char;
+        }
+      }
+      cells.push(cell.trim());
+      return cells;
+    });
+    
+    const dataRows = rows.slice(1).filter(row => 
+      row.length > 1 && row[1] && row[1].trim() !== '' && !row[1].includes('Sample Item') && !row[1].includes('Add more rows')
+    );
+    
+    if (dataRows.length === 0) {
+      alert('❌ No valid data found in the file. Please make sure:\n- File has items listed\n- Columns are: ITEM NO, ITEM DESCRIPTION, QTY, UNIT, UNIT PRICE, AMOUNT');
+      event.target.value = '';
+      return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    dataRows.forEach((row, index) => {
+      const tr = createRow(index + 1);
+      
+      if (row[1]) {
+        const desc = row[1].replace(/^"|"$/g, '');
+        tr.querySelector('.desc').innerText = desc;
+      }
+      
+      if (row[2]) {
+        const qty = row[2].replace(/^"|"$/g, '').replace(/,/g, '');
+        tr.querySelector('.qty').value = qty;
+      }
+      
+      if (row[3]) {
+        const unit = row[3].replace(/^"|"$/g, '');
+        tr.querySelector('.unit').value = unit;
+      }
+      
+      if (row[4]) {
+        const price = row[4].replace(/^"|"$/g, '').replace(/,/g, '');
+        tr.querySelector('.price').value = price;
+      }
+      
+      tbody.appendChild(tr);
+    });
+    
+    recalc();
+    saveUPRData();
+    
+    alert(`✅ Successfully imported ${dataRows.length} items from Excel!`);
+    event.target.value = '';
+  };
+  
+  reader.readAsText(file);
+}
+
+initRows();
+
+const purposeBox = document.getElementById('purposeBox');
+purposeBox.addEventListener('input', () => {
+  purposeBox.style.height = 'auto';
+  purposeBox.style.height = purposeBox.scrollHeight + 'px';
+});
+
+function saveToRIS() {
+  const rows = Array.from(document.querySelectorAll("#itemsTable tbody tr"));
+  const items = rows.map(row => {
+    const desc = row.querySelector(".desc")?.innerText.trim() || "";
+    const qty = row.querySelector(".qty")?.value.trim() || "";
+    const unit = row.querySelector(".unit")?.value.trim() || "";
+    const price = row.querySelector(".price")?.value.trim() || "";
+    const amount = row.querySelector(".amount")?.value.trim() || "";
+    return { description: desc, quantity: qty, unit: unit, price: price, amount: amount };
+  }).filter(item => item.description !== "");
+
+  const data = {
+    uprNo: document.getElementById("uprNo").value.trim(),
+    placeDelivery: document.getElementById("placeDelivery").value.trim(),
+    afppsRef: document.getElementById("afppsRef").value.trim(),
+    modeProc: document.getElementById("modeProc").value.trim(),
+    datePrepared: document.getElementById("datePrepared").value.trim(),
+    chargeability: document.getElementById("chargeability").value.trim(),
+    accountCode: document.getElementById("accountCode").value.trim(),
+    fundValidity: document.getElementById("fundValidity").value.trim(),
+    termsPayment: document.getElementById("termsPayment").value.trim(),
+    otherInfo: document.getElementById("otherInfo").value.trim(),
+    purpose: document.getElementById("purposeBox").value.trim(),
+    grandTotal: document.getElementById("grandTotal").innerText.trim(),
+    items
+  };
+
+  const dataStr = JSON.stringify(data);
+  const dataBlob = new Blob([dataStr], {type: 'application/json'});
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'upr_data_for_ris.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  alert("✅ Data saved as JSON file! You can load this in RIS or PPMP forms.");
+}
+
+function saveUPRData() {
+  const data = {
+    uprNo: document.getElementById("uprNo").value,
+    placeDelivery: document.getElementById("placeDelivery").value,
+    afppsRef: document.getElementById("afppsRef").value,
+    modeProc: document.getElementById("modeProc").value,
+    datePrepared: document.getElementById("datePrepared").value,
+    chargeability: document.getElementById("chargeability").value,
+    accountCode: document.getElementById("accountCode").value,
+    fundValidity: document.getElementById("fundValidity").value,
+    termsPayment: document.getElementById("termsPayment").value,
+    otherInfo: document.getElementById("otherInfo").value,
+    purposeBox: document.getElementById("purposeBox").value,
+    items: Array.from(document.querySelectorAll("#itemsTable tbody tr")).map(row => ({
+      desc: row.querySelector(".desc").innerText,
+      qty: row.querySelector(".qty").value,
+      unit: row.querySelector(".unit").value,
+      price: row.querySelector(".price").value
+    }))
+  };
+  
+  const dataStr = JSON.stringify(data);
+  sessionStorage.setItem("UPR_DATA", dataStr);
+}
+
+function loadUPRData() {
+  const saved = sessionStorage.getItem("UPR_DATA");
+  if (!saved) return;
+  const data = JSON.parse(saved);
+
+  document.getElementById("uprNo").value = data.uprNo || "";
+  document.getElementById("placeDelivery").value = data.placeDelivery || "";
+  document.getElementById("afppsRef").value = data.afppsRef || "";
+  document.getElementById("modeProc").value = data.modeProc || "";
+  document.getElementById("datePrepared").value = data.datePrepared || "";
+  document.getElementById("chargeability").value = data.chargeability || "";
+  document.getElementById("accountCode").value = data.accountCode || "";
+  document.getElementById("fundValidity").value = data.fundValidity || "";
+  document.getElementById("termsPayment").value = data.termsPayment || "";
+  document.getElementById("otherInfo").value = data.otherInfo || "";
+  document.getElementById("purposeBox").value = data.purposeBox || "";
+
+  tbody.innerHTML = "";
+  (data.items || []).forEach((item, i) => {
+    const tr = createRow(i + 1);
+    tr.querySelector(".desc").innerText = item.desc || "";
+    tr.querySelector(".qty").value = item.qty || "";
+    tr.querySelector(".unit").value = item.unit || "";
+    tr.querySelector(".price").value = item.price || "";
+    tbody.appendChild(tr);
+  });
+  if (!data.items || data.items.length === 0) initRows();
+  recalc();
+}
+
+function clearUPRData() {
+  if (confirm("Are you sure you want to clear all UPR data?")) {
+    sessionStorage.removeItem("UPR_DATA");
+    document.querySelectorAll('input.cell').forEach(el => el.value = '');
+    document.querySelectorAll('.desc').forEach(el => el.innerText = '');
+    document.getElementById("purposeBox").value = '';
+    document.getElementById("grandTotal").innerText = '0.00';
+    initRows();
+    alert("✅ Form cleared successfully.");
+  }
+}
+
+document.addEventListener("input", saveUPRData);
+document.addEventListener("change", saveUPRData);
+window.addEventListener("DOMContentLoaded", loadUPRData);
+</script>
+</body>
+</html>

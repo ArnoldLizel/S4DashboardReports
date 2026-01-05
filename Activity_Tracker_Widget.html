@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quarterly Activity Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+      /* Custom scrollbar for activity lists */
+      .activity-list::-webkit-scrollbar { width: 6px; }
+      .activity-list::-webkit-scrollbar-track { background: transparent; }
+      .activity-list::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="app" class="min-h-screen p-4 sm:p-8">
+        <!-- Header -->
+        <div class="max-w-7xl mx-auto mb-8 text-center sm:text-left">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Yearly Planner</h1>
+            <p className="text-gray-500 mt-2">
+                Track your quarterly goals. Synced with Activities Monitoring Dashboard.
+            </p>
+        </div>
+
+        <!-- Grid Container -->
+        <div id="grid-container" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Quarters will be injected here -->
+            <div class="col-span-full text-center py-12">
+                <div class="inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <p class="mt-4 text-gray-500">Loading activities...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from "@supabase/supabase-js";
+        import { GoogleGenAI, Type } from "@google/genai";
+
+        // --- Configuration ---
+        const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+        
+        // Note: In a real environment, use process.env.API_KEY. 
+        // For this standalone HTML file, ensure your environment injects this or replace manually if needed.
+        const GOOGLE_API_KEY = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : '';
+
+        // --- Supabase Client ---
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- State Definition ---
+        const quarters = [
+            { id: 'q1', title: '1st Qtr Activities', dbValue: 'First Quarter', theme: 'blue', activities: [] },
+            { id: 'q2', title: '2nd Qtr Activities', dbValue: 'Second Quarter', theme: 'emerald', activities: [] },
+            { id: 'q3', title: '3rd Qtr Activities', dbValue: 'Third Quarter', theme: 'amber', activities: [] },
+            { id: 'q4', title: '4th Qtr Activities', dbValue: 'Fourth Quarter', theme: 'indigo', activities: [] }
+        ];
+
+        // --- Icons ---
+        const ICONS = {
+            magic: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 7h4"/><path d="M3 5h4"/></svg>`,
+            plus: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>`,
+            trash: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+            loader: `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`
+        };
+
+        // --- Core Application Logic ---
+
+        async function fetchActivities() {
+            try {
+                const { data, error } = await supabase.from('iapb').select('*').order('id', { ascending: true });
+                if (error) throw error;
+
+                // Reset state
+                quarters.forEach(q => q.activities = []);
+
+                // Distribute data
+                data.forEach(row => {
+                    const activity = {
+                        id: row.id.toString(),
+                        text: row.activity_title || '',
+                        completed: row.completed === true,
+                        quarter_implementation: row.quarter_implementation
+                    };
+                    const targetQ = quarters.find(q => q.dbValue === activity.quarter_implementation);
+                    if (targetQ) targetQ.activities.push(activity);
+                });
+
+                renderAllQuarters();
+            } catch (err) {
+                console.error("Error loading data:", err);
+                document.getElementById('grid-container').innerHTML = `<div class="col-span-full text-center text-red-500">Error loading data. Check console.</div>`;
+            }
+        }
+
+        // --- Gemini AI Logic ---
+        async function generateSuggestions(quarterIndex) {
+            const quarter = quarters[quarterIndex];
+            const btn = document.getElementById(`magic-btn-${quarter.id}`);
+            
+            if (!GOOGLE_API_KEY) {
+                alert("API Key is missing. Suggestions are disabled.");
+                return;
+            }
+
+            // Set loading state
+            btn.innerHTML = ICONS.loader;
+            btn.disabled = true;
+
+            try {
+                const ai = new GoogleGenAI({ apiKey: GOOGLE_API_KEY });
+                const response = await ai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: `Generate 4 specific, actionable, and productive activity ideas for the "${quarter.title}" of the year. Keep them short (under 6 words).`,
+                    config: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING }
+                        }
+                    }
+                });
+
+                const suggestions = JSON.parse(response.text);
+                if (Array.isArray(suggestions)) {
+                    for (const text of suggestions) {
+                        await addActivity(quarterIndex, text);
+                    }
+                }
+            } catch (err) {
+                console.error("Gemini Error:", err);
+                alert("Failed to generate suggestions. Please try again.");
+            } finally {
+                // Reset button state
+                btn.innerHTML = ICONS.magic;
+                btn.disabled = false;
+            }
+        }
+
+        // --- Actions ---
+
+        async function addActivity(quarterIndex, text = '') {
+            const quarter = quarters[quarterIndex];
+            
+            // Optimistic Update (create temp ID)
+            const tempId = 'temp-' + Date.now() + Math.random();
+            const newActivity = { id: tempId, text, completed: false, quarter_implementation: quarter.dbValue };
+            quarter.activities.push(newActivity);
+            renderQuarterActivities(quarterIndex);
+
+            // DB Insert
+            const { data, error } = await supabase
+                .from('iapb')
+                .insert([{ 
+                    activity_title: text, 
+                    quarter_implementation: quarter.dbValue,
+                    completed: false
+                }])
+                .select()
+                .single();
+
+            if (error) {
+                console.error("Add failed", error);
+                // Rollback
+                quarter.activities = quarter.activities.filter(a => a.id !== tempId);
+                renderQuarterActivities(quarterIndex);
+                return;
+            }
+
+            // Replace temp ID with real ID
+            const idx = quarter.activities.findIndex(a => a.id === tempId);
+            if (idx !== -1) {
+                quarter.activities[idx] = {
+                    id: data.id.toString(),
+                    text: data.activity_title,
+                    completed: data.completed,
+                    quarter_implementation: data.quarter_implementation
+                };
+                renderQuarterActivities(quarterIndex); // Re-render to attach correct ID to DOM
+            }
+        }
+
+        async function toggleActivity(quarterIndex, activityId) {
+            const quarter = quarters[quarterIndex];
+            const activity = quarter.activities.find(a => a.id === activityId);
+            if (!activity) return;
+
+            // Optimistic
+            activity.completed = !activity.completed;
+            renderQuarterActivities(quarterIndex);
+
+            const { error } = await supabase
+                .from('iapb')
+                .update({ completed: activity.completed })
+                .eq('id', activityId);
+            
+            if (error) console.error("Toggle failed", error);
+        }
+
+        async function updateText(quarterIndex, activityId, newText) {
+            const quarter = quarters[quarterIndex];
+            const activity = quarter.activities.find(a => a.id === activityId);
+            if (!activity) return;
+
+            activity.text = newText;
+            // Note: We do NOT re-render here to keep focus on input
+            
+            // Debounced update to DB could go here. For now, we update blindly.
+            await supabase.from('iapb').update({ activity_title: newText }).eq('id', activityId);
+        }
+
+        async function deleteActivity(quarterIndex, activityId) {
+            const quarter = quarters[quarterIndex];
+            
+            // Optimistic
+            const prevActivities = [...quarter.activities];
+            quarter.activities = quarter.activities.filter(a => a.id !== activityId);
+            renderQuarterActivities(quarterIndex);
+
+            const { error } = await supabase.from('iapb').delete().eq('id', activityId);
+
+            if (error) {
+                console.error("Delete failed", error);
+                quarter.activities = prevActivities; // Rollback
+                renderQuarterActivities(quarterIndex);
+            }
+        }
+
+        // --- Rendering ---
+
+        function renderAllQuarters() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            quarters.forEach((q, index) => {
+                container.appendChild(createQuarterElement(q, index));
+                renderQuarterActivities(index);
+            });
+        }
+
+        function createQuarterElement(quarter, index) {
+            const el = document.createElement('div');
+            el.className = "bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 flex flex-col h-full transition-transform hover:-translate-y-1 duration-300";
+            el.innerHTML = `
+                <!-- Header -->
+                <div class="bg-${quarter.theme}-600 p-4 flex justify-between items-center text-white">
+                    <h2 class="text-lg font-bold tracking-wide uppercase">${quarter.title}</h2>
+                    <button id="magic-btn-${quarter.id}" class="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors disabled:opacity-50" title="Ask Gemini">
+                        ${ICONS.magic}
+                    </button>
+                </div>
+                <!-- Table Header -->
+                <div class="flex border-b border-gray-200 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div class="flex-grow p-3">Activity</div>
+                    <div class="w-24 p-3 text-center">Status</div>
+                </div>
+                <!-- List Container -->
+                <div id="list-${quarter.id}" class="flex-grow overflow-y-auto max-h-[300px] activity-list"></div>
+                <!-- Footer -->
+                <div class="p-3 border-t border-gray-100 bg-gray-50">
+                    <button id="add-btn-${quarter.id}" class="w-full py-2 px-4 border border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-${quarter.theme}-500 hover:text-${quarter.theme}-600 hover:bg-white transition-all flex items-center justify-center gap-2">
+                        ${ICONS.plus} Add New Activity
+                    </button>
+                </div>
+            `;
+
+            // Attach Event Listeners for static buttons
+            el.querySelector(`#magic-btn-${quarter.id}`).addEventListener('click', () => generateSuggestions(index));
+            el.querySelector(`#add-btn-${quarter.id}`).addEventListener('click', () => addActivity(index));
+
+            return el;
+        }
+
+        function renderQuarterActivities(index) {
+            const quarter = quarters[index];
+            const listContainer = document.getElementById(`list-${quarter.id}`);
+            if (!listContainer) return;
+
+            listContainer.innerHTML = '';
+
+            if (quarter.activities.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="p-8 text-center text-gray-400 text-sm italic">
+                        No activities yet. <br/>Add one or click the sparkle icon!
+                    </div>
+                `;
+                return;
+            }
+
+            const ul = document.createElement('ul');
+            ul.className = "divide-y divide-gray-100";
+
+            quarter.activities.forEach(activity => {
+                const li = document.createElement('li');
+                li.className = `flex items-center group transition-colors ${activity.completed ? 'bg-gray-50' : 'bg-white'}`;
+                
+                // Ring color class logic for Vanilla
+                const ringClass = `focus:ring-${quarter.theme}-500`;
+
+                li.innerHTML = `
+                    <div class="flex-grow p-2 relative">
+                        <input
+                            type="text"
+                            value="${activity.text}"
+                            placeholder="Enter activity..."
+                            class="w-full p-2 rounded-md bg-transparent border-transparent focus:border-${quarter.theme}-300 focus:ring focus:${ringClass} focus:ring-opacity-50 transition-all ${activity.completed ? 'text-gray-400 line-through decoration-gray-400 decoration-2' : 'text-gray-800 font-medium'}"
+                        />
+                        <button class="delete-btn absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity p-1">
+                            ${ICONS.trash}
+                        </button>
+                    </div>
+                    <div class="w-24 p-2 flex justify-center border-l border-gray-100">
+                         <button class="toggle-btn relative w-12 h-7 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:${ringClass} ${activity.completed ? `bg-${quarter.theme}-500` : 'bg-gray-200'}">
+                            <span class="inline-block w-5 h-5 transform bg-white rounded-full transition-transform duration-200 shadow-sm ${activity.completed ? 'translate-x-6' : 'translate-x-1'} mt-1"></span>
+                         </button>
+                    </div>
+                `;
+
+                // Bind Events
+                const input = li.querySelector('input');
+                input.addEventListener('input', (e) => updateText(index, activity.id, e.target.value));
+                
+                const deleteBtn = li.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', () => deleteActivity(index, activity.id));
+
+                const toggleBtn = li.querySelector('.toggle-btn');
+                toggleBtn.addEventListener('click', () => toggleActivity(index, activity.id));
+
+                ul.appendChild(li);
+            });
+
+            listContainer.appendChild(ul);
+        }
+
+        // Start
+        fetchActivities();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scanned Documents Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+        background-image: url('image/bg2.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed; /* Keeps background still while scrolling */
+        background-repeat: no-repeat;
+        min-height: 100vh;
+    }
+
+    /* Optional: If the background makes text hard to read, 
+       this adds a subtle white overlay to the container */
+    .container {
+        background-color: rgba(255, 255, 255, 0.9); 
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+</style>
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #f4f6f9;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      vertical-align: middle;
+    }
+    th {
+      background-color: #003366;
+      color: white;
+    }
+    .btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+    .btn-upload {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-upload:hover {
+      background-color: #0056b3;
+    }
+    .btn-download {
+      background-color: #28a745;
+      color: white;
+    }
+    .btn-download:hover {
+      background-color: #1e7e34;
+    }
+    .btn-remove {
+      background-color: #dc2626;
+      color: white;
+      margin-left: 5px;
+    }
+    .btn-remove:hover {
+      background-color: #b91c1c;
+    }
+    .thumbnail {
+      max-width: 60px;
+      max-height: 60px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+    .file-icon {
+      font-size: 24px;
+      text-align: center;
+      width: 60px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="text-2xl font-bold mb-4 text-center">📄 TNCE Scanned Documents Dashboard</h1>
+
+    <section class="mb-10">
+      <h2 class="text-xl font-semibold mb-2 text-blue-700">Upload Documents</h2>
+      <input type="file" id="docInput" class="mb-2" multiple accept=".pdf,.jpg,.jpeg,.png">
+      <button class="btn btn-upload" onclick="uploadFiles()">Upload</button>
+
+      <table id="docTable" class="mt-4">
+        <thead>
+          <tr>
+            <th>Preview</th>
+            <th>Filename</th>
+            <th>Date Uploaded</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    // Load files from localStorage on startup
+    document.addEventListener("DOMContentLoaded", () => {
+      loadFiles();
+    });
+
+    function uploadFiles() {
+      const input = document.getElementById('docInput');
+      const files = Array.from(input.files);
+      if (files.length === 0) {
+        alert("Please select at least one file to upload!");
+        return;
+      }
+
+      let storedFiles = JSON.parse(localStorage.getItem('docFiles')) || [];
+
+      files.forEach(file => {
+        const fileData = {
+          id: Date.now() + Math.random(), // unique ID
+          name: file.name,
+          date: new Date().toLocaleString(),
+          url: URL.createObjectURL(file),
+          type: file.type
+        };
+        storedFiles.push(fileData);
+        addFileRow(fileData);
+      });
+
+      localStorage.setItem('docFiles', JSON.stringify(storedFiles));
+      input.value = ""; // Clear file input
+    }
+
+    function addFileRow(file) {
+      const tbody = document.querySelector('#docTable tbody');
+      const row = document.createElement("tr");
+      row.dataset.id = file.id;
+
+      let preview = '';
+      if (file.type.startsWith('image/')) {
+        preview = `<img src="${file.url}" class="thumbnail" alt="${file.name}">`;
+      } else if (file.type === 'application/pdf') {
+        preview = `<div class="file-icon">📄</div>`;
+      } else {
+        preview = `<div class="file-icon">📎</div>`;
+      }
+
+      row.innerHTML = `
+        <td>${preview}</td>
+        <td>${file.name}</td>
+        <td>${file.date}</td>
+        <td>
+          <a href="${file.url}" download="${file.name}" class="btn btn-download">Download</a>
+          <button class="btn btn-remove" onclick="removeFile('${file.id}')">Remove</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function loadFiles() {
+      const files = JSON.parse(localStorage.getItem('docFiles')) || [];
+      files.forEach(file => addFileRow(file));
+    }
+
+    function removeFile(fileId) {
+      let files = JSON.parse(localStorage.getItem('docFiles')) || [];
+      files = files.filter(f => f.id != fileId);
+      localStorage.setItem('docFiles', JSON.stringify(files));
+
+      const row = document.querySelector(`#docTable tr[data-id='${fileId}']`);
+      if (row) row.remove();
+    }
+  </script>
+
+</body>
+</html>

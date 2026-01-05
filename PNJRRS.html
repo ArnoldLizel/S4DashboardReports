@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Performance Rating - PN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
+    <style>
+    body {
+        background-image: url('image/bg2.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed; /* Keeps background still while scrolling */
+        background-repeat: no-repeat;
+        min-height: 100vh;
+    }
+
+    /* Optional: If the background makes text hard to read, 
+       this adds a subtle white overlay to the container */
+    .container {
+        background-color: rgba(255, 255, 255, 0.9); 
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+</style>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; padding: 1.5rem; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0; }
+        h1, h2, h3, h4, h5, h6 { color: #0b1a3a; font-weight: 600; margin-bottom: 1rem; }
+        h1 { font-size: 2rem; }
+        p { margin-bottom: 1rem; color: #4b5563; }
+        .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; transition: box-shadow 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .card-header { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem 0.5rem 0 0; margin: -1.5rem -1.5rem 1.5rem -1.5rem; font-weight: 600; font-size: 1.125rem; border-left: 4px solid #f1c232; }
+        .card-body { padding: 0; }
+        .card-body-form { padding: 1.5rem; }
+        .card-footer { border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem; color: #6b7280; font-size: 0.875rem; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; padding: 1.5rem; }
+        .summary-box { background: linear-gradient(145deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; transition: transform 0.2s; }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ummary-box:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); }
+        .summary-category-section { grid-column: 1 / -1; margin-top: 1rem; padding-top: 0.75rem; border-top: 2px dashed #e5e7eb; }
+        .summary-category-title { grid-column: 1 / -1; font-size: 1.125rem; font-weight: 600; color: #1e3a8a; margin-bottom: 0.75rem; }
+        .summary-box.inventory-box { background: linear-gradient(145deg, #0891b2 0%, #06b6d4 100%); }
+        .summary-icon { font-size: 1.25rem; margin-right: 0.5rem; color: #f1c232; }
+        .inventory-box .summary-icon { color: white; }
+        .summary-label { font-size: 0.875rem; font-weight: 500; opacity: 0.8; display: flex; align-items: center; }
+        .summary-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-top: 0.5rem; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; font-size: 0.875rem; font-weight: 500; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s ease; text-decoration: none; text-align: center; white-space: nowrap; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background-color: #0b1a3a; color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: #1e3a8a; box-shadow: 0 4px 6px -1px rgba(11, 26, 58, 0.3); }
+        .btn-neutral { background-color: #06b6d4; color: white; }
+        .btn-neutral:hover:not(:disabled) { background-color: #0891b2; }
+        .btn-success { background-color: #10b981; color: white; }
+        .btn-group { display: inline-flex; gap: 0.5rem; flex-wrap: wrap; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-select { display: block; width: 100%; padding: 0.625rem 2.5rem 0.625rem 0.875rem; font-size: 0.875rem; font-weight: 400; line-height: 1.5; color: #1f2937; background-color: white; border: 1px solid #d1d5db; border-radius: 0.375rem; appearance: none; }
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1.5rem; padding: 1.5rem 0; }
+        .table { width: 100%; border-collapse: collapse; background-color: white; font-size: 0.875rem; }
+        .table thead { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; }
+        .table thead th { padding: 0.875rem 1rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f1c232; }
+        .table tbody tr { border-bottom: 1px solid #e5e7eb; transition: background-color 0.15s ease; }
+        .table tbody tr:hover { background-color: #f9fafb; }
+        .table tbody td { padding: 0.875rem 1rem; color: #4b5563; vertical-align: middle; }
+        .table-striped tbody tr:nth-child(odd) { background-color: #f9fafb; }
+        .highlight-row td { background-color: #eef2ff !important; color: #1e3a8a; font-weight: 600; padding: 0.875rem 1rem; text-align: left; border-top: 2px solid #c7d2fe; }
+        #toe-body input, #mrr-body input { width: 60px; padding: 0.4rem 0.2rem; text-align: center; font-size: 0.875rem; border-radius: 0.25rem; height: 32px; border: 1px solid #d1d5db; }
+        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 700; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.025em; white-space: nowrap; }
+        .status-badge.status-active, .status-badge.status-approved { background-color: #d1fae5; color: #065f46; }
+        .status-badge.status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-badge.status-rejected, .status-badge.status-inactive { background-color: #fee2e2; color: #991b1b; }
+        .text-center { text-align: center; }
+        .text-muted { color: #6b7280; }
+        .mt-3 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 2rem; }
+        .d-flex { display: flex; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="mb-4">Philippine Navy Office Performance Rating System</h1>
+
+    <div class="card">
+        <div class="card-header">Select Office and Action Center</div>
+        <div class="card-body card-body-form">
+            <div class="form-group">
+                <label for="office-select" class="form-label">Select Office:</label>
+                <select id="office-select" class="form-select" onchange="loadOfficeData()">
+                    <option value="">-- Select Office --</option>
+                    <option value="FOIC">FOIC</option>
+                    <option value="VCOM">VCOM</option>
+                    <option value="CNS">CNS</option>
+                    <option value="N1">N1</option>
+                    <option value="N2">N2</option>
+                    <option value="N3">N3</option>
+                    <option value="N4">N4</option>
+                    <option value="N5">N5</option>
+                    <option value="N6">N6</option>
+                    <option value="N7">N7</option>
+                    <option value="N8">N8</option>
+                    <option value="N9">N9</option>
+                    <option value="N10">N10</option>
+                    <option value="N11">N11</option>
+                    <option value="NIOFC">NIOFC</option>
+                    <option value="HSG">HSG</option>
+                </select>
+            </div>
+            <div class="d-flex align-items-center justify-content-between mt-3">
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="computeAllRatings()">Compute Ratings</button>
+                    <button class="btn btn-neutral" onclick="updateOfficeData()">Update (Save)</button>
+                </div>
+                <div class="text-muted" id="statusMsg" style="font-weight: 500;">Ready. Select an Office to load or start a new rating.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Overall Asset Summary Dashboard (PN Fleet Totals)</div>
+        <div class="card-body">
+            <div class="summary-grid">
+                <div class="summary-category-title">Grand Totals Across All Offices (Aggregated TOE/MRR)</div>
+                <div class="summary-box">
+                    <div class="summary-label"><span class="summary-icon">🎯</span> TOTAL REQUIRED (TOE A)</div>
+                    <div class="summary-value" id="grand-total-required">0</div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label"><span class="summary-icon">📦</span> TOTAL ACTUAL (MRR A)</div>
+                    <div class="summary-value" id="grand-total-actual">0</div>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-label"><span class="summary-icon">✅</span> TOTAL SERVICEABLE (MRR B)</div>
+                    <div class="summary-value" id="grand-total-serviceable">0</div>
+                </div>
+                <div class="summary-box" id="overall-readiness-box" style="background: linear-gradient(145deg, #f1c232 0%, #f9d75c 100%); color: #0b1a3a;">
+                    <div class="summary-label"><span class="summary-icon">📊</span> OVERALL READINESS</div>
+                    <div class="summary-value" id="overall-readiness-percent">0.00%</div>
+                </div>
+                <div class="summary-category-section"></div>
+                <div class="summary-category-title">Total Actual Inventory (On Hand Count) by Category</div>
+                <div class="summary-box inventory-box">
+                    <div class="summary-label"><span class="summary-icon">🚗</span> MOBILITY INVENTORY</div>
+                    <div class="summary-value" id="inventory-mobility">0</div>
+                </div>
+                <div class="summary-box inventory-box">
+                    <div class="summary-label"><span class="summary-icon">🔫</span> FIREPOWER INVENTORY</div>
+                    <div class="summary-value" id="inventory-firepower">0</div>
+                </div>
+                <div class="summary-box inventory-box">
+                    <div class="summary-label"><span class="summary-icon">📡</span> COMMUNICATION INVENTORY</div>
+                    <div class="summary-value" id="inventory-communication">0</div>
+                </div>
+                <div class="summary-box inventory-box">
+                    <div class="summary-label"><span class="summary-icon">⚕️</span> MEDICAL INVENTORY</div>
+                    <div class="summary-value" id="inventory-medical">0</div>
+                </div>
+                <div class="summary-box inventory-box">
+                    <div class="summary-label"><span class="summary-icon">🦷</span> DENTAL INVENTORY</div>
+                    <div class="summary-value" id="inventory-dental">0</div>
+                </div>
+                <div class="summary-box inventory-box">
+                    <div class="summary-label"><span class="summary-icon">🪖</span> QUARTERMASTER INVENTORY</div>
+                    <div class="summary-value" id="inventory-quartermaster">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p style="margin-top: 1rem;">The final Office Performance Rating is a composite of the Equipment Readiness (TOE) and Maintenance Readiness (MRR) reports below.</p>
+
+    <div class="card">
+        <div class="card-header">1. Equipment Readiness Report (TOE) - Current Office: <span id="current-office-name">N/A</span></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">EQUIPMENT CATEGORY</th>
+                            <th class="text-center" style="width: 15%;">TABLE OF EQ (A)</th>
+                            <th class="text-center" style="width: 15%;">ACTUAL (B)</th>
+                            <th class="text-center" style="width: 25%;">READINESS RATING (B/A × 100%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="toe-body">
+                        <tr><td>MOBILITY</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr><td>FIREPOWER</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr><td>COMMUNICATION</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr class="highlight-row">
+                            <td>MISSION ESSENTIAL EQUIPMENT (Average × 80%)</td>
+                            <td colspan="2" class="text-muted text-center">Auto-computed</td>
+                            <td id="toe-mission-essential" class="text-center"></td>
+                        </tr>
+                        <tr><td>MEDICAL</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr><td>DENTAL</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr><td>QUARTERMASTER</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr class="highlight-row">
+                            <td>SECONDARY ESSENTIAL EQUIPMENT (Average × 20%)</td>
+                            <td colspan="2" class="text-muted text-center">Auto-computed</td>
+                            <td id="toe-secondary-essential" class="text-center"></td>
+                        </tr>
+                        <tr class="highlight-row" style="background-color: #dbeafe !important;">
+                            <td style="font-weight: 700; color: #0b1a3a;">TOTAL TOE READINESS RATING (80% + 20%)</td>
+                            <td colspan="2" class="text-muted text-center">Auto-computed</td>
+                            <td id="toe-total-essential" class="text-center"><span class="status-badge status-pending">N/A</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">2. Maintenance Readiness Report (MRR) - Current Office: <span id="current-office-name-mrr">N/A</span></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">EQUIPMENT CATEGORY</th>
+                            <th class="text-center" style="width: 15%;">ON HAND EQ (A)</th>
+                            <th class="text-center" style="width: 15%;">SERVICEABLE (B)</th>
+                            <th class="text-center" style="width: 25%;">READINESS RATING (B/A × 100%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mrr-body">
+                        <tr><td>MOBILITY</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr><td>FIREPOWER</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr><td>COMMUNICATION</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr class="highlight-row">
+                            <td>MISSION ESSENTIAL EQUIPMENT (Average × 80%)</td>
+                            <td colspan="2" class="text-muted text-center">Auto-computed</td>
+                            <td id="mrr-mission-essential" class="text-center"></td>
+                        </tr>
+                        <tr><td>MEDICAL</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr><td>DENTAL</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr><td>QUARTERMASTER</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
+                        <tr class="highlight-row">
+                            <td>SECONDARY ESSENTIAL EQUIPMENT (Average × 20%)</td>
+                            <td colspan="2" class="text-muted text-center">Auto-computed</td>
+                            <td id="mrr-secondary-essential" class="text-center"></td>
+                        </tr>
+                        <tr class="highlight-row" style="background-color: #dbeafe !important;">
+                            <td style="font-weight: 700; color: #0b1a3a;">TOTAL MRR READINESS RATING (80% + 20%)</td>
+                            <td colspan="2" class="text-muted text-center">Auto-computed</td>
+                            <td id="mrr-total-essential" class="text-center"><span class="status-badge status-pending">N/A</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+const TABLE = "office_performance";
+
+// ✅ FIXED: Changed from 'supabase' to 'supabasePNJRRS' to avoid conflict
+const supabasePNJRRS = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const limitTo100 = v => Math.min(v, 100);
+const parseNumber = (value) => parseFloat(value) || 0;
+const INVENTORY_IDS = ['inventory-mobility','inventory-firepower','inventory-communication','inventory-medical','inventory-dental','inventory-quartermaster'];
+
+function applyStatusBadge(elementId, ratingValue) {
+    const el = document.getElementById(elementId);
+    let statusText, statusClass;
+    if (ratingValue === null || isNaN(ratingValue) || ratingValue === 0) {
+        statusText = "N/A"; statusClass = "status-pending";
+    } else if (ratingValue >= 80) {
+        statusText = ratingValue.toFixed(2) + "%"; statusClass = "status-active";
+    } else if (ratingValue >= 60) {
+        statusText = ratingValue.toFixed(2) + "%"; statusClass = "status-pending";
+    } else {
+        statusText = ratingValue.toFixed(2) + "%"; statusClass = "status-rejected";
+    }
+    el.innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
+}
+
+function computeRatingsForTable(tbodyId, missionId, secondaryId, totalId) {
+    const tbody = document.getElementById(tbodyId);
+    const rows = tbody.querySelectorAll("tr");
+    let ratings = [];
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        const ratingCell = row.querySelector(".rating");
+        if(inputs.length === 2 && ratingCell) {
+            const A = parseNumber(inputs[0].value);
+            const B = parseNumber(inputs[1].value);
+            let rating = A > 0 ? (B / A * 100) : 0;
+            rating = limitTo100(rating);
+            ratingCell.textContent = rating.toFixed(2);
+            ratings.push(rating);
+        }
+    });
+    const meRatings = ratings.slice(0, 3);
+    const meValidRatings = meRatings.filter(r => r > 0);
+    const meSum = meValidRatings.reduce((sum, r) => sum + r, 0);
+    const meCount = meValidRatings.length;
+    const meAvg = meCount > 0 ? meSum / meCount : 0;
+    const me = meAvg * 0.8;
+    document.getElementById(missionId).textContent = me.toFixed(2);
+    const seRatings = ratings.slice(3, 6);
+    const seValidRatings = seRatings.filter(r => r > 0);
+    const seSum = seValidRatings.reduce((sum, r) => sum + r, 0);
+    const seCount = seValidRatings.length;
+    const seAvg = seCount > 0 ? seSum / seCount : 0;
+    const se = seAvg * 0.2;
+    document.getElementById(secondaryId).textContent = se.toFixed(2);
+    const total = me + se;
+    applyStatusBadge(totalId, total);
+}
+
+window.loadAggregatedDashboardData = async () => {
+    try {
+        const { data: allRecords, error } = await supabasePNJRRS.from(TABLE).select("payload");
+        if (error) throw error;
+        let grandTotalRequired = 0, grandTotalActual = 0, grandTotalServiceable = 0;
+        let categoryInventories = new Array(6).fill(0);
+        if (allRecords && allRecords.length > 0) {
+            allRecords.forEach(record => {
+                const payload = record.payload;
+                if (payload && payload.toe && payload.mrr) {
+                    for (let i = 0; i < 6; i++) {
+                        const toeA = parseNumber(payload.toe[i]?.[0]);
+                        const mrrA = parseNumber(payload.mrr[i]?.[0]);
+                        const mrrB = parseNumber(payload.mrr[i]?.[1]);
+                        grandTotalRequired += toeA;
+                        grandTotalActual += mrrA;
+                        grandTotalServiceable += mrrB;
+                        categoryInventories[i] += mrrA;
+                    }
+                }
+            });
+        }
+        const readiness = grandTotalActual > 0 ? (grandTotalServiceable / grandTotalActual) * 100 : 0;
+        document.getElementById('grand-total-required').textContent = grandTotalRequired.toLocaleString();
+        document.getElementById('grand-total-actual').textContent = grandTotalActual.toLocaleString();
+        document.getElementById('grand-total-serviceable').textContent = grandTotalServiceable.toLocaleString();
+        document.getElementById('overall-readiness-percent').textContent = limitTo100(readiness).toFixed(2) + '%';
+        INVENTORY_IDS.forEach((id, index) => {
+            document.getElementById(id).textContent = categoryInventories[index].toLocaleString();
+        });
+        const readinessBox = document.getElementById('overall-readiness-box');
+        const readinessValue = limitTo100(readiness);
+        const readinessIcon = readinessBox.querySelector('.summary-icon');
+        if (readinessValue >= 80) {
+            readinessBox.style.background = 'linear-gradient(145deg, #065f46 0%, #10b981 100%)';
+            readinessBox.style.color = 'white'; readinessIcon.style.color = 'white';
+        } else if (readinessValue >= 60) {
+            readinessBox.style.background = 'linear-gradient(145deg, #92400e 0%, #f59e0b 100%)';
+            readinessBox.style.color = 'white'; readinessIcon.style.color = 'white';
+        } else {
+            readinessBox.style.background = 'linear-gradient(145deg, #991b1b 0%, #ef4444 100%)';
+            readinessBox.style.color = 'white'; readinessIcon.style.color = 'white';
+        }
+    } catch (err) {
+        showMessageModal("Aggregation Error", "Failed to fetch all office data for dashboard summary.", true);
+    }
+}
+
+window.computeAllRatings = () => {
+    computeRatingsForTable("toe-body", "toe-mission-essential", "toe-secondary-essential", "toe-total-essential");
+    computeRatingsForTable("mrr-body", "mrr-mission-essential", "mrr-secondary-essential", "mrr-total-essential");
+};
+
+function getTableData(tbodyId) {
+    const tbody = document.getElementById(tbodyId);
+    const rows = tbody.querySelectorAll("tr");
+    const data = [];
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        if(inputs.length===2) data.push([inputs[0].value, inputs[1].value]);
+    });
+    return data;
+}
+
+function buildPayload() {
+    const getBadgeValue = (id) => {
+        const el = document.getElementById(id).querySelector(".status-badge");
+        if (el) {
+            const text = el.textContent.replace('%', '');
+            return text === "N/A" ? "" : text;
+        }
+        return "";
+    };
+    return {
+        toe: getTableData("toe-body"),
+        mrr: getTableData("mrr-body"),
+        computed: {
+            toe: { mission: document.getElementById("toe-mission-essential").textContent || "", secondary: document.getElementById("toe-secondary-essential").textContent || "", total: getBadgeValue("toe-total-essential") },
+            mrr: { mission: document.getElementById("mrr-mission-essential").textContent || "", secondary: document.getElementById("mrr-secondary-essential").textContent || "", total: getBadgeValue("mrr-total-essential") }
+        },
+        updated_at: new Date().toISOString()
+    };
+}
+
+function populateTable(tbodyId, data) {
+    const rows = document.getElementById(tbodyId).querySelectorAll("tr");
+    let inputRowIndex = 0;
+    rows.forEach((row) => {
+        const inputs = row.querySelectorAll("input");
+        if (inputs.length === 2) {
+            if(data && data[inputRowIndex]) {
+                inputs[0].value = data[inputRowIndex][0];
+                inputs[1].value = data[inputRowIndex][1];
+            } else {
+                inputs[0].value = ""; inputs[1].value = "";
+            }
+            inputRowIndex++;
+        }
+    });
+}
+
+function showMessageModal(title, message, isError = false) {
+    if (isError) { console.error(`${title}: ${message}`); } else { console.log(`${title}: ${message}`); }
+    const statusEl = document.getElementById("statusMsg");
+    statusEl.textContent = `${title}: ${message}`;
+    statusEl.style.color = isError ? '#ef4444' : '#10b981';
+    setTimeout(() => {
+        statusEl.textContent = "Ready. Select an Office to load or start a new rating.";
+        statusEl.style.color = '#6b7280';
+    }, 4000);
+}
+
+async function updateOfficeData() {
+    const office = document.getElementById("office-select").value;
+    const statusEl = document.getElementById("statusMsg");
+    if(!office) { showMessageModal("Error", "Select an office first.", true); return; }
+    computeAllRatings();
+    const payload = buildPayload();
+    try {
+        statusEl.textContent = "Saving..."; statusEl.style.color = '#0b1a3a';
+        const { data, error } = await supabasePNJRRS.from(TABLE).upsert([{ office: office, payload: payload }], { onConflict: ['office'] }).select();
+        if (error) throw error;
+        showMessageModal("Success", `Data saved for ${office}`);
+        loadAggregatedDashboardData();
+    } catch (err) {
+        showMessageModal("Save Failed", `Failed to save data for ${office}. Check console.`, true);
+    }
+}
+
+async function loadOfficeData() {
+    const office = document.getElementById("office-select").value;
+    const statusEl = document.getElementById("statusMsg");
+    document.getElementById("current-office-name").textContent = office || "N/A";
+    document.getElementById("current-office-name-mrr").textContent = office || "N/A";
+    if(!office) {
+        populateTable("toe-body", []); populateTable("mrr-body", []); computeAllRatings(); return;
+    }
+    try {
+        statusEl.textContent = "Loading..."; statusEl.style.color = '#f59e0b';
+        const { data, error } = await supabasePNJRRS.from(TABLE).select("payload").eq("office", office).single();
+        
+        // ✅ FIXED: Check for errors FIRST before checking data
+        if (error) {
+            // Handle PGRST116 error (no rows) as a non-critical case
+            if (error.code === 'PGRST116') {
+                console.warn(`No saved data found for ${office}.`);
+                populateTable("toe-body", []); populateTable("mrr-body", []); computeAllRatings();
+                showMessageModal("Info", `No saved data found for ${office}.`);
+                return;
+            }
+            // For all other errors, throw
+            throw error;
+        }
+
+        if (data && data.payload) {
+            const payload = data.payload;
+            populateTable("toe-body", payload.toe || []);
+            populateTable("mrr-body", payload.mrr || []);
+            if (payload.computed) {
+                document.getElementById("toe-mission-essential").textContent = payload.computed.toe.mission || "0.00";
+                document.getElementById("toe-secondary-essential").textContent = payload.computed.toe.secondary || "0.00";
+                document.getElementById("mrr-mission-essential").textContent = payload.computed.mrr.mission || "0.00";
+                document.getElementById("mrr-secondary-essential").textContent = payload.computed.mrr.secondary || "0.00";
+                computeAllRatings();
+                const toeTotal = parseFloat(payload.computed.toe.total);
+                const mrrTotal = parseFloat(payload.computed.mrr.total);
+                if (!isNaN(toeTotal) && toeTotal > 0) applyStatusBadge("toe-total-essential", toeTotal);
+                if (!isNaN(mrrTotal) && mrrTotal > 0) applyStatusBadge("mrr-total-essential", mrrTotal);
+            } else { computeAllRatings(); }
+            showMessageModal("Loaded", `Data loaded for ${office}`);
+        } else {
+            populateTable("toe-body", []); populateTable("mrr-body", []); computeAllRatings();
+            showMessageModal("Info", `No saved data found for ${office}.`);
+        }
+    } catch (err) {
+        console.error("CRITICAL Load Failure:", err);
+        showMessageModal("Load Failed", `Failed to load data for ${office}. Check console for details.`, true);
+    }
+}
+
+window.onload = () => { computeAllRatings(); loadAggregatedDashboardData(); };
+</script>
+</body>
+</html>
