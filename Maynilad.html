@@ -11,424 +11,118 @@
         background-image: url('image/bg2.jpg');
         background-size: cover;
         background-position: center;
-        background-attachment: fixed; /* Keeps background still while scrolling */
+        background-attachment: fixed;
         background-repeat: no-repeat;
         min-height: 100vh;
     }
 
-    /* Optional: If the background makes text hard to read, 
-       this adds a subtle white overlay to the container */
     .container {
         background-color: rgba(255, 255, 255, 0.9); 
         border-radius: 8px;
         padding: 20px;
         margin-top: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
     }
-</style>
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f3f4f6;
-  color: #1f2937;
-  line-height: 1.6;
-  min-height: 100vh;
-}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f3f4f6;
+      color: #1f2937;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
 
-h1, h2, h3, h4, h5, h6 {
-  color: #0b1a3a;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
+    h1 { color: #0b1a3a; font-weight: 600; margin-bottom: 1rem; font-size: 2rem; }
 
-h1 { font-size: 2rem; }
+    .header-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
 
-.header-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
+    .action-buttons { display: flex; gap: 1rem; }
 
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-}
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+    .btn-save { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+    .btn-save:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
 
-.btn-save {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
+    .btn-print { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; }
+    .btn-print:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4); }
 
-.btn-save:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
 
-.btn-save:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  transform: none;
-}
+    .notification.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    .notification.error { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
 
-.btn-print {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  color: white;
-}
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-.btn-print:hover {
-  background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
-}
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
 
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 1rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  z-index: 1000;
-  animation: slideIn 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
+    .summary-card {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
 
-.notification.success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
+    .summary-icon { width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+    .summary-value { font-size: 1.75rem; font-weight: 700; color: #0b1a3a; margin-top: 0.25rem; }
 
-.notification.error {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
-}
+    .table-responsive { overflow-x: auto; margin-bottom: 1.5rem; }
+    .table { width: 100%; border-collapse: collapse; background-color: white; font-size: 0.875rem; }
+    .table thead { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; }
+    .table thead th { padding: 0.875rem 1rem; text-align: center; text-transform: uppercase; border-bottom: 2px solid #06b6d4; }
+    .table tbody td { padding: 0.875rem 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; }
+    .table tbody td[contenteditable="true"] { background-color: #f9fafb; cursor: text; }
+    .table tfoot { background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%); color: white; font-weight: 700; }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
+    .chart-container { position: relative; height: 400px; margin-bottom: 1.5rem; }
+    .collapse-section { background: white; border-radius: 0.5rem; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; overflow: hidden; }
+    .collapse-toggle { width: 100%; padding: 1rem 1.5rem; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; border: none; cursor: pointer; display: flex; justify-content: space-between; font-weight: 600; }
+    .collapse-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .collapse-content.open { max-height: 600px; }
 
-.year-label {
-  text-align: right;
-  font-weight: 600;
-  color: #0b1a3a;
-  margin-bottom: 1rem;
-  font-size: 1.125rem;
-}
-
-.card {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #e5e7eb;
-  transition: box-shadow 0.3s ease;
-}
-
-.card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: 0.5rem 0.5rem 0 0;
-  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-  font-weight: 600;
-  font-size: 1.125rem;
-  border-left: 4px solid #06b6d4;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.summary-card {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  border: 1px solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.summary-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  flex-shrink: 0;
-}
-
-.summary-info {
-  flex: 1;
-}
-
-.summary-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.summary-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #0b1a3a;
-  margin-top: 0.25rem;
-}
-
-.table-responsive {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-bottom: 1.5rem;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: white;
-  font-size: 0.875rem;
-}
-
-.table thead {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  color: white;
-}
-
-.table thead th {
-  padding: 0.875rem 1rem;
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 2px solid #06b6d4;
-}
-
-.table tbody tr {
-  border-bottom: 1px solid #e5e7eb;
-  transition: background-color 0.15s ease;
-}
-
-.table tbody tr:hover {
-  background-color: #f9fafb;
-}
-
-.table tbody tr:last-child {
-  border-bottom: none;
-}
-
-.table tbody td {
-  padding: 0.875rem 1rem;
-  color: #4b5563;
-  vertical-align: middle;
-  text-align: center;
-}
-
-.table tbody td[contenteditable="true"] {
-  background-color: #f9fafb;
-  cursor: text;
-  min-height: 2rem;
-  border: 1px solid #e5e7eb;
-}
-
-.table tbody td[contenteditable="true"]:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: -2px;
-  background-color: white;
-}
-
-.table tfoot {
-  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
-  color: white;
-  font-weight: 700;
-}
-
-.table tfoot td {
-  padding: 1rem;
-  font-size: 1rem;
-  text-align: center;
-}
-
-.chart-container {
-  position: relative;
-  height: 400px;
-  margin-bottom: 1.5rem;
-}
-
-.collapse-section {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-  margin-bottom: 1.5rem;
-  overflow: hidden;
-}
-
-.collapse-toggle {
-  width: 100%;
-  padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 1.125rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.collapse-toggle:hover {
-  background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
-}
-
-.collapse-arrow {
-  font-size: 1.2rem;
-  transition: transform 0.3s ease;
-}
-
-.collapse-arrow.open {
-  transform: rotate(180deg);
-}
-
-.collapse-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.collapse-content.open {
-  max-height: 600px;
-}
-
-.collapse-inner {
-  padding: 1.5rem;
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding: 1rem;
-  }
-  
-  .header-wrapper {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .action-buttons {
-    width: 100%;
-  }
-  
-  .btn {
-    flex: 1;
-    justify-content: center;
-  }
-  
-  .card {
-    padding: 1rem;
-  }
-  
-  .card-header {
-    margin: -1rem -1rem 1rem -1rem;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-  }
-  
-  h1 {
-    font-size: 1.5rem;
-  }
-  
-  .summary-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .table {
-    font-size: 0.8125rem;
-  }
-  
-  .table thead th,
-  .table tbody td {
-    padding: 0.5rem;
-  }
-  
-  .chart-container {
-    height: 300px;
-  }
-}
-
-@media print {
-  body {
-    background-color: white;
-  }
-  
-  .no-print {
-    display: none !important;
-  }
-  
-  .card {
-    box-shadow: none;
-    border: 1px solid #ddd;
-    page-break-inside: avoid;
-  }
-  
-  .table {
-    page-break-inside: auto;
-  }
-  
-  .table tr {
-    page-break-inside: avoid;
-    page-break-after: auto;
-  }
-  
-  .table thead {
-    display: table-header-group;
-  }
-}
+    @media print { .no-print { display: none !important; } .container { background: white; padding: 0; } }
 </style>
 </head>
 <body>
@@ -437,56 +131,35 @@ h1 { font-size: 2rem; }
   <div class="header-wrapper">
     <h1>💧 Water Bill (Maynilad)</h1>
     <div class="action-buttons no-print">
-      <button class="btn btn-save" id="saveBtn">
-        <span>💾</span>
-        <span>Save All Data</span>
-      </button>
-      <button class="btn btn-print" id="printBtn">
-        <span>🖨️</span>
-        <span>Print</span>
-      </button>
+      <button class="btn btn-save" id="saveBtn"><span>💾</span><span>Save All Data</span></button>
+      <button class="btn btn-print" id="printBtn"><span>🖨️</span><span>Print</span></button>
     </div>
   </div>
 
-  <div class="year-label" style="display: none;">
-    Year: <strong id="activeYear">2025</strong>
-  </div>
-  
   <div class="summary-grid">
     <div class="summary-card">
-      <div class="summary-icon" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white;">
-        💧
-      </div>
+      <div class="summary-icon" style="background: #1e3a8a; color: white;">💧</div>
       <div class="summary-info">
         <div class="summary-label">Total m³ Consumed</div>
         <div class="summary-value" id="summaryTotalCubic">0</div>
       </div>
     </div>
-
     <div class="summary-card">
-      <div class="summary-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;">
-        💰
-      </div>
+      <div class="summary-icon" style="background: #ef4444; color: white;">💰</div>
       <div class="summary-info">
         <div class="summary-label">Total Amount (PHP)</div>
         <div class="summary-value" id="summaryTotalAmount">₱0</div>
       </div>
     </div>
-
     <div class="summary-card">
-      <div class="summary-icon" style="background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%); color: white;">
-        📊
-      </div>
+      <div class="summary-icon" style="background: #0f766e; color: white;">📊</div>
       <div class="summary-info">
         <div class="summary-label">Average m³/Month</div>
         <div class="summary-value" id="summaryAvgCubic">0</div>
       </div>
     </div>
-
     <div class="summary-card">
-      <div class="summary-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
-        💵
-      </div>
+      <div class="summary-icon" style="background: #f59e0b; color: white;">💵</div>
       <div class="summary-info">
         <div class="summary-label">Avg. Amount/Month (PHP)</div>
         <div class="summary-value" id="summaryAvgAmount">₱0</div>
@@ -497,20 +170,14 @@ h1 { font-size: 2rem; }
   <div class="collapse-section no-print">
     <button class="collapse-toggle" id="chartToggle">
       <span>📈 Monthly Water Consumption Chart</span>
-      <span class="collapse-arrow" id="chartArrow">▼</span>
+      <span id="chartArrow">▼</span>
     </button>
-    
     <div class="collapse-content" id="chartContent">
-      <div class="collapse-inner">
-        <div class="chart-container">
-          <canvas id="waterChart"></canvas>
-        </div>
-      </div>
+      <div style="padding: 1.5rem;"><div class="chart-container"><canvas id="waterChart"></canvas></div></div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-header">💧 Monthly Water Bill</div>
     <div class="table-responsive">
       <table class="table">
         <thead>
@@ -537,145 +204,106 @@ h1 { font-size: 2rem; }
 
 <script>
 (() => {
-  // ============= SUPABASE CONFIGURATION =============
   const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-  
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   
-  const months = [
-    "09 JAN - 09 FEB", "09 FEB - 09 MAR", "09 MAR - 09 APR", "09 APR - 09 MAY",
-    "09 MAY - 09 JUN", "09 JUN - 09 JUL", "09 JUL - 09 AUG", "09 AUG - 09 SEP",
-    "09 SEP - 09 OCT", "09 OCT - 09 NOV", "09 NOV - 09 DEC", "09 DEC - 09 JAN"
-  ];
-  
+  const months = ["09 JAN - 09 FEB", "09 FEB - 09 MAR", "09 MAR - 09 APR", "09 APR - 09 MAY", "09 MAY - 09 JUN", "09 JUN - 09 JUL", "09 JUL - 09 AUG", "09 AUG - 09 SEP", "09 SEP - 09 OCT", "09 OCT - 09 NOV", "09 NOV - 09 DEC", "09 DEC - 09 JAN"];
   const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  
   const tbody = document.getElementById("billTableBody");
-  const activeYearSpan = document.getElementById("activeYear");
   const saveBtn = document.getElementById("saveBtn");
-  const printBtn = document.getElementById("printBtn");
-  
-  let currentYear = window.currentDashboardYear || new Date().getFullYear().toString();
+  let currentYear = new Date().getFullYear().toString();
   let chart = null;
   let waterData = [];
 
-  // Show notification
   function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.style.animation = 'slideIn 0.3s ease reverse';
-      setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    const n = document.createElement('div');
+    n.className = `notification ${type}`;
+    n.textContent = message;
+    document.body.appendChild(n);
+    setTimeout(() => { n.style.animation = 'slideIn 0.3s ease reverse'; setTimeout(() => n.remove(), 300); }, 3000);
   }
 
   const renderTable = () => {
     tbody.innerHTML = "";
-    activeYearSpan.textContent = currentYear;
-    
     months.forEach((month, idx) => {
       const row = document.createElement("tr");
       const saved = waterData[idx] || {};
       
+      const perCubicValue = (saved.perCubic !== undefined && saved.perCubic !== null) 
+                            ? saved.perCubic.toString() 
+                            : '';
+
       row.innerHTML = `
         <td><strong>${month}</strong></td>
         <td contenteditable="true">${saved.location || 'HPN, NSJA'}</td>
-        <td contenteditable="true">${saved.perCubic || ''}</td>
+        <td contenteditable="true" class="per-cubic-cell">${perCubicValue}</td>
         <td contenteditable="true">${saved.totalCubic || ''}</td>
         <td class="amount">${saved.amount || ''}</td>
       `;
       row.dataset.monthIndex = idx;
       tbody.appendChild(row);
     });
-    
     computeTotals();
     updateChart();
   };
 
-  tbody.addEventListener("input", e => {
-    const row = e.target.closest("tr");
-    const monthIndex = parseInt(row.dataset.monthIndex);
-    const cells = row.children;
-    
-    const data = {
-      location: cells[1].innerText.trim(),
-      perCubic: cells[2].innerText.trim(),
-      totalCubic: cells[3].innerText.trim(),
-      amount: cells[4].innerText.trim()
-    };
-    
-    waterData[monthIndex] = data;
-    computeTotals();
-    updateChart();
-  });
-
   const computeTotals = () => {
-    let totalCubic = 0, totalAmount = 0;
-    let validMonths = 0;
+    let totalCubic = 0, totalAmount = 0, validMonths = 0;
     
     tbody.querySelectorAll("tr").forEach(row => {
         const cells = row.children;
         const perCubicText = cells[2].innerText.trim();
-        const totalCubicText = cells[3].innerText.trim();
-
-        const perCubic = parseFloat(perCubicText) || 0;
-        const cubic = parseFloat(totalCubicText) || 0;
+        const cubicText = cells[3].innerText.trim();
         
-        // Calculate the amount using the full precision of perCubic
+        const perCubic = perCubicText === '' ? 0 : parseFloat(perCubicText);
+        const cubic = cubicText === '' ? 0 : parseFloat(cubicText);
+        
         const amount = cubic * perCubic;
-        
-        // Update the Amount column - we keep 2 decimals for currency display 
-        // but the calculation used the full 6 decimals from above.
-        cells[4].innerText = amount ? amount.toFixed(2) : '';
+        cells[4].innerText = amount > 0 ? amount.toFixed(2) : '';
         
         totalCubic += cubic;
         totalAmount += amount;
         if (cubic > 0) validMonths++;
     });
     
-    // Update Footers and Summaries
     document.getElementById("totalCubic").innerText = totalCubic.toFixed(2);
     document.getElementById("totalAmount").innerText = totalAmount.toFixed(2);
-    
     document.getElementById("summaryTotalCubic").innerText = totalCubic.toFixed(2);
     document.getElementById("summaryTotalAmount").innerText = '₱' + totalAmount.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById("summaryAvgCubic").innerText = validMonths > 0 ? (totalCubic / validMonths).toFixed(2) : '0';
     document.getElementById("summaryAvgAmount").innerText = validMonths > 0 ? '₱' + (totalAmount / validMonths).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '₱0';
-};
+  };
 
-tbody.addEventListener("keydown", e => {
-    if (e.target.getAttribute("contenteditable") === "true") {
-        // Find if this is the 'Per Cubic' column (index 2)
-        const cellIndex = Array.from(e.target.parentNode.children).indexOf(e.target);
-        if (cellIndex === 2) {
-            // Allow backspace, delete, arrows, etc.
-            if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) return;
-
-            const currentText = e.target.innerText;
-            if (currentText.includes('.')) {
-                const parts = currentText.split('.');
-                // If there are already 6 digits after the decimal, prevent more typing
-                if (parts[1].length >= 6 && e.key.match(/[0-9]/)) {
-                    e.preventDefault();
-                }
-            }
+  tbody.addEventListener("keydown", e => {
+    if (e.target.classList.contains("per-cubic-cell")) {
+        if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) return;
+        if (!e.key.match(/[0-9.]/)) {
+            e.preventDefault();
+            return;
+        }
+        const text = e.target.innerText;
+        if (e.key === '.' && text.includes('.')) {
+            e.preventDefault();
+            return;
+        }
+        if (text.includes('.') && text.split('.')[1].length >= 6 && e.key.match(/[0-9]/)) {
+            e.preventDefault();
         }
     }
-});
+  });
+
+  tbody.addEventListener("input", e => {
+    computeTotals();
+    updateChart();
+  });
 
   const updateChart = () => {
-    const cubicData = [];
-    const amountData = [];
-    
+    const cubicData = [], amountData = [];
     tbody.querySelectorAll("tr").forEach(row => {
       cubicData.push(parseFloat(row.cells[3].innerText) || 0);
       amountData.push(parseFloat(row.cells[4].innerText) || 0);
     });
-
     if (chart) {
       chart.data.datasets[0].data = cubicData;
       chart.data.datasets[1].data = amountData;
@@ -687,181 +315,94 @@ tbody.addEventListener("keydown", e => {
         data: {
           labels: monthLabels,
           datasets: [
-            {
-              label: 'm³ Consumption',
-              data: cubicData,
-              backgroundColor: 'rgba(59, 130, 246, 0.8)',
-              borderColor: 'rgba(59, 130, 246, 1)',
-              borderWidth: 1,
-              yAxisID: 'y'
-            },
-            {
-              label: 'Amount (PHP)',
-              data: amountData,
-              backgroundColor: 'rgba(239, 68, 68, 0.8)',
-              borderColor: 'rgba(239, 68, 68, 1)',
-              borderWidth: 1,
-              yAxisID: 'y1',
-              type: 'line'
-            }
+            { label: 'm³ Consumption', data: cubicData, backgroundColor: 'rgba(59, 130, 246, 0.8)', yAxisID: 'y' },
+            { label: 'Amount (PHP)', data: amountData, borderColor: 'rgba(239, 68, 68, 1)', type: 'line', yAxisID: 'y1' }
           ]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          plugins: {
-            title: {
-              display: true,
-              text: 'Monthly Water Consumption & Cost',
-              font: {
-                size: 16,
-                weight: 'bold'
-              }
-            },
-            legend: {
-              display: true,
-              position: 'top'
-            }
-          },
-          scales: {
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: {
-                display: true,
-                text: 'Cubic Meters (m³)'
-              }
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: {
-                display: true,
-                text: 'Amount (PHP)'
-              },
-              grid: {
-                drawOnChartArea: false,
-              }
-            }
-          }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { position: 'left' }, y1: { position: 'right', grid: { drawOnChartArea: false } } } }
       });
     }
   };
 
-  document.getElementById('chartToggle').addEventListener('click', function() {
-    const content = document.getElementById('chartContent');
-    const arrow = document.getElementById('chartArrow');
-    
-    content.classList.toggle('open');
-    arrow.classList.toggle('open');
-    
-    if (content.classList.contains('open') && chart) {
-      setTimeout(() => chart.resize(), 300);
-    }
+  document.getElementById('chartToggle').addEventListener('click', () => {
+    document.getElementById('chartContent').classList.toggle('open');
+    document.getElementById('chartArrow').innerText = document.getElementById('chartContent').classList.contains('open') ? '▲' : '▼';
+    if (chart) setTimeout(() => chart.resize(), 300);
   });
 
-  // ============= SAVE ALL DATA TO SUPABASE =============
   saveBtn.addEventListener('click', async () => {
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<span>⏳</span><span>Saving...</span>';
-    
     try {
       const dataToSave = [];
-      
       tbody.querySelectorAll("tr").forEach((row, idx) => {
         const cells = row.children;
+        const perCubicText = cells[2].innerText.trim();
+        
         dataToSave.push({
-          year: currentYear,
-          month: months[idx],
+          year: currentYear, 
+          month: months[idx], 
           month_index: idx,
           location: cells[1].innerText.trim(),
-          per_cubic: parseFloat(cells[2].innerText) || null,
+          per_cubic: perCubicText === "" ? null : perCubicText,
           total_cubic: parseFloat(cells[3].innerText) || null,
           amount: parseFloat(cells[4].innerText) || null,
           updated_at: new Date().toISOString()
         });
       });
-      
-      const { error } = await supabase
-        .from('water_bills')
-        .upsert(dataToSave, {
-          onConflict: 'year,month_index'
-        });
-      
-      if (error) {
-        throw error;
-      }
-      
-      showNotification('✅ All water bill data saved successfully!', 'success');
-    } catch (err) {
-      console.error('Error saving data:', err);
-      showNotification('❌ Error saving data: ' + err.message, 'error');
-    } finally {
-      saveBtn.disabled = false;
-      saveBtn.innerHTML = '<span>💾</span><span>Save All Data</span>';
+      const { error } = await supabase.from('water_bills').upsert(dataToSave, { onConflict: 'year,month_index' });
+      if (error) throw error;
+      showNotification('✅ Saved successfully!');
+    } catch (err) { 
+      showNotification('❌ Error: ' + err.message, 'error'); 
+    } finally { 
+      saveBtn.disabled = false; 
+      saveBtn.innerHTML = '<span>💾</span><span>Save All Data</span>'; 
     }
   });
 
-  // ============= PRINT FUNCTIONALITY =============
-  printBtn.addEventListener('click', () => {
-    window.print();
-  });
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
 
-  // ============= LOAD DATA FROM SUPABASE =============
-  async function loadDataFromSupabase(year) {
-    try {
-      const { data, error } = await supabase
-        .from('water_bills')
-        .select('*')
-        .eq('year', year)
-        .order('month_index');
-      
-      if (error) {
-        console.error('Error loading data:', error);
-        return;
-      }
-      
-      if (data) {
-        waterData = new Array(12).fill(null);
+  async function loadData(year) {
+    const { data, error } = await supabase.from('water_bills').select('*').eq('year', year).order('month_index');
+    if (error) {
+      console.error('Error loading data:', error);
+      showNotification('⚠️ Error loading data: ' + error.message, 'error');
+    }
+    if (data) {
+      waterData = new Array(12).fill(null);
+      data.forEach(r => { 
+        // Handle per_cubic as string to preserve decimals
+        let perCubicValue = '';
+        if (r.per_cubic !== null && r.per_cubic !== undefined) {
+          // Check if it's already a string or convert it
+          perCubicValue = typeof r.per_cubic === 'string' ? r.per_cubic : r.per_cubic.toString();
+        }
         
-        data.forEach(record => {
-          waterData[record.month_index] = {
-            location: record.location || '',
-            perCubic: record.per_cubic || '',
-            totalCubic: record.total_cubic || '',
-            amount: record.amount || ''
-          };
-        });
-        
-        renderTable();
-      }
-    } catch (err) {
-      console.error('Exception loading data:', err);
+        waterData[r.month_index] = { 
+          location: r.location, 
+          perCubic: perCubicValue,
+          totalCubic: r.total_cubic, 
+          amount: r.amount 
+        }; 
+      });
+      renderTable();
     }
   }
 
-  window.addEventListener("message", event => {
-    if(event.data.year){
-      currentYear = event.data.year;
-      loadDataFromSupabase(currentYear);
-    }
-  });
+  // Check database schema on load
+  async function checkDatabaseSchema() {
+    console.log('💡 IMPORTANT: Make sure your Supabase "per_cubic" column is set to TEXT type, not NUMERIC!');
+    console.log('To fix this in Supabase:');
+    console.log('1. Go to Table Editor → water_bills table');
+    console.log('2. Click on "per_cubic" column');
+    console.log('3. Change type from "numeric" to "text"');
+    console.log('4. Save changes');
+  }
 
-  // Initialize - render table first, then try to load from Supabase
+  checkDatabaseSchema();
   renderTable();
-  
-  if (supabase) {
-    loadDataFromSupabase(currentYear).catch(err => {
-      console.log('Supabase not available, using local data only');
-    });
-  }
+  loadData(currentYear);
 })();
 </script>
 </body>
