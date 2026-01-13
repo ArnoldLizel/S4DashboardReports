@@ -68,6 +68,7 @@
     .btn-danger { background-color: #ef4444; color: white; }
     .btn-info { background-color: #06b6d4; color: white; }
     .btn-warning { background-color: #f59e0b; color: white; }
+    .btn-edit { background-color: #8b5cf6; color: white; font-size: 0.75rem; padding: 0.4rem 0.8rem; }
     .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 
     .form-control {
@@ -107,9 +108,88 @@
     .alert-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     .alert-info { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
     
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s;
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 0.5rem;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: slideDown 0.3s;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+    
+    .close {
+        color: white;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .close:hover {
+        opacity: 0.8;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideDown {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
     @media (max-width: 768px) {
         .form-grid { grid-template-columns: 1fr; }
         .btn { width: 100%; justify-content: center; }
+        .modal-content { width: 95%; margin: 10% auto; }
     }
     </style>
 </head>
@@ -175,7 +255,7 @@
             <option value="NSPAO">NSPAO</option>
             <option value="NPAO">NPAO</option>
             <option value="ONSSSM">ONSSSM</option>
-            <option value="TNJA">TNJA</option>
+            <option value="NJAG">NJAG</option>
             <option value="TNCH">TNCH</option>
             <option value="TCSN">TCSN</option>
             <option value="TCNN">TCNN</option>
@@ -239,10 +319,58 @@
                         <th>Chassis</th>
                         <th>Remarks</th>
                         <th>Reg. Date</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="vehicleTable"></tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="margin: 0; font-size: 1.25rem;">✏️ Edit Vehicle Record</h2>
+            <button class="close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editForm" class="form-grid">
+                <input type="hidden" id="edit_id">
+                <div>
+                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Office</label>
+                    <input id="edit_office" class="form-control" required>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Vehicle Type</label>
+                    <input id="edit_vehicle_type" class="form-control" required>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Plate Number</label>
+                    <input id="edit_plate_number" class="form-control">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Engine Number</label>
+                    <input id="edit_engine_number" class="form-control">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Chassis Number</label>
+                    <input id="edit_chassis_number" class="form-control">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Remarks</label>
+                    <input id="edit_remarks" class="form-control">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Registration Date</label>
+                    <input id="edit_date_of_registration" class="form-control" type="date">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-dark" onclick="closeEditModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
         </div>
     </div>
 </div>
@@ -323,7 +451,7 @@
 
     async function refreshData() {
         const tbody = document.getElementById("vehicleTable");
-        tbody.innerHTML = "<tr><td colspan='9' style='padding:2rem;'>Fetching Data...</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='10' style='padding:2rem;'>Fetching Data...</td></tr>";
 
         try {
             const result = await db
@@ -338,7 +466,7 @@
             tbody.innerHTML = "";
 
             if (!data || data.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='9' style='padding:2rem;'>No records found for " + activeYear + ".</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='10' style='padding:2rem;'>No records found for " + activeYear + ".</td></tr>";
                 updateStats([]);
                 document.getElementById('dbStatus').textContent = '✅ Connected';
                 document.getElementById('dbStatus').style.color = '#10b981';
@@ -356,13 +484,14 @@
                     '<td>' + (v.engine_number || '') + '</td>' +
                     '<td>' + (v.chassis_number || '') + '</td>' +
                     '<td>' + (v.remarks || '') + '</td>' +
-                    '<td>' + (v.date_of_registration || '') + '</td>';
+                    '<td>' + (v.date_of_registration || '') + '</td>' +
+                    '<td><button class="btn btn-edit" onclick="openEditModal(' + v.id + ')">✏️ Edit</button></td>';
             });
             updateStats(data);
             document.getElementById('dbStatus').textContent = '✅ Connected';
             document.getElementById('dbStatus').style.color = '#10b981';
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="9" style="color:red; padding:2rem;">Error: ' + err.message + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="color:red; padding:2rem;">Error: ' + err.message + '</td></tr>';
             showAlert('Error loading data: ' + err.message, 'error');
             document.getElementById('dbStatus').textContent = '❌ Error';
             document.getElementById('dbStatus').style.color = '#ef4444';
@@ -426,6 +555,66 @@
                 showAlert('❌ Error deleting records: ' + err.message, 'error');
                 console.error('Delete error:', err);
             }
+        }
+    }
+
+    // Edit Modal Functions
+    async function openEditModal(id) {
+        try {
+            const result = await db.from('vehicles').select('*').eq('id', id).single();
+            if (result.error) throw result.error;
+            
+            const vehicle = result.data;
+            document.getElementById('edit_id').value = vehicle.id;
+            document.getElementById('edit_office').value = vehicle.office || '';
+            document.getElementById('edit_vehicle_type').value = vehicle.vehicle_type || '';
+            document.getElementById('edit_plate_number').value = vehicle.plate_number || '';
+            document.getElementById('edit_engine_number').value = vehicle.engine_number || '';
+            document.getElementById('edit_chassis_number').value = vehicle.chassis_number || '';
+            document.getElementById('edit_remarks').value = vehicle.remarks || '';
+            document.getElementById('edit_date_of_registration').value = vehicle.date_of_registration || '';
+            
+            document.getElementById('editModal').style.display = 'block';
+        } catch (err) {
+            showAlert('❌ Error loading vehicle data: ' + err.message, 'error');
+            console.error('Load error:', err);
+        }
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+        document.getElementById('editForm').reset();
+    }
+
+    async function saveEdit() {
+        const id = parseInt(document.getElementById('edit_id').value);
+        const payload = {
+            office: document.getElementById('edit_office').value.toUpperCase(),
+            vehicle_type: document.getElementById('edit_vehicle_type').value,
+            plate_number: document.getElementById('edit_plate_number').value,
+            engine_number: document.getElementById('edit_engine_number').value,
+            chassis_number: document.getElementById('edit_chassis_number').value,
+            remarks: document.getElementById('edit_remarks').value,
+            date_of_registration: document.getElementById('edit_date_of_registration').value || null
+        };
+
+        try {
+            const result = await db.from('vehicles').update(payload).eq('id', id).select();
+            if (result.error) throw result.error;
+            showAlert('✅ Vehicle updated successfully!', 'success');
+            closeEditModal();
+            refreshData();
+        } catch (err) {
+            showAlert('❌ Error updating vehicle: ' + err.message, 'error');
+            console.error('Update error:', err);
+        }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target === modal) {
+            closeEditModal();
         }
     }
 
@@ -519,5 +708,4 @@
     refreshData();
 </script>
 </body>
-
 </html>
