@@ -3,119 +3,553 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>PN Comms Inventory - Tactical Dashboard</title>
+    <title>PN Comms Inventory - Modern Dashboard</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-    body {
-        background-image: url('image/bg2.jpg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed; /* Keeps background still while scrolling */
-        background-repeat: no-repeat;
-        min-height: 100vh;
-    }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    /* Optional: If the background makes text hard to read, 
-       this adds a subtle white overlay to the container */
-    .container {
-        background-color: rgba(255, 255, 255, 0.9); 
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-</style>
     <style>
-        /* [YOUR UNIFIED STYLES INJECTED HERE] */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; }
-        .container { max-width: 1600px; margin: 0 auto; padding: 1.5rem; }
         
-        .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; position: relative; }
-        .card-header { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem 0.5rem 0 0; margin: -1.5rem -1.5rem 1.5rem -1.5rem; font-weight: 600; border-left: 4px solid #f1c232; display: flex; justify-content: space-between; align-items: center; }
+        body { 
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            line-height: 1.6;
+        }
 
-        .table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-        .table thead { background: #0b1a3a; color: white; }
-        .table th { padding: 0.75rem; text-align: center; border-bottom: 2px solid #f1c232; text-transform: uppercase; font-size: 0.75rem; }
-        .table td { padding: 0.6rem; border-bottom: 1px solid #e5e7eb; text-align: center; }
-        .table tr:hover { background-color: #f9fafb; }
-        
-        .sub-header { background: #f8fafc !important; font-weight: bold; text-align: left !important; color: #0b1a3a; }
-        .item-name { text-align: left !important; font-weight: 600; width: 40%; }
+        .container { 
+            max-width: 1900px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
 
-        /* Tactical Dashboard Specifics */
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .qty-input { width: 60px; padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center; font-weight: bold; }
-        .qty-input:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .top-bar {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
 
-        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; font-size: 0.875rem; font-weight: 500; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s; color: white; text-decoration: none; }
-        .btn-primary { background-color: #0b1a3a; }
-        .btn-success { background-color: #10b981; }
-        .btn-secondary { background-color: #4b5563; }
-        
-        .sync-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: bold; color: #4b5563; }
-        .dot { height: 10px; width: 10px; border-radius: 50%; background: #9ca3af; }
-        .dot.active { background: #10b981; box-shadow: 0 0 8px #10b981; }
-        .dot.pulse { background: #f59e0b; animation: pulse-animation 1s infinite; }
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
 
-        @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .title-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #60a5fa;
+        }
 
-        @media print { .no-print { display: none !important; } .dashboard-grid { display: block; } .card { box-shadow: none; border: 1px solid #ddd; } }
+        .title-text h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .title-text p {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sync-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.625rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sync-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+
+        .sync-dot.active {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .sync-dot.pulse {
+            background: #f59e0b;
+            animation: pulse-animation 1s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .sync-text {
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid;
+            transition: all 0.3s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-box.blue { border-color: #3b82f6; }
+        .stat-box.green { border-color: #10b981; }
+        .stat-box.orange { border-color: #f59e0b; }
+        .stat-box.purple { border-color: #8b5cf6; }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .controls-panel {
+            background: white;
+            padding: 1.25rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .control-label {
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #475569;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .office-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .office-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.125rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 400px);
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .panel-title i {
+            font-size: 1.25rem;
+            color: #60a5fa;
+        }
+
+        .panel-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .panel-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .panel-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .panel-body::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .panel-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .category-section {
+            margin-bottom: 2rem;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: 0.875rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .category-header i {
+            color: #60a5fa;
+        }
+
+        .item-grid {
+            display: grid;
+            gap: 0.625rem;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 0.75rem;
+            align-items: center;
+            background: #f8fafc;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .item-row:hover {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+
+        .item-value {
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #475569;
+        }
+
+        .qty-input {
+            width: 100%;
+            padding: 0.625rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #1e293b;
+            transition: all 0.3s;
+        }
+
+        .qty-input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: scale(1.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .empty-state h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 1400px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .item-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .item-value,
+            .qty-input {
+                font-size: 1rem;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            .main-grid { display: block; }
+            .panel { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; margin-bottom: 1rem; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card no-print">
-        <div class="card-header">
-            <span><i class="fas fa-satellite-dish"></i> COMMUNICATIONS INVENTORY CONTROL</span>
-            <div class="sync-indicator">
-                <div id="syncDot" class="dot"></div>
-                <span id="syncStatus">SYSTEM READY</span>
+    <!-- Top Bar -->
+    <div class="top-bar no-print">
+        <div class="title-section">
+            <div class="title-icon">
+                <i class="fas fa-satellite-dish"></i>
+            </div>
+            <div class="title-text">
+                <h1>Communications Inventory Control</h1>
+                <p>Philippine Navy Logistics - Real-Time Management System</p>
             </div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-            <div style="flex: 1; min-width: 300px;">
-                <label class="form-label" style="font-weight: bold;">Select Office/Unit:</label>
-                <select id="officeSelect" class="form-select" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #d1d5db;">
-                    <option value="">-- LOADING OFFICES --</option>
-                </select>
+        <div class="top-actions">
+            <div class="sync-badge">
+                <div id="syncDot" class="sync-dot"></div>
+                <span id="syncStatus" class="sync-text">READY</span>
             </div>
-            <div class="btn-group">
-                <button class="btn btn-success" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> DOWNLOAD MASTER XLSX</button>
-                <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> PRINT REPORT</button>
-            </div>
+            <button class="btn btn-success" onclick="exportToExcel()">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+            <button class="btn btn-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
         </div>
     </div>
 
-    <div class="dashboard-grid">
-        <div class="card">
-            <div class="card-header">
-                <span><i class="fas fa-calculator"></i> GLOBAL COMPUTATION (ALL OFFICES)</span>
+    <!-- Stats Bar -->
+    <div class="stats-bar no-print">
+        <div class="stat-box blue">
+            <div class="stat-label"><i class="fas fa-database"></i> Total TE 2019</div>
+            <div class="stat-value" id="globalTE2019">0</div>
+        </div>
+        <div class="stat-box green">
+            <div class="stat-label"><i class="fas fa-boxes"></i> Total On Hand</div>
+            <div class="stat-value" id="globalOnHand">0</div>
+        </div>
+        <div class="stat-box orange">
+            <div class="stat-label"><i class="fas fa-chart-line"></i> Proposed 2025</div>
+            <div class="stat-value" id="globalProposed">0</div>
+        </div>
+        <div class="stat-box purple">
+            <div class="stat-label"><i class="fas fa-building"></i> Total Items</div>
+            <div class="stat-value" id="totalItems">0</div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-panel no-print">
+        <div class="control-group">
+            <label class="control-label"><i class="fas fa-building"></i> Select Office/Unit</label>
+            <select id="officeSelect" class="office-select">
+                <option value="">-- LOADING OFFICES --</option>
+            </select>
+        </div>
+        <div class="search-box">
+            <label class="control-label"><i class="fas fa-search"></i> Search Items</label>
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search item descriptions...">
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+        <!-- Global Summary -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-globe"></i>
+                    <span>Global Summary</span>
+                </div>
+                <div class="panel-badge" id="globalItemCount">0 Items</div>
             </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ITEM DESCRIPTION</th>
-                            <th>Σ TE 2019</th>
-                            <th>Σ ON HAND</th>
-                            <th>Σ PROP 2025</th>
-                        </tr>
-                    </thead>
-                    <tbody id="globalTableBody"></tbody>
-                </table>
+            <div class="panel-body" id="globalContent">
+                <div class="empty-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <h3>Loading Data...</h3>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <span id="editorTitle"><i class="fas fa-edit"></i> OFFICE EDITOR</span>
+        <!-- Office Editor -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-edit"></i>
+                    <span id="editorTitle">Office Editor</span>
+                </div>
+                <div class="panel-badge" id="editorItemCount">Select Office</div>
             </div>
-            <div id="editorContent" class="table-responsive">
-                <p style="text-align: center; padding: 2rem; color: #6b7280;">Please select an office to start editing records.</p>
+            <div class="panel-body" id="editorContent">
+                <div class="empty-state">
+                    <i class="fas fa-hand-pointer"></i>
+                    <h3>Select an Office</h3>
+                    <p>Choose an office from the dropdown above</p>
+                </div>
             </div>
         </div>
     </div>
@@ -130,6 +564,7 @@
     let ALL_DATA = [];
     let currentOfficeId = null;
     let saveTimeout = null;
+    let searchTerm = '';
 
     async function init() {
         const { data: items } = await supabaseClient.from("office_items").select("*").order("id");
@@ -138,10 +573,22 @@
         MASTER_ITEMS = items || [];
         
         const select = document.getElementById("officeSelect");
-        select.innerHTML = '<option value="">-- Select Office --</option>';
+        select.innerHTML = '<option value="">-- Select an Office/Unit --</option>';
         offices?.forEach(o => select.add(new Option(o.office_name, o.id)));
 
-        select.addEventListener("change", (e) => loadOffice(e.target.value, e.target.options[e.target.selectedIndex].text));
+        select.addEventListener("change", (e) => {
+            const name = e.target.options[e.target.selectedIndex].text;
+            loadOffice(e.target.value, name);
+        });
+
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            searchTerm = e.target.value.toLowerCase();
+            renderGlobalContent();
+            if(currentOfficeId) {
+                const name = document.getElementById("officeSelect").selectedOptions[0].text;
+                loadOffice(currentOfficeId, name);
+            }
+        });
         
         await fetchAllData();
     }
@@ -149,63 +596,168 @@
     async function fetchAllData() {
         const { data } = await supabaseClient.from("office_communications").select("*");
         ALL_DATA = data || [];
-        renderGlobalTable();
+        renderGlobalContent();
+        updateGlobalStats();
     }
 
-    function renderGlobalTable() {
-        const tbody = document.getElementById("globalTableBody");
-        tbody.innerHTML = "";
-        MASTER_ITEMS.forEach(it => {
-            const tr = document.createElement("tr");
-            if(it.colspan) {
-                tr.className = "sub-header";
-                tr.innerHTML = `<td colspan="4">${it.item_name}</td>`;
-            } else {
-                const itemRecords = ALL_DATA.filter(d => d.item_id === it.id);
-                const sum19 = itemRecords.reduce((a, b) => a + (b.te_2019 || 0), 0);
-                const sumOH = itemRecords.reduce((a, b) => a + (b.onhand || 0), 0);
-                const sum25 = itemRecords.reduce((a, b) => a + (b.proposed_te_2025 || 0), 0);
-                
-                tr.innerHTML = `
-                    <td class="item-name">${it.item_name}</td>
-                    <td>${sum19}</td>
-                    <td>${sumOH}</td>
-                    <td>${sum25}</td>
-                `;
+    function updateGlobalStats() {
+        const totalTE = ALL_DATA.reduce((sum, item) => sum + (item.te_2019 || 0), 0);
+        const totalOH = ALL_DATA.reduce((sum, item) => sum + (item.onhand || 0), 0);
+        const totalProp = ALL_DATA.reduce((sum, item) => sum + (item.proposed_te_2025 || 0), 0);
+        const itemCount = MASTER_ITEMS.filter(it => !it.colspan).length;
+
+        document.getElementById('globalTE2019').textContent = totalTE.toLocaleString();
+        document.getElementById('globalOnHand').textContent = totalOH.toLocaleString();
+        document.getElementById('globalProposed').textContent = totalProp.toLocaleString();
+        document.getElementById('totalItems').textContent = itemCount;
+    }
+
+    function renderGlobalContent() {
+        const container = document.getElementById("globalContent");
+        const categories = {};
+        
+        MASTER_ITEMS.forEach(item => {
+            if(item.colspan) {
+                categories[item.item_name] = [];
             }
-            tbody.appendChild(tr);
         });
+
+        let currentCategory = null;
+        MASTER_ITEMS.forEach(item => {
+            if(item.colspan) {
+                currentCategory = item.item_name;
+            } else if(currentCategory) {
+                if(!searchTerm || item.item_name.toLowerCase().includes(searchTerm)) {
+                    categories[currentCategory].push(item);
+                }
+            }
+        });
+
+        let html = '';
+        let visibleCount = 0;
+        
+        Object.entries(categories).forEach(([catName, items]) => {
+            if(items.length > 0) {
+                html += `
+                    <div class="category-section">
+                        <div class="category-header">
+                            <i class="fas fa-layer-group"></i>
+                            <span>${catName}</span>
+                        </div>
+                        <div class="item-grid">
+                `;
+                
+                items.forEach(it => {
+                    const itemRecords = ALL_DATA.filter(d => d.item_id === it.id);
+                    const sum19 = itemRecords.reduce((a, b) => a + (b.te_2019 || 0), 0);
+                    const sumOH = itemRecords.reduce((a, b) => a + (b.onhand || 0), 0);
+                    const sum25 = itemRecords.reduce((a, b) => a + (b.proposed_te_2025 || 0), 0);
+                    
+                    html += `
+                        <div class="item-row">
+                            <div class="item-name">${it.item_name}</div>
+                            <div class="item-value">${sum19.toLocaleString()}</div>
+                            <div class="item-value">${sumOH.toLocaleString()}</div>
+                            <div class="item-value">${sum25.toLocaleString()}</div>
+                        </div>
+                    `;
+                    visibleCount++;
+                });
+                
+                html += `</div></div>`;
+            }
+        });
+
+        if(visibleCount === 0) {
+            html = `
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>No Results Found</h3>
+                    <p>Try a different search term</p>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+        document.getElementById('globalItemCount').textContent = `${visibleCount} Items`;
     }
 
     async function loadOffice(id, name) {
-        if(!id) return;
+        if(!id) {
+            document.getElementById("editorContent").innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-hand-pointer"></i>
+                    <h3>Select an Office</h3>
+                    <p>Choose an office from the dropdown above</p>
+                </div>
+            `;
+            document.getElementById("editorTitle").textContent = "Office Editor";
+            document.getElementById("editorItemCount").textContent = "Select Office";
+            return;
+        }
+        
         currentOfficeId = id;
-        document.getElementById("editorTitle").innerText = `EDITING: ${name}`;
+        document.getElementById("editorTitle").textContent = name;
         
         const { data } = await supabaseClient.from("office_communications").select("*").eq("office_id", id);
         const valMap = {};
         data?.forEach(r => valMap[r.item_id] = r);
 
-        const container = document.getElementById("editorContent");
-        container.innerHTML = `
-            <table class="table">
-                <thead><tr><th>ITEM</th><th>TE '19</th><th>OH</th><th>PROP '25</th></tr></thead>
-                <tbody>${MASTER_ITEMS.map(it => {
-                    if(it.colspan) return `<tr class="sub-header"><td colspan="4">${it.item_name}</td></tr>`;
-                    const v = valMap[it.id] || {te_2019:0, onhand:0, proposed_te_2025:0};
-                    return `<tr>
-                        <td class="item-name">${it.item_name}</td>
-                        <td><input type="number" class="qty-input" data-id="${it.id}" data-f="te_2019" value="${v.te_2019}"></td>
-                        <td><input type="number" class="qty-input" data-id="${it.id}" data-f="onhand" value="${v.onhand}"></td>
-                        <td><input type="number" class="qty-input" data-id="${it.id}" data-f="proposed_te_2025" value="${v.proposed_te_2025}"></td>
-                    </tr>`;
-                }).join('')}</tbody>
-            </table>
-        `;
+        const categories = {};
+        MASTER_ITEMS.forEach(item => {
+            if(item.colspan) {
+                categories[item.item_name] = [];
+            }
+        });
 
-        container.querySelectorAll(".qty-input").forEach(input => {
+        let currentCategory = null;
+        MASTER_ITEMS.forEach(item => {
+            if(item.colspan) {
+                currentCategory = item.item_name;
+            } else if(currentCategory) {
+                if(!searchTerm || item.item_name.toLowerCase().includes(searchTerm)) {
+                    categories[currentCategory].push(item);
+                }
+            }
+        });
+
+        let html = '';
+        let visibleCount = 0;
+        
+        Object.entries(categories).forEach(([catName, items]) => {
+            if(items.length > 0) {
+                html += `
+                    <div class="category-section">
+                        <div class="category-header">
+                            <i class="fas fa-layer-group"></i>
+                            <span>${catName}</span>
+                        </div>
+                        <div class="item-grid">
+                `;
+                
+                items.forEach(it => {
+                    const v = valMap[it.id] || {te_2019:0, onhand:0, proposed_te_2025:0};
+                    html += `
+                        <div class="item-row">
+                            <div class="item-name">${it.item_name}</div>
+                            <input type="number" class="qty-input" data-id="${it.id}" data-f="te_2019" value="${v.te_2019}" min="0">
+                            <input type="number" class="qty-input" data-id="${it.id}" data-f="onhand" value="${v.onhand}" min="0">
+                            <input type="number" class="qty-input" data-id="${it.id}" data-f="proposed_te_2025" value="${v.proposed_te_2025}" min="0">
+                        </div>
+                    `;
+                    visibleCount++;
+                });
+                
+                html += `</div></div>`;
+            }
+        });
+
+        document.getElementById("editorContent").innerHTML = html;
+        document.getElementById("editorItemCount").textContent = `${visibleCount} Items`;
+
+        document.querySelectorAll(".qty-input").forEach(input => {
             input.addEventListener("input", () => {
-                setSyncState('pulse', 'PENDING SYNC...');
+                setSyncState('pulse', 'SAVING...');
                 clearTimeout(saveTimeout);
                 saveTimeout = setTimeout(saveOfficeData, 1500);
             });
@@ -214,26 +766,37 @@
 
     async function saveOfficeData() {
         if(!currentOfficeId) return;
+        
         const rows = [];
         document.querySelectorAll(".qty-input").forEach(i => {
             const id = i.dataset.id;
             const field = i.dataset.f;
             let existing = rows.find(r => r.item_id == id);
             if(!existing) {
-                existing = { office_id: currentOfficeId, item_id: id, te_2019:0, onhand:0, proposed_te_2025:0 };
+                existing = { 
+                    office_id: currentOfficeId, 
+                    item_id: id, 
+                    te_2019: 0, 
+                    onhand: 0, 
+                    proposed_te_2025: 0 
+                };
                 rows.push(existing);
             }
             existing[field] = parseInt(i.value) || 0;
         });
 
         await supabaseClient.from("office_communications").upsert(rows, { onConflict: 'office_id,item_id' });
-        setSyncState('active', 'SYNCED TO CLOUD');
+        setSyncState('active', 'SYNCED ✓');
         await fetchAllData();
+        
+        setTimeout(() => {
+            setSyncState('', 'READY');
+        }, 2000);
     }
 
     function setSyncState(state, text) {
         const dot = document.getElementById("syncDot");
-        dot.className = "dot " + state;
+        dot.className = "sync-dot " + state;
         document.getElementById("syncStatus").innerText = text;
     }
 
