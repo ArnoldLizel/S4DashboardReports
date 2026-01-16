@@ -1,979 +1,398 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Quartermaster Inventory Report</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Quartermaster | Complete Summary System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ORIGINAL DESIGN STYLES */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          padding: 1.5rem;
+        }
+        .app-container { max-width: 1600px; margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; align-items: start; }
+        .sidebar { background: white; border-radius: 1rem; box-shadow: 0 20px 60px rgba(0,0,0,0.15); padding: 2rem; position: sticky; top: 1.5rem; }
+        .logo-section { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 2px solid #f3f4f6; }
+        .logo-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 2rem; }
+        
+        .section { margin-bottom: 2rem; }
+        .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; font-weight: 700; margin-bottom: 1rem; }
+        .form-select { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.95rem; background: white; cursor: pointer; }
+        
+        /* SEARCH BAR */
+        .search-container { padding: 0 2rem; margin: 1.5rem 0; position: relative; }
+        .search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; border: 2px solid #667eea; border-radius: 0.5rem; font-size: 1rem; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .search-icon { position: absolute; left: 3rem; top: 50%; transform: translateY(-50%); color: #667eea; }
 
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { padding: 1rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; }
-  
-  .container { max-width: 1400px; margin: 0 auto; }
-  .page-header { text-align: center; margin-bottom: 2rem; }
-  .page-header h1 { color: #0b1a3a; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; }
-  .page-header p { color: #6b7280; font-size: 0.95rem; }
+        /* BUTTONS */
+        .action-buttons { display: grid; gap: 0.75rem; }
+        .btn { padding: 0.75rem 1rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-outline { background: white; color: #667eea; border: 2px solid #667eea; }
+        .btn-manage { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
 
-  .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
-  .card-body { padding: 1.5rem; }
-  .card-footer { padding: 1rem 1.5rem; background: #f9fafb; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        /* TABLE AREA */
+        .main-content { background: white; border-radius: 1rem; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+        .content-header { padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .inventory-table-wrapper { padding: 2rem; max-height: calc(100vh - 280px); overflow-y: auto; }
+        .inventory-table { width: 100%; border-collapse: collapse; }
+        .inventory-table th { padding: 1rem; background: #f9fafb; text-align: center; font-size: 0.8rem; border-bottom: 2px solid #e5e7eb; position: sticky; top: 0; z-index: 10; }
+        .inventory-table td { padding: 0.8rem; border-bottom: 1px solid #f3f4f6; text-align: center; }
+        .category-row td { background: #667eea !important; color: white !important; text-align: left !important; font-weight: bold; }
+        .qty-input { width: 80px; padding: 0.4rem; text-align: center; border: 1px solid #ddd; border-radius: 4px; font-weight: bold; }
 
-  .office-selector { background: #f9fafb; padding: 1rem 1.5rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
-  .office-selector label { font-weight: 600; color: #374151; margin-right: 0.75rem; display: inline-block; margin-bottom: 0.5rem; }
-  .office-selector select { width: 100%; max-width: 400px; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
+        /* MODAL & SUMMARY */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 1rem; padding: 2rem; width: 95%; max-width: 1000px; max-height: 90vh; overflow-y: auto; }
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .summary-card { padding: 1.5rem; border-radius: 0.75rem; background: #f8fafc; border-bottom: 4px solid #10b981; text-align: center; }
 
-  .autosave-section { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 0.375rem; margin-bottom: 1rem; }
-  
-  .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 0.375rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
-  .btn-success { background: #10b981; color: white; }
-  .btn-success:hover { background: #059669; }
-  .btn-outline-primary { background: white; color: #2563eb; border: 1px solid #2563eb; }
-  .btn-outline-primary:hover { background: #2563eb; color: white; }
-  .btn-outline-danger { background: white; color: #dc2626; border: 1px solid #dc2626; }
-  .btn-outline-danger:hover { background: #dc2626; color: white; }
-  .d-flex { display: flex; }
-  .gap-2 { gap: 0.5rem; }
-  .mb-3 { margin-bottom: 1rem; }
+        /* MANAGE MODAL SPECIFICS */
+        .input-group { margin-bottom: 1rem; text-align: left; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; color: #64748b; }
+        .input-group input, .input-group select { width: 100%; padding: 0.7rem; border: 1px solid #e2e8f0; border-radius: 0.4rem; }
 
-  .table-responsive { overflow-x: auto; }
-  .table { width: 100%; border-collapse: collapse; }
-  .table th { text-align: center; background-color: #f8fafc; font-size: 0.85rem; color: #475569; padding: 1rem; border-bottom: 2px solid #e2e8f0; font-weight: 700; }
-  .table td { text-align: center; vertical-align: middle; padding: 0.75rem; border-bottom: 1px solid #e2e8f0; }
-  .table td.item-name { text-align: left; font-weight: 600; color: #1f2937; padding-left: 1rem; }
-  .table tbody tr:hover { background: #f8fafc; }
-  
-  .sub-header-row td { background: #f1f5f9 !important; font-weight: 700; color: #1e293b; text-align: left !important; border-left: 4px solid #0b1a3a; padding: 0.75rem 1rem !important; }
-
-  input.qty-input { width: 90px; padding: 0.5rem; text-align: center; border: 1px solid #cbd5e1; border-radius: 0.25rem; font-weight: 600; font-size: 0.95rem; }
-  input.qty-input:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-  .stat-card { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a5f 100%); color: white; padding: 1.25rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-  .stat-card .small { font-size: 0.8rem; opacity: 0.9; margin-bottom: 0.5rem; }
-  .stat-card .stat-value { font-size: 1.5rem; font-weight: 800; }
-
-  .loading-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(255,255,255,0.85); z-index: 9999; }
-  .loading-overlay.show { display: flex; }
-  .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0b1a3a; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-  .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 10000; }
-  .alert { padding: 1rem 1.5rem; border-radius: 0.375rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: 600; }
-  .alert-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
-  .alert-danger { background: #fee2e2; color: #991b1b; border-left: 4px solid #dc2626; }
-  
-  .text-center { text-align: center; }
-  .text-muted { color: #6b7280; }
-  .small { font-size: 0.875rem; }
-  .p-5 { padding: 3rem; }
-
-  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; }
-  .modal.show { display: flex; }
-  .modal-content { background: white; border-radius: 0.5rem; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-  .modal-header h2 { margin: 0; font-size: 1.5rem; color: #0b1a3a; }
-  .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280; }
-  .close-btn:hover { color: #0b1a3a; }
-  .form-group { margin-bottom: 1rem; }
-  .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151; }
-  .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
-  .form-group input:focus, .form-group select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-  .checkbox-group { display: flex; align-items: center; gap: 0.5rem; }
-  .checkbox-group input[type="checkbox"] { width: auto; }
-  .item-list { max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 0.375rem; }
-  .item-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; cursor: move; }
-  .item-row:last-child { border-bottom: none; }
-  .item-row:hover { background: #f9fafb; }
-  .item-row.header-item { background: #f1f5f9; font-weight: 700; border-left: 4px solid #0b1a3a; }
-  .item-row.dragging { opacity: 0.5; background: #dbeafe; }
-  .item-row.drag-over { border-top: 3px solid #2563eb; }
-  .drag-handle { cursor: grab; color: #9ca3af; margin-right: 0.75rem; }
-  .drag-handle:active { cursor: grabbing; }
-  .item-actions { display: flex; gap: 0.5rem; }
-  .btn-icon { padding: 0.4rem 0.6rem; border: none; border-radius: 0.25rem; cursor: pointer; transition: all 0.2s; }
-  .btn-edit { background: #dbeafe; color: #1e40af; }
-  .btn-edit:hover { background: #bfdbfe; }
-  .btn-delete { background: #fee2e2; color: #991b1b; }
-  .btn-delete:hover { background: #fecaca; }
-  .btn-secondary { background: #6b7280; color: white; }
-  .btn-secondary:hover { background: #4b5563; }
-</style>
+        /* PRINT */
+        @media print {
+            .sidebar, .no-print, .search-container, .btn-close-modal { display: none !important; }
+            body { background: white !important; padding: 0; }
+            .modal { position: absolute; display: block; background: white; inset: 0; }
+            .modal-content { width: 100%; max-width: 100%; box-shadow: none; padding: 0; }
+            .inventory-table-wrapper { max-height: none; overflow: visible; }
+            .inventory-table th { background: #eee !important; color: black !important; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loader"><div class="spinner"></div></div>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo-section">
+            <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+            <h1>Quartermaster</h1>
+            <p>Admin Console</p>
+        </div>
 
-<div class="container">
-  <div class="page-header">
-    <h1><i class="fas fa-boxes"></i> Quartermaster Inventory System</h1>
-    <p>Office Furniture & Equipment Tracking</p>
-  </div>
+        <div class="section">
+            <div class="section-title">Select Office</div>
+            <select id="officeSelect" class="form-select">
+                <option value="">-- Choose Office --</option>
+            </select>
+        </div>
 
-  <div class="card">
-    <div class="card-body">
-      <div class="office-selector">
-        <label for="officeSelect"><i class="fas fa-building"></i> Select Office:</label>
-        <select id="officeSelect" class="form-select">
-          <option value="">-- Choose an Office --</option>
-        </select>
-      </div>
+        <div class="section">
+            <div class="section-title">Actions</div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="saveBtn"><i class="fas fa-save"></i> Save Current</button>
+                <button class="btn btn-success" id="totalSummaryBtn"><i class="fas fa-file-invoice"></i> Complete Summary</button>
+                <button class="btn btn-manage" id="manageItemsBtn"><i class="fas fa-cog"></i> Manage Master List</button>
+                <button class="btn btn-outline" onclick="location.reload()"><i class="fas fa-sync"></i> Refresh App</button>
+            </div>
+        </div>
+    </aside>
 
-      <div class="autosave-section">
-        <input type="checkbox" id="autosaveToggle" checked />
-        <label for="autosaveToggle" style="cursor:pointer; margin: 0;"><strong>Auto-save enabled</strong> (1.2s delay)</label>
-      </div>
+    <main class="main-content">
+        <div class="content-header">
+            <h2 id="contentTitle">Inventory Overview</h2>
+            <p id="contentSubtitle">Real-time Equipment Tracking</p>
+        </div>
 
-      <div class="d-flex gap-2 mb-3">
-        <button class="btn btn-success" id="saveBtn"><i class="fas fa-save"></i> Save All</button>
-        <button class="btn btn-outline-primary" id="manageItemsBtn"><i class="fas fa-list"></i> Manage Items</button>
-        <button class="btn btn-outline-primary" id="exportBtn"><i class="fas fa-file-export"></i> CSV Export</button>
-        <button class="btn btn-outline-danger" id="clearBtn"><i class="fas fa-eraser"></i> Clear Data</button>
-      </div>
-    </div>
-  </div>
+        <div class="search-container no-print">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="tableSearch" class="search-input" placeholder="Search item name..." onkeyup="filterItems()">
+        </div>
 
-  <div class="stats-grid" id="statsGrid" style="display: none;">
-    <div class="stat-card">
-      <div class="small">Items with Data</div>
-      <div class="stat-value" id="statCount">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="small">Total TE 2019</div>
-      <div class="stat-value" id="stat19">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="small">Total On Hand</div>
-      <div class="stat-value" id="statOH">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="small">Total TE 2025</div>
-      <div class="stat-value" id="stat25">0</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="table-responsive">
-      <table class="table" id="inventoryTable">
-        <thead>
-          <tr>
-            <th style="width: 40%;">Item Description</th>
-            <th style="width: 20%;">TE 2019</th>
-            <th style="width: 20%;">On Hand</th>
-            <th style="width: 20%;">TE 2025</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <tr><td colspan="4" class="text-center p-5">Please select an office to load inventory data.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="card-footer">
-      <span id="lastSaved" class="text-muted small"></span>
-      <span class="text-muted small"><i class="fas fa-info-circle"></i> Changes auto-saved to Supabase</span>
-    </div>
-  </div>
+        <div class="inventory-table-wrapper">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; width: 45%;">Item Description</th>
+                        <th>TE 2019</th>
+                        <th>On Hand</th>
+                        <th>TE 2025</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="4" style="padding: 3rem; color: #999;">Select an office to begin.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
 </div>
 
-<div class="toast-container" id="toastContainer"></div>
+<div class="modal" id="manageModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2>Manage Master Items</h2>
+            <button style="background:none; border:none; font-size: 1.5rem; cursor:pointer;" onclick="closeManageModal()">&times;</button>
+        </div>
 
-<!-- Item Management Modal -->
-<div class="modal" id="itemModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2><i class="fas fa-edit"></i> Manage Items</h2>
-      <button class="close-btn" onclick="closeItemModal()">&times;</button>
+        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 0.8rem; margin-bottom: 2rem;">
+            <h4 style="margin-bottom:1rem">Add New Entry</h4>
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" id="newItemName" placeholder="e.g. Laptop, Dell Latitude">
+            </div>
+            <div class="input-group">
+                <label>Entry Type</label>
+                <select id="newItemType">
+                    <option value="false">Regular Item</option>
+                    <option value="true">Category Header</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="handleAddItem()" style="width:100%">Add to Master List</button>
+        </div>
+
+        <h4 style="margin-bottom:1rem">Current Items</h4>
+        <div id="masterListScroll" style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+            </div>
     </div>
-    
-    <div class="form-group">
-      <label for="newItemName">Item Name</label>
-      <input type="text" id="newItemName" placeholder="Enter item name">
+</div>
+
+<div class="modal" id="summaryModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2>Complete Global Inventory Report</h2>
+            <button class="btn-close-modal" style="background:none; border:none; font-size: 1.5rem; cursor:pointer;" onclick="closeModal()">&times;</button>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #64748b;">Global TE 2019</div>
+                <div id="sum19" style="font-size: 1.8rem; font-weight: 800;">0</div>
+            </div>
+            <div class="summary-card" style="border-bottom-color: #667eea;">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #64748b;">Global On Hand</div>
+                <div id="sumOH" style="font-size: 1.8rem; font-weight: 800;">0</div>
+            </div>
+            <div class="summary-card">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #64748b;">Global TE 2025</div>
+                <div id="sum25" style="font-size: 1.8rem; font-weight: 800;">0</div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 1rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem;">Detailed Item Breakdown</h3>
+        <table class="inventory-table" style="font-size: 0.9rem;">
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Item Description</th>
+                    <th>Global TE 2019</th>
+                    <th>Global On Hand</th>
+                    <th>Global TE 2025</th>
+                </tr>
+            </thead>
+            <tbody id="summaryTableBody"></tbody>
+        </table>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;" class="no-print">
+            <button class="btn btn-primary" style="flex: 1;" onclick="window.print()"><i class="fas fa-print"></i> Print Full Report</button>
+            <button class="btn btn-outline" onclick="closeModal()">Close</button>
+        </div>
     </div>
-    
-    <div class="form-group">
-      <label for="newItemOrder">Display Order (Optional)</label>
-      <input type="number" id="newItemOrder" placeholder="Leave empty to add at end" min="1">
-    </div>
-    
-    <div class="form-group checkbox-group">
-      <input type="checkbox" id="newItemColspan">
-      <label for="newItemColspan" style="margin: 0;">Is Category Header (colspan)</label>
-    </div>
-    
-    <div class="d-flex gap-2 mb-3">
-      <button class="btn btn-success" onclick="addNewItem()"><i class="fas fa-plus"></i> Add Item</button>
-      <button class="btn btn-secondary" onclick="closeItemModal()">Close</button>
-    </div>
-    
-    <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e5e7eb;">
-    
-    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: #374151;">
-      Current Items 
-      <span style="font-size: 0.85rem; font-weight: normal; color: #6b7280;">(Drag to reorder)</span>
-    </h3>
-    <div class="item-list" id="itemListContainer">
-      <!-- Items will be loaded here -->
-    </div>
-  </div>
 </div>
 
 <script>
-/* ==================== CONFIGURATION ==================== */
 const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-
 const T_OFFICES = "offices";
 const T_ITEMS = "quartermaster_items";
 const T_DATA = "office_quartermaster";
-
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ==================== OFFICE LIST ==================== */
-const OFFICES = [
-  'FOIC', 'VCOM', 'CNS', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 
-  'N9', 'N10', 'N11', 'HSG', 'NIOFC', 'CMCPO', 'CRDO', 'CNLE', 'NSPAO', 
-  'NPAO', 'ONSSSM', 'NJAG', 'TNCH', 'TCSN', 'TCNN', 'TCDSN', 'TNCE', 
-  'PNOLOAC', 'TNIA', 'NSO', 'NASO', 'TNIG', 'OESPA', 'TNPM', 'OTNA', 
-  'PNGADC', 'PNREO', 'PNMO', 'ONIA', 'FMWC', 'PNMCMC'
-];
-
-/* ==================== ITEMS LIST ==================== */
-const ITEMS = [
-  { name: 'QUARTERMASTER', colspan: true },
-  { name: 'Air-Conditioning Unit', colspan: false },
-  { name: 'Bed', colspan: true },
-  { name: 'Bunks', colspan: false },
-  { name: 'Cot Bed', colspan: false },
-  { name: 'Cabinet', colspan: false },
-  { name: 'Chair', colspan: true },
-  { name: 'Chair, Conference', colspan: false },
-  { name: 'Chair, Junior Executive', colspan: false },
-  { name: 'Chair, Office', colspan: false },
-  { name: 'Chair, Senior Executive', colspan: false },
-  { name: 'Compressor, Air', colspan: false },
-  { name: 'Dining Set (1 Table & 4 Chairs)', colspan: false },
-  { name: 'Fan, Industrial', colspan: false },
-  { name: 'Machine, Binding', colspan: false },
-  { name: 'Machine, Laminating', colspan: false },
-  { name: 'Machine, Shredding (Criss cross)', colspan: false },
-  { name: 'Machine, Washing', colspan: false },
-  { name: 'Podium', colspan: false },
-  { name: 'Refrigerator', colspan: false },
-  { name: 'Sofa Set', colspan: false },
-  { name: 'Table', colspan: true },
-  { name: 'Table, Conference', colspan: false },
-  { name: 'Table, Junior Executive', colspan: false },
-  { name: 'Table, Office', colspan: false },
-  { name: 'Table, Senior Executive', colspan: false },
-  { name: 'Table, Computer', colspan: false },
-  { name: 'Vault, Safety', colspan: false },
-  { name: 'Weighing Scale', colspan: false },
-  { name: 'Vacuum, Heavy Duty', colspan: false }
-];
-
-/* ==================== STATE ==================== */
 let masterItems = [];
 let officeMap = {};
 let currentOfficeId = null;
-let valuesStore = {};
-let autoSaveTimer = null;
+let currentOfficeData = {};
 
-/* ==================== INITIALIZATION ==================== */
 async function init() {
-    showLoader(true);
-    try {
-        // First load offices and items without trying to insert
-        await loadOffices();
-        await loadMasterItems();
-
-        // Then check if we need to add any missing ones
-        await ensureOfficesExist();
-        await ensureItemsExist();
-
-        // Reload to show newly added offices/items
-        await loadOffices();
-        await loadMasterItems();
-
-        document.getElementById('officeSelect').addEventListener('change', (e) => loadInventory(e.target.value));
-        document.getElementById('saveBtn').addEventListener('click', saveData);
-        document.getElementById('manageItemsBtn').addEventListener('click', openItemModal);
-        document.getElementById('exportBtn').addEventListener('click', exportCSV);
-        document.getElementById('clearBtn').addEventListener('click', clearData);
-
-        notify("System loaded successfully!", "success");
-    } catch (err) {
-        console.error("Initialization error:", err);
-        notify("Error loading system: " + err.message, "danger");
-    } finally {
-        showLoader(false);
-    }
-}
-
-/* ==================== OFFICE & ITEM SETUP ==================== */
-async function ensureOfficesExist() {
-    try {
-        const { data: existing } = await supabaseClient.from(T_OFFICES).select("office_name");
-        const existingNames = (existing || []).map(o => o.office_name);
-        
-        const missing = OFFICES.filter(name => !existingNames.includes(name));
-        
-        if (missing.length > 0) {
-            const records = missing.map(name => ({ office_name: name }));
-            const { error } = await supabaseClient.from(T_OFFICES).insert(records);
-            if (error) {
-                console.warn("Some offices may already exist:", error.message);
-            } else {
-                console.log(`✓ Inserted ${missing.length} new offices`);
-            }
-        }
-    } catch (err) {
-        console.warn("Office setup warning:", err);
-    }
-}
-
-async function ensureItemsExist() {
-    try {
-        const { data: existing } = await supabaseClient.from(T_ITEMS).select("item_name");
-        const existingNames = (existing || []).map(i => i.item_name);
-        
-        const missing = ITEMS.filter(item => !existingNames.includes(item.name));
-        
-        if (missing.length > 0) {
-            const records = missing.map(item => ({ 
-                item_name: item.name,
-                colspan: item.colspan 
-            }));
-            const { error } = await supabaseClient.from(T_ITEMS).insert(records);
-            if (error) {
-                console.warn("Some items may already exist:", error.message);
-            } else {
-                console.log(`✓ Inserted ${missing.length} new items`);
-            }
-        }
-    } catch (err) {
-        console.warn("Items setup warning:", err);
-    }
+    await loadOffices();
+    await loadMasterItems();
+    document.getElementById('officeSelect').addEventListener('change', e => loadOfficeInventory(e.target.value));
+    document.getElementById('saveBtn').addEventListener('click', saveCurrentData);
+    document.getElementById('totalSummaryBtn').addEventListener('click', generateCompleteSummary);
+    document.getElementById('manageItemsBtn').addEventListener('click', openManageModal);
 }
 
 async function loadOffices() {
-    try {
-        const { data: offData, error } = await supabaseClient
-            .from(T_OFFICES)
-            .select("id, office_name")
-            .order('office_name');
-        
-        if (error) {
-            console.error("Error loading offices:", error);
-            notify("Error loading offices: " + error.message, "danger");
-            return;
-        }
-
-        const select = document.getElementById('officeSelect');
-        select.innerHTML = '<option value="">-- Choose an Office --</option>';
-        
-        if (!offData || offData.length === 0) {
-            select.innerHTML = '<option value="">-- No offices found --</option>';
-            console.warn("No offices found in database");
-            return;
-        }
-
-        offData.forEach(o => {
+    const { data } = await supabaseClient.from(T_OFFICES).select("id, office_name").order('office_name');
+    const select = document.getElementById('officeSelect');
+    if(data) {
+        data.forEach(o => {
             officeMap[o.id] = o.office_name;
-            let opt = new Option(o.office_name, o.id);
-            select.add(opt);
+            select.add(new Option(o.office_name, o.id));
         });
-        
-        console.log(`✓ Loaded ${offData.length} offices`);
-    } catch (err) {
-        console.error("Failed to load offices:", err);
-        notify("Failed to load offices", "danger");
     }
 }
 
 async function loadMasterItems() {
-    try {
-        const { data: itemData, error } = await supabaseClient
-            .from(T_ITEMS)
-            .select("*")
-            .order('display_order', { ascending: true, nullsFirst: false })
-            .order('id', { ascending: true });
-        
-        if (error) {
-            console.error("Error loading items:", error);
-            notify("Error loading items: " + error.message, "danger");
-            return;
-        }
-        
-        masterItems = itemData || [];
-        console.log(`✓ Loaded ${masterItems.length} items from database`);
-        
-        if (masterItems.length === 0) {
-            console.warn("No items found in database - they may need to be inserted");
-        }
-    } catch (err) {
-        console.error("Failed to load items:", err);
-        notify("Failed to load items", "danger");
-    }
+    const { data } = await supabaseClient.from(T_ITEMS).select("*").order('display_order');
+    masterItems = data || [];
 }
 
-/* ==================== DATA LOADING ==================== */
-async function loadInventory(officeId) {
-    if (!officeId) {
-        currentOfficeId = null;
-        renderTable();
-        return;
-    }
-    
+async function loadOfficeInventory(officeId) {
+    if (!officeId) return;
     currentOfficeId = officeId;
-    showLoader(true);
-
-    try {
-        const { data, error } = await supabaseClient
-            .from(T_DATA)
-            .select("*")
-            .eq('office_id', officeId);
-
-        if (error) throw error;
-
-        valuesStore = {};
-        (data || []).forEach(row => {
-            valuesStore[row.item_id] = {
-                te_2019: row.te_2019 || 0,
-                onhand: row.onhand || 0,
-                proposed_te_2025: row.proposed_te_2025 || 0
-            };
-        });
-
-        renderTable();
-        notify(`Loaded inventory for ${officeMap[officeId]}`, "success");
-    } catch (err) {
-        console.error(err);
-        notify("Error loading data", "danger");
-    } finally {
-        showLoader(false);
-    }
+    document.getElementById('contentTitle').textContent = officeMap[officeId];
+    
+    const { data } = await supabaseClient.from(T_DATA).select("*").eq('office_id', officeId);
+    currentOfficeData = {};
+    (data || []).forEach(row => {
+        currentOfficeData[row.item_id] = { t19: row.te_2019 || 0, oh: row.onhand || 0, t25: row.proposed_te_2025 || 0 };
+    });
+    renderMainTable();
 }
 
-/* ==================== RENDERING ==================== */
-function renderTable() {
+function renderMainTable() {
     const tbody = document.getElementById('tableBody');
-    const stats = document.getElementById('statsGrid');
-    
-    if (!currentOfficeId) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-5">Select an office to begin.</td></tr>';
-        stats.style.display = 'none';
-        return;
-    }
-
-    stats.style.display = 'grid';
     tbody.innerHTML = "";
-
     masterItems.forEach(item => {
         const tr = document.createElement('tr');
-        
         if (item.colspan) {
-            tr.className = "sub-header-row";
-            tr.innerHTML = `<td colspan="4"><i class="fas fa-folder-open"></i> ${item.item_name}</td>`;
+            tr.className = "category-row";
+            tr.innerHTML = `<td colspan="4"><i class="fas fa-folder"></i> ${item.item_name}</td>`;
         } else {
-            const val = valuesStore[item.id] || { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
+            const val = currentOfficeData[item.id] || {t19:0, oh:0, t25:0};
             tr.innerHTML = `
-                <td class="item-name">${item.item_name}</td>
-                <td><input type="number" class="qty-input" value="${val.te_2019}" oninput="updateStore(${item.id}, 'te_2019', this.value)"></td>
-                <td><input type="number" class="qty-input" value="${val.onhand}" oninput="updateStore(${item.id}, 'onhand', this.value)"></td>
-                <td><input type="number" class="qty-input" value="${val.proposed_te_2025}" oninput="updateStore(${item.id}, 'proposed_te_2025', this.value)"></td>
+                <td class="item-name" style="text-align: left; font-weight: 600;">${item.item_name}</td>
+                <td><input type="number" class="qty-input" value="${val.t19}" onchange="updateLocal(${item.id}, 't19', this.value)"></td>
+                <td><input type="number" class="qty-input" value="${val.oh}" onchange="updateLocal(${item.id}, 'oh', this.value)"></td>
+                <td><input type="number" class="qty-input" value="${val.t25}" onchange="updateLocal(${item.id}, 't25', this.value)"></td>
             `;
         }
         tbody.appendChild(tr);
     });
-    
-    updateStats();
 }
 
-/* ==================== EVENT HANDLERS ==================== */
-function updateStore(itemId, field, value) {
-    if (!valuesStore[itemId]) {
-        valuesStore[itemId] = { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
-    }
-    valuesStore[itemId][field] = parseInt(value) || 0;
-    
-    updateStats();
-
-    if (document.getElementById('autosaveToggle').checked) {
-        clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(saveData, 1200);
-    }
+function updateLocal(id, field, val) {
+    if(!currentOfficeData[id]) currentOfficeData[id] = {t19:0, oh:0, t25:0};
+    currentOfficeData[id][field] = parseInt(val) || 0;
 }
 
-async function saveData() {
-    if (!currentOfficeId) return;
-
-    showLoader(true);
-    
-    const records = Object.keys(valuesStore).map(itemId => ({
+async function saveCurrentData() {
+    if(!currentOfficeId) return alert("Select an office first.");
+    const records = Object.keys(currentOfficeData).map(itemId => ({
         office_id: currentOfficeId,
         item_id: parseInt(itemId),
-        te_2019: valuesStore[itemId].te_2019,
-        onhand: valuesStore[itemId].onhand,
-        proposed_te_2025: valuesStore[itemId].proposed_te_2025
+        te_2019: currentOfficeData[itemId].t19,
+        onhand: currentOfficeData[itemId].oh,
+        proposed_te_2025: currentOfficeData[itemId].t25
     }));
+    await supabaseClient.from(T_DATA).delete().eq('office_id', currentOfficeId);
+    await supabaseClient.from(T_DATA).insert(records);
+    alert("Office data saved successfully!");
+}
 
-    try {
-        const { error: delError } = await supabaseClient
-            .from(T_DATA)
-            .delete()
-            .eq('office_id', currentOfficeId);
-        
-        if (delError) throw delError;
+// MANAGEMENT FUNCTIONS
+function openManageModal() {
+    renderMasterManager();
+    document.getElementById('manageModal').classList.add('show');
+}
 
-        if (records.length > 0) {
-            const { error: insError } = await supabaseClient
-                .from(T_DATA)
-                .insert(records);
-            
-            if (insError) throw insError;
-        }
+function closeManageModal() {
+    document.getElementById('manageModal').classList.remove('show');
+}
 
-        const timestamp = new Date().toLocaleTimeString();
-        document.getElementById('lastSaved').textContent = `✓ Saved at ${timestamp}`;
-        notify("Data saved successfully!", "success");
-    } catch (err) {
-        console.error(err);
-        notify("Save Failed", "danger");
-    } finally {
-        showLoader(false);
+function renderMasterManager() {
+    const container = document.getElementById('masterListScroll');
+    container.innerHTML = masterItems.map(item => `
+        <div style="display:flex; justify-content:space-between; padding: 0.8rem; border-bottom: 1px solid #f1f5f9; align-items:center; background:${item.colspan ? '#f8fafc' : 'white'}">
+            <span style="${item.colspan ? 'font-weight:bold; color:#667eea' : ''}">${item.colspan ? '📁 ' : ''}${item.item_name}</span>
+            <button onclick="handleDeleteItem(${item.id})" style="color:#ef4444; border:none; background:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+        </div>
+    `).join('');
+}
+
+async function handleAddItem() {
+    const name = document.getElementById('newItemName').value;
+    const isHeader = document.getElementById('newItemType').value === "true";
+    if(!name) return alert("Please enter a name");
+
+    const { error } = await supabaseClient.from(T_ITEMS).insert([{
+        item_name: name,
+        colspan: isHeader,
+        display_order: masterItems.length + 1
+    }]);
+
+    if(error) alert(error.message);
+    else {
+        document.getElementById('newItemName').value = "";
+        await loadMasterItems();
+        renderMasterManager();
+        if(currentOfficeId) renderMainTable();
     }
 }
 
-function updateStats() {
-    let count = 0, t19 = 0, toh = 0, t25 = 0;
-    
-    Object.values(valuesStore).forEach(v => {
-        if (v.te_2019 > 0 || v.onhand > 0 || v.proposed_te_2025 > 0) {
-            count++;
-        }
-        t19 += v.te_2019;
-        toh += v.onhand;
-        t25 += v.proposed_te_2025;
+async function handleDeleteItem(id) {
+    if(!confirm("Remove this item? This affects all offices.")) return;
+    const { error } = await supabaseClient.from(T_ITEMS).delete().eq('id', id);
+    if(error) alert(error.message);
+    else {
+        await loadMasterItems();
+        renderMasterManager();
+        if(currentOfficeId) renderMainTable();
+    }
+}
+
+function filterItems() {
+    const filter = document.getElementById('tableSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('#tableBody tr');
+    rows.forEach(row => {
+        if (row.classList.contains('category-row')) return;
+        const text = row.querySelector('.item-name').textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
     });
-    
-    document.getElementById('statCount').textContent = count;
-    document.getElementById('stat19').textContent = t19;
-    document.getElementById('statOH').textContent = toh;
-    document.getElementById('stat25').textContent = t25;
 }
 
-/* ==================== UTILITY FUNCTIONS ==================== */
-function notify(msg, type) {
-    const container = document.getElementById('toastContainer');
-    container.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-    setTimeout(() => container.innerHTML = "", 3000);
-}
+async function generateCompleteSummary() {
+    const { data } = await supabaseClient.from(T_DATA).select("*");
+    const totalsByItem = {};
+    let global19 = 0, globalOH = 0, global25 = 0;
 
-function showLoader(show) {
-    document.getElementById('loader').classList.toggle('show', show);
-}
+    (data || []).forEach(row => {
+        if (!totalsByItem[row.item_id]) totalsByItem[row.item_id] = { t19: 0, oh: 0, t25: 0 };
+        totalsByItem[row.item_id].t19 += (row.te_2019 || 0);
+        totalsByItem[row.item_id].oh += (row.onhand || 0);
+        totalsByItem[row.item_id].t25 += (row.proposed_te_2025 || 0);
+        global19 += (row.te_2019 || 0);
+        globalOH += (row.onhand || 0);
+        global25 += (row.proposed_te_2025 || 0);
+    });
 
-async function clearData() {
-    if (!currentOfficeId) {
-        notify("Please select an office first", "danger");
-        return;
-    }
-    
-    if (!confirm(`Are you sure you want to delete ALL inventory data for ${officeMap[currentOfficeId]}?`)) {
-        return;
-    }
-    
-    showLoader(true);
-    
-    try {
-        await supabaseClient.from(T_DATA).delete().eq('office_id', currentOfficeId);
-        valuesStore = {};
-        renderTable();
-        notify("Data cleared successfully", "success");
-    } catch (err) {
-        console.error(err);
-        notify("Error clearing data", "danger");
-    } finally {
-        showLoader(false);
-    }
-}
+    document.getElementById('sum19').textContent = global19.toLocaleString();
+    document.getElementById('sumOH').textContent = globalOH.toLocaleString();
+    document.getElementById('sum25').textContent = global25.toLocaleString();
 
-function exportCSV() {
-    if (!currentOfficeId) {
-        notify("Please select an office first", "danger");
-        return;
-    }
-    
-    const officeName = officeMap[currentOfficeId] || "Export";
-    let csv = "Item Description,TE 2019,On Hand,TE 2025\n";
-    
+    const sumTbody = document.getElementById('summaryTableBody');
+    sumTbody.innerHTML = "";
     masterItems.forEach(item => {
-        if (!item.colspan) {
-            const v = valuesStore[item.id] || { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
-            csv += `"${item.item_name}",${v.te_2019},${v.onhand},${v.proposed_te_2025}\n`;
+        const tr = document.createElement('tr');
+        if (item.colspan) {
+            tr.className = "category-row";
+            tr.innerHTML = `<td colspan="4">${item.item_name}</td>`;
+        } else {
+            const t = totalsByItem[item.id] || { t19: 0, oh: 0, t25: 0 };
+            tr.innerHTML = `
+                <td style="text-align: left;">${item.item_name}</td>
+                <td>${t.t19}</td>
+                <td><strong style="color: #10b981;">${t.oh}</strong></td>
+                <td>${t.t25}</td>
+            `;
         }
+        sumTbody.appendChild(tr);
     });
-    
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${officeName}_Inventory_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    
-    notify("CSV exported successfully!", "success");
+    document.getElementById('summaryModal').classList.add('show');
 }
 
-/* ==================== START APPLICATION ==================== */
+function closeModal() { document.getElementById('summaryModal').classList.remove('show'); }
+
 init();
-
-/* ==================== ITEM MANAGEMENT FUNCTIONS ==================== */
-function openItemModal() {
-    document.getElementById('itemModal').classList.add('show');
-    loadItemList();
-}
-
-function closeItemModal() {
-    document.getElementById('itemModal').classList.remove('show');
-    document.getElementById('newItemName').value = '';
-    document.getElementById('newItemOrder').value = '';
-    document.getElementById('newItemColspan').checked = false;
-    editingItemId = null;
-    
-    // Reset button if in edit mode
-    const addBtn = document.querySelector('[onclick="updateItem()"]');
-    if (addBtn) {
-        addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Item';
-        addBtn.setAttribute('onclick', 'addNewItem()');
-    }
-}
-
-function loadItemList() {
-    const container = document.getElementById('itemListContainer');
-    container.innerHTML = '';
-    
-    if (masterItems.length === 0) {
-        container.innerHTML = '<div style="padding: 1rem; text-align: center; color: #6b7280;">No items found</div>';
-        return;
-    }
-    
-    masterItems.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.className = item.colspan ? 'item-row header-item' : 'item-row';
-        div.setAttribute('draggable', 'true');
-        div.setAttribute('data-item-id', item.id);
-        div.setAttribute('data-index', index);
-        
-        // Escape single quotes properly for inline onclick
-        const escapedName = item.item_name.replace(/'/g, "&apos;");
-        
-        div.innerHTML = `
-            <div style="display: flex; align-items: center; flex: 1;">
-                <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
-                <div>
-                    <strong>${item.item_name}</strong>
-                    ${item.colspan ? '<span style="margin-left: 0.5rem; font-size: 0.75rem; background: #0b1a3a; color: white; padding: 0.2rem 0.5rem; border-radius: 0.25rem;">HEADER</span>' : ''}
-                </div>
-            </div>
-            <div class="item-actions">
-                <button class="btn-icon btn-edit" data-action="edit" data-id="${item.id}" data-name="${escapedName}" data-colspan="${item.colspan}" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-icon btn-delete" data-action="delete" data-id="${item.id}" data-name="${escapedName}" title="Delete">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
-        
-        // Add drag event listeners
-        div.addEventListener('dragstart', handleDragStart);
-        div.addEventListener('dragover', handleDragOver);
-        div.addEventListener('drop', handleDrop);
-        div.addEventListener('dragend', handleDragEnd);
-        div.addEventListener('dragenter', handleDragEnter);
-        div.addEventListener('dragleave', handleDragLeave);
-        
-        container.appendChild(div);
-    });
-    
-    // Add click event delegation for edit/delete buttons
-    container.addEventListener('click', handleItemAction);
-}
-
-let draggedItem = null;
-
-function handleDragStart(e) {
-    draggedItem = this;
-    this.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', this.innerHTML);
-}
-
-function handleDragOver(e) {
-    if (e.preventDefault) {
-        e.preventDefault();
-    }
-    e.dataTransfer.dropEffect = 'move';
-    return false;
-}
-
-function handleDragEnter(e) {
-    if (this !== draggedItem) {
-        this.classList.add('drag-over');
-    }
-}
-
-function handleDragLeave(e) {
-    this.classList.remove('drag-over');
-}
-
-function handleDrop(e) {
-    if (e.stopPropagation) {
-        e.stopPropagation();
-    }
-    
-    if (draggedItem !== this) {
-        const allItems = Array.from(document.querySelectorAll('.item-row'));
-        const draggedIndex = allItems.indexOf(draggedItem);
-        const droppedIndex = allItems.indexOf(this);
-        
-        if (draggedIndex < droppedIndex) {
-            this.parentNode.insertBefore(draggedItem, this.nextSibling);
-        } else {
-            this.parentNode.insertBefore(draggedItem, this);
-        }
-        
-        saveNewOrder();
-    }
-    
-    return false;
-}
-
-function handleDragEnd(e) {
-    this.classList.remove('dragging');
-    document.querySelectorAll('.item-row').forEach(item => {
-        item.classList.remove('drag-over');
-    });
-}
-
-async function saveNewOrder() {
-    showLoader(true);
-    
-    try {
-        const items = Array.from(document.querySelectorAll('.item-row'));
-        const updates = items.map((item, index) => {
-            const itemId = parseInt(item.getAttribute('data-item-id'));
-            return supabaseClient
-                .from(T_ITEMS)
-                .update({ display_order: index + 1 })
-                .eq('id', itemId);
-        });
-        
-        await Promise.all(updates);
-        
-        notify("Item order saved!", "success");
-        await loadMasterItems();
-        
-        if (currentOfficeId) {
-            renderTable();
-        }
-    } catch (err) {
-        console.error(err);
-        notify("Error saving order", "danger");
-    } finally {
-        showLoader(false);
-    }
-}
-
-function handleItemAction(e) {
-    const button = e.target.closest('button[data-action]');
-    if (!button) return;
-    
-    const action = button.getAttribute('data-action');
-    const itemId = parseInt(button.getAttribute('data-id'));
-    const itemName = button.getAttribute('data-name');
-    
-    if (action === 'edit') {
-        const isColspan = button.getAttribute('data-colspan') === 'true';
-        editItem(itemId, itemName, isColspan);
-    } else if (action === 'delete') {
-        deleteItem(itemId, itemName);
-    }
-}
-
-async function addNewItem() {
-    const itemName = document.getElementById('newItemName').value.trim();
-    const isColspan = document.getElementById('newItemColspan').checked;
-    const displayOrder = document.getElementById('newItemOrder').value;
-    
-    if (!itemName) {
-        notify("Please enter an item name", "danger");
-        return;
-    }
-    
-    showLoader(true);
-    
-    try {
-        const itemData = { 
-            item_name: itemName, 
-            colspan: isColspan 
-        };
-        
-        if (displayOrder) {
-            itemData.display_order = parseInt(displayOrder);
-        }
-        
-        const { data, error } = await supabaseClient
-            .from(T_ITEMS)
-            .insert([itemData])
-            .select();
-        
-        if (error) throw error;
-        
-        notify(`Item "${itemName}" added successfully!`, "success");
-        document.getElementById('newItemName').value = '';
-        document.getElementById('newItemOrder').value = '';
-        document.getElementById('newItemColspan').checked = false;
-        
-        await loadMasterItems();
-        loadItemList();
-        
-        // Reload table if an office is selected
-        if (currentOfficeId) {
-            renderTable();
-        }
-    } catch (err) {
-        console.error(err);
-        if (err.code === '23505') {
-            notify("Item already exists", "danger");
-        } else {
-            notify("Error adding item", "danger");
-        }
-    } finally {
-        showLoader(false);
-    }
-}
-
-let editingItemId = null;
-
-function editItem(itemId, itemName, isColspan) {
-    editingItemId = itemId;
-    
-    // Decode HTML entities
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = itemName;
-    const decodedName = textarea.value;
-    
-    document.getElementById('newItemName').value = decodedName;
-    document.getElementById('newItemColspan').checked = isColspan;
-    
-    // Find the item's current display order
-    const item = masterItems.find(i => i.id === itemId);
-    if (item && item.display_order) {
-        document.getElementById('newItemOrder').value = item.display_order;
-    }
-    
-    const addBtn = document.querySelector('[onclick="addNewItem()"]');
-    addBtn.innerHTML = '<i class="fas fa-save"></i> Update Item';
-    addBtn.setAttribute('onclick', 'updateItem()');
-    
-    // Scroll to top of modal
-    document.querySelector('.modal-content').scrollTop = 0;
-}
-
-async function updateItem() {
-    const itemName = document.getElementById('newItemName').value.trim();
-    const isColspan = document.getElementById('newItemColspan').checked;
-    const displayOrder = document.getElementById('newItemOrder').value;
-    
-    if (!itemName) {
-        notify("Please enter an item name", "danger");
-        return;
-    }
-    
-    showLoader(true);
-    
-    try {
-        const updateData = { 
-            item_name: itemName, 
-            colspan: isColspan 
-        };
-        
-        if (displayOrder) {
-            updateData.display_order = parseInt(displayOrder);
-        } else {
-            updateData.display_order = null;
-        }
-        
-        const { error } = await supabaseClient
-            .from(T_ITEMS)
-            .update(updateData)
-            .eq('id', editingItemId);
-        
-        if (error) throw error;
-        
-        notify("Item updated successfully!", "success");
-        document.getElementById('newItemName').value = '';
-        document.getElementById('newItemOrder').value = '';
-        document.getElementById('newItemColspan').checked = false;
-        editingItemId = null;
-        
-        const addBtn = document.querySelector('[onclick="updateItem()"]');
-        addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Item';
-        addBtn.setAttribute('onclick', 'addNewItem()');
-        
-        await loadMasterItems();
-        loadItemList();
-        
-        if (currentOfficeId) {
-            renderTable();
-        }
-    } catch (err) {
-        console.error(err);
-        notify("Error updating item", "danger");
-    } finally {
-        showLoader(false);
-    }
-}
-
-async function deleteItem(itemId, itemName) {
-    // Decode HTML entities
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = itemName;
-    const decodedName = textarea.value;
-    
-    if (!confirm(`Are you sure you want to delete "${decodedName}"?\n\nThis will also remove all inventory data for this item across all offices.`)) {
-        return;
-    }
-    
-    showLoader(true);
-    
-    try {
-        const { error } = await supabaseClient
-            .from(T_ITEMS)
-            .delete()
-            .eq('id', itemId);
-        
-        if (error) throw error;
-        
-        notify(`Item "${decodedName}" deleted successfully!`, "success");
-        
-        await loadMasterItems();
-        loadItemList();
-        
-        if (currentOfficeId) {
-            await loadInventory(currentOfficeId);
-        }
-    } catch (err) {
-        console.error(err);
-        notify("Error deleting item", "danger");
-    } finally {
-        showLoader(false);
-    }
-}
 </script>
-
 </body>
 </html>
