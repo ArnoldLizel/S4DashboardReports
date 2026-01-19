@@ -25,6 +25,7 @@
         .btn-primary { background: #667eea; color: white; }
         .btn-success { background: #10b981; color: white; }
         .btn-manage { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .form-select { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 2px solid #e5e7eb; margin-bottom: 1.5rem; }
 
         /* MAIN TABLE */
@@ -53,8 +54,8 @@
         /* PRINT LOGIC - CRITICAL FIX */
         @media print {
             body * { visibility: hidden; background: white !important; }
-            #summaryModal, #summaryModal * { visibility: visible; }
-            #summaryModal { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+            .modal.show, .modal.show * { visibility: visible; }
+            .modal.show { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
             .modal-content { box-shadow: none !important; width: 100% !important; max-width: 100% !important; border: none !important; overflow: visible !important; }
             .no-print { display: none !important; }
             .inventory-table { width: 100% !important; border: 1px solid #000; }
@@ -76,7 +77,9 @@
             <option value="">-- Choose Office --</option>
         </select>
         <button class="btn btn-primary" id="saveBtn"><i class="fas fa-save"></i> Save Office Data</button>
-        <button class="btn btn-success" id="totalSummaryBtn"><i class="fas fa-print"></i> Global Summary</button>
+        <button class="btn btn-success" id="printOfficeBtn" disabled><i class="fas fa-print"></i> Print Office Report</button>
+        <button class="btn btn-success" id="totalSummaryBtn"><i class="fas fa-chart-bar"></i> Global Summary</button>
+        <button class="btn btn-success" id="printGlobalBtn"><i class="fas fa-print"></i> Print Global Report</button>
         <button class="btn btn-manage" id="manageItemsBtn"><i class="fas fa-sort"></i> Reorder / Add Items</button>
     </aside>
 
@@ -115,7 +118,7 @@
         </div>
 
         <div id="dragList" style="border: 1px solid #eee; border-radius: 0.5rem; max-height: 400px; overflow-y: auto;">
-            </div>
+        </div>
         <button class="btn btn-manage" style="margin-top:1rem" onclick="closeModal('manageModal')">Close</button>
     </div>
 </div>
@@ -151,6 +154,37 @@
     </div>
 </div>
 
+<div class="modal" id="officeReportModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 id="officeReportTitle">Office Inventory Report</h2>
+            <button class="no-print" onclick="closeModal('officeReportModal')" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card"><div>TE 2019</div><h3 id="office19">0</h3></div>
+            <div class="summary-card"><div>On Hand</div><h3 id="officeOH">0</h3></div>
+            <div class="summary-card"><div>TE 2025</div><h3 id="office25">0</h3></div>
+        </div>
+
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Description</th>
+                    <th>TE 2019</th>
+                    <th>On Hand</th>
+                    <th>TE 2025</th>
+                </tr>
+            </thead>
+            <tbody id="officeReportBody"></tbody>
+        </table>
+
+        <div style="margin-top: 2rem;" class="no-print">
+            <button class="btn btn-primary" onclick="window.print()">Print This Report</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
@@ -166,7 +200,9 @@ async function init() {
     await loadMasterItems();
     document.getElementById('officeSelect').onchange = (e) => loadOfficeInventory(e.target.value);
     document.getElementById('saveBtn').onclick = saveCurrentData;
-    document.getElementById('totalSummaryBtn').onclick = generateCompleteSummary;
+    document.getElementById('printOfficeBtn').onclick = printOfficeReport;
+    document.getElementById('totalSummaryBtn').onclick = showGlobalSummary;
+    document.getElementById('printGlobalBtn').onclick = generateCompleteSummary;
     document.getElementById('manageItemsBtn').onclick = openManageModal;
     
     // Initialize Drag and Drop
@@ -200,8 +236,13 @@ async function loadMasterItems() {
 }
 
 async function loadOfficeInventory(officeId) {
-    if (!officeId) return;
+    if (!officeId) {
+        currentOfficeId = null;
+        document.getElementById('printOfficeBtn').disabled = true;
+        return;
+    }
     currentOfficeId = officeId;
+    document.getElementById('printOfficeBtn').disabled = false;
     document.getElementById('contentTitle').textContent = officeMap[officeId];
     const { data } = await supabaseClient.from('office_quartermaster').select("*").eq('office_id', officeId);
     currentOfficeData = {};
@@ -275,7 +316,7 @@ async function deleteMasterItem(id) {
     if(currentOfficeId) renderMainTable();
 }
 
-async function generateCompleteSummary() {
+async function showGlobalSummary() {
     const { data } = await supabaseClient.from('office_quartermaster').select("*");
     const totals = {};
     let g19 = 0, gOH = 0, g25 = 0;
@@ -304,6 +345,45 @@ async function generateCompleteSummary() {
         tbody.appendChild(tr);
     });
     document.getElementById('summaryModal').classList.add('show');
+}
+
+async function generateCompleteSummary() {
+    await showGlobalSummary();
+    // Wait a bit for the modal to render before printing
+    setTimeout(() => {
+        window.print();
+    }, 300);
+}
+
+function printOfficeReport() {
+    if(!currentOfficeId) return;
+    
+    let o19 = 0, oOH = 0, o25 = 0;
+    Object.values(currentOfficeData).forEach(v => {
+        o19 += (v.t19 || 0);
+        oOH += (v.oh || 0);
+        o25 += (v.t25 || 0);
+    });
+    
+    document.getElementById('officeReportTitle').innerText = `${officeMap[currentOfficeId]} - Inventory Report`;
+    document.getElementById('office19').innerText = o19;
+    document.getElementById('officeOH').innerText = oOH;
+    document.getElementById('office25').innerText = o25;
+    
+    const tbody = document.getElementById('officeReportBody');
+    tbody.innerHTML = "";
+    masterItems.forEach(item => {
+        const tr = document.createElement('tr');
+        if (item.colspan) {
+            tr.className = "category-row";
+            tr.innerHTML = `<td colspan="4">${item.item_name}</td>`;
+        } else {
+            const v = currentOfficeData[item.id] || {t19:0, oh:0, t25:0};
+            tr.innerHTML = `<td>${item.item_name}</td><td>${v.t19}</td><td>${v.oh}</td><td>${v.t25}</td>`;
+        }
+        tbody.appendChild(tr);
+    });
+    document.getElementById('officeReportModal').classList.add('show');
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
