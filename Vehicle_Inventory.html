@@ -4,326 +4,676 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vehicle Inventory - Philippine Navy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-    body {
-        background-image: url('image/bg4.jpg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        min-height: 100vh;
-    }
-
-    .container {
-        background-color: rgba(255, 255, 255, 0.95); 
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f3f4f6;
-        color: #1f2937;
-        line-height: 1.6;
-        min-height: 100vh;
-    }
-    .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
-    h1 { color: #0b1a3a; font-weight: 600; margin-bottom: 1.5rem; font-size: 2rem; }
-
-    .card {
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid #e5e7eb;
-    }
-    .card-header {
-        background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 0.5rem 0.5rem 0 0;
-        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-        font-weight: 600;
-        border-left: 4px solid #f1c232;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.625rem 1.25rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        border-radius: 0.375rem;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .btn-primary { background-color: #0b1a3a; color: white; }
-    .btn-dark { background-color: #374151; color: white; }
-    .btn-accent { background-color: #10b981; color: white; }
-    .btn-danger { background-color: #ef4444; color: white; }
-    .btn-info { background-color: #06b6d4; color: white; }
-    .btn-warning { background-color: #f59e0b; color: white; }
-    .btn-edit { background-color: #8b5cf6; color: white; font-size: 0.75rem; padding: 0.4rem 0.8rem; }
-    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-
-    .form-control {
-        display: block;
-        width: 100%;
-        padding: 0.625rem 0.875rem;
-        font-size: 0.875rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-    }
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .form-select {
-        padding: 0.625rem;
-        border-radius: 0.375rem;
-        border: 1px solid #d1d5db;
-        min-width: 200px;
-        background-color: white;
-    }
-
-    .table-responsive { overflow-x: auto; margin-bottom: 1.5rem; border-radius: 0.375rem; }
-    .table { width: 100%; border-collapse: collapse; background-color: white; font-size: 0.875rem; }
-    .table thead { background: #0b1a3a; color: white; }
-    .table th, .table td { padding: 0.875rem 1rem; text-align: center; border-bottom: 1px solid #e5e7eb; }
-    
-    .alert {
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-    }
-    .alert-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-    .alert-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .alert-info { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-    
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-        animation: fadeIn 0.3s;
-    }
-    
-    .modal-content {
-        background-color: white;
-        margin: 5% auto;
-        padding: 0;
-        border-radius: 0.5rem;
-        width: 90%;
-        max-width: 600px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        animation: slideDown 0.3s;
-    }
-    
-    .modal-header {
-        background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 0.5rem 0.5rem 0 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .modal-body {
-        padding: 1.5rem;
-    }
-    
-    .modal-footer {
-        padding: 1rem 1.5rem;
-        border-top: 1px solid #e5e7eb;
-        display: flex;
-        gap: 0.5rem;
-        justify-content: flex-end;
-    }
-    
-    .close {
-        color: white;
-        font-size: 2rem;
-        font-weight: bold;
-        cursor: pointer;
-        background: none;
-        border: none;
-        padding: 0;
-        line-height: 1;
-    }
-    
-    .close:hover {
-        opacity: 0.8;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    @keyframes slideDown {
-        from {
-            transform: translateY(-50px);
-            opacity: 0;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            color: #1f2937;
+            line-height: 1.6;
         }
-        to {
-            transform: translateY(0);
-            opacity: 1;
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
         }
-    }
-    
-    @media (max-width: 768px) {
-        .form-grid { grid-template-columns: 1fr; }
-        .btn { width: 100%; justify-content: center; }
-        .modal-content { width: 95%; margin: 10% auto; }
-    }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0b1a3a 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border-left: 6px solid #fbbf24;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        /* Alert Container */
+        #alertContainer {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 10000;
+            max-width: 400px;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideInRight 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.75rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-bottom: 4px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card.blue { border-bottom-color: #3b82f6; }
+        .stat-card.green { border-bottom-color: #10b981; }
+        .stat-card.yellow { border-bottom-color: #f59e0b; }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .stat-icon.yellow { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+
+        .stat-content h3 {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-content p {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .stat-content small {
+            font-size: 1rem;
+            color: #111827;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0b1a3a 100%);
+            color: white;
+            padding: 1.25rem 1.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-left: 5px solid #fbbf24;
+        }
+
+        .card-body {
+            padding: 1.75rem;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr auto auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0b1a3a 100%);
+            color: white;
+        }
+
+        .btn-dark {
+            background: #374151;
+            color: white;
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Table Styles */
+        .table-container {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
+        }
+
+        .table th {
+            padding: 1rem;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table td {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.875rem;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 3% auto;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.3s;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0b1a3a 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 1rem 1rem 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #fbbf24;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            padding: 1.25rem 2rem;
+            border-top: 2px solid #f3f4f6;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .close {
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+            transition: opacity 0.2s;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .table {
+                font-size: 0.75rem;
+            }
+
+            .table th, .table td {
+                padding: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🚗 Vehicle Inventory</h1>
+<div class="main-container">
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-ship"></i> Philippine Navy - Vehicle Fleet Management System</h1>
+        <p>Comprehensive inventory tracking and management platform</p>
+    </div>
 
+    <!-- Alert Container -->
     <div id="alertContainer"></div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div class="card" style="margin-bottom: 0;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="background: #0b1a3a; color: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">🚗</div>
-                <div>
-                    <p style="font-size: 0.875rem; color: #6b7280;">Total Fleet</p>
-                    <p style="font-size: 2rem; font-weight: 700;" id="totalVehicles">0</p>
-                </div>
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon blue">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Total Fleet</h3>
+                <p id="totalVehicles">0</p>
             </div>
         </div>
-        <div class="card" style="margin-bottom: 0;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="background: #10b981; color: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">🏢</div>
-                <div>
-                    <p style="font-size: 0.875rem; color: #6b7280;">Active Offices</p>
-                    <p style="font-size: 2rem; font-weight: 700;" id="totalOffices">0</p>
-                </div>
+        <div class="stat-card green">
+            <div class="stat-icon green">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Active Offices</h3>
+                <p id="totalOffices">0</p>
             </div>
         </div>
-        <div class="card" style="margin-bottom: 0;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="background: #f59e0b; color: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">🔗</div>
-                <div>
-                    <p style="font-size: 0.875rem; color: #6b7280;">Database Status</p>
-                    <p style="font-size: 1.2rem; font-weight: 700;" id="dbStatus">Checking...</p>
-                </div>
+        <div class="stat-card yellow">
+            <div class="stat-icon yellow">
+                <i class="fas fa-database"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Database Status</h3>
+                <small id="dbStatus">Checking...</small>
             </div>
         </div>
     </div>
 
-    <div class="card" style="padding: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; background-color: #ebf0f7;">
-        <select id="officeFilterDropdown" class="form-select">
-            <option value="">-- All Offices --</option>
-            <option value="FOIC">FOIC</option>
-            <option value="VCOM">VCOM</option>
-            <option value="CNS">CNS</option>
-            <option value="N1">N1</option>
-            <option value="N2">N2</option>
-            <option value="N3">N3</option>
-            <option value="N4">N4</option>
-            <option value="N5">N5</option>
-            <option value="N6">N6</option>
-            <option value="N7">N7</option>
-            <option value="N8">N8</option>
-            <option value="N9">N9</option>
-            <option value="N10">N10</option>
-            <option value="N11">N11</option>
-            <option value="HSG">HSG</option>
-            <option value="NIOFC">NIOFC</option>
-            <option value="CMCPO">CMCPO</option>
-            <option value="CRDO">CRDO</option>
-            <option value="CNLE">CNLE</option>
-            <option value="NSPAO">NSPAO</option>
-            <option value="NPAO">NPAO</option>
-            <option value="ONSSSM">ONSSSM</option>
-            <option value="NJAG">NJAG</option>
-            <option value="TNCH">TNCH</option>
-            <option value="TCSN">TCSN</option>
-            <option value="TCNN">TCNN</option>
-            <option value="TCDSN">TCDSN</option>
-            <option value="TNCE">TNCE</option>
-            <option value="PNOLOAC">PNOLOAC</option>
-            <option value="TNIA">TNIA</option>
-            <option value="NSO">NSO</option>
-            <option value="NASO">NASO</option>
-            <option value="TNIG">TNIG</option>
-            <option value="OESPA">OESPA</option>
-            <option value="TNPM">TNPM</option>
-            <option value="OTNA">OTNA</option>
-            <option value="PNGADC">PNGADC</option>
-            <option value="PNREO">PNREO</option>
-            <option value="PNMO">PNMO</option>
-            <option value="ONIA">ONIA</option>
-            <option value="FMWC">FMWC</option>
-            <option value="PNMCMC">PNMCMC</option>
-        </select>
-        <input type="text" id="plateSearchInput" class="form-control" style="max-width: 250px;" placeholder="Search Plate Number...">
-        <button type="button" id="searchBtn" class="btn btn-accent">🔍 Search</button>
-        <button type="button" id="clearFilter" class="btn btn-primary">✖ Reset</button>
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-grid">
+            <div class="form-group">
+                <label class="form-label">Filter by Office</label>
+                <select id="officeFilterDropdown" class="form-select">
+                    <option value="">-- All Offices --</option>
+                    <option value="FOIC">FOIC</option>
+                    <option value="VCOM">VCOM</option>
+                    <option value="CNS">CNS</option>
+                    <option value="N1">N1</option>
+                    <option value="N2">N2</option>
+                    <option value="N3">N3</option>
+                    <option value="N4">N4</option>
+                    <option value="N5">N5</option>
+                    <option value="N6">N6</option>
+                    <option value="N7">N7</option>
+                    <option value="N8">N8</option>
+                    <option value="N9">N9</option>
+                    <option value="N10">N10</option>
+                    <option value="N11">N11</option>
+                    <option value="HSG">HSG</option>
+                    <option value="NIOFC">NIOFC</option>
+                    <option value="CMCPO">CMCPO</option>
+                    <option value="CRDO">CRDO</option>
+                    <option value="CNLE">CNLE</option>
+                    <option value="NSPAO">NSPAO</option>
+                    <option value="NPAO">NPAO</option>
+                    <option value="ONSSSM">ONSSSM</option>
+                    <option value="NJAG">NJAG</option>
+                    <option value="TNCH">TNCH</option>
+                    <option value="TCSN">TCSN</option>
+                    <option value="TCNN">TCNN</option>
+                    <option value="TCDSN">TCDSN</option>
+                    <option value="TNCE">TNCE</option>
+                    <option value="PNOLOAC">PNOLOAC</option>
+                    <option value="TNIA">TNIA</option>
+                    <option value="NSO">NSO</option>
+                    <option value="NASO">NASO</option>
+                    <option value="TNIG">TNIG</option>
+                    <option value="OESPA">OESPA</option>
+                    <option value="TNPM">TNPM</option>
+                    <option value="OTNA">OTNA</option>
+                    <option value="PNGADC">PNGADC</option>
+                    <option value="PNREO">PNREO</option>
+                    <option value="PNMO">PNMO</option>
+                    <option value="ONIA">ONIA</option>
+                    <option value="FMWC">FMWC</option>
+                    <option value="PNMCMC">PNMCMC</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Search Plate Number</label>
+                <input type="text" id="plateSearchInput" class="form-control" placeholder="Enter plate number...">
+            </div>
+            <button type="button" id="searchBtn" class="btn btn-accent">
+                <i class="fas fa-search"></i> Search
+            </button>
+            <button type="button" id="clearFilter" class="btn btn-primary">
+                <i class="fas fa-times"></i> Reset
+            </button>
+        </div>
     </div>
 
+    <!-- Add Vehicle Form -->
     <div class="card">
-        <div class="card-header">Add New Vehicle Entry</div>
-        <form id="addForm" class="form-grid">
-            <input id="office" class="form-control" placeholder="Office (e.g. N1)" required>
-            <input id="vehicle_type" class="form-control" placeholder="Vehicle Type (e.g. SUV)" required>
-            <input id="plate_number" class="form-control" placeholder="Plate Number">
-            <input id="engine_number" class="form-control" placeholder="Engine Number">
-            <input id="chassis_number" class="form-control" placeholder="Chassis Number">
-            <input id="remarks" class="form-control" placeholder="Remarks/Status">
-            <input id="date_of_registration" class="form-control" type="date">
-            <button type="submit" class="btn btn-primary">➕ Add Vehicle</button>
-        </form>
+        <div class="card-header">
+            <i class="fas fa-plus-circle"></i> Add New Vehicle Entry
+        </div>
+        <div class="card-body">
+            <form id="addForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Office *</label>
+                        <input id="office" class="form-control" placeholder="e.g., N1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vehicle Type *</label>
+                        <input id="vehicle_type" class="form-control" placeholder="e.g., SUV" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plate Number</label>
+                        <input id="plate_number" class="form-control" placeholder="ABC-1234">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Engine Number</label>
+                        <input id="engine_number" class="form-control" placeholder="ENG-001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chassis Number</label>
+                        <input id="chassis_number" class="form-control" placeholder="CHS-001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Remarks/Status</label>
+                        <input id="remarks" class="form-control" placeholder="Good condition">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Registration Date</label>
+                        <input id="date_of_registration" class="form-control" type="date">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: end;">
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-plus"></i> Add Vehicle
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <!-- Action Buttons -->
     <div class="btn-group">
-        <button onclick="exportToExcel()" class="btn btn-dark">📊 Export to Excel</button>
-        <button onclick="downloadTemplate()" class="btn btn-info">📋 Download Template</button>
-        <button onclick="document.getElementById('excelUpload').click()" class="btn btn-warning">📤 Import from Excel</button>
+        <button onclick="exportToExcel()" class="btn btn-dark">
+            <i class="fas fa-file-excel"></i> Export to Excel
+        </button>
+        <button onclick="downloadTemplate()" class="btn btn-info">
+            <i class="fas fa-download"></i> Download Template
+        </button>
+        <button onclick="document.getElementById('excelUpload').click()" class="btn btn-warning">
+            <i class="fas fa-upload"></i> Import from Excel
+        </button>
         <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
-        <button onclick="deleteSelected()" class="btn btn-danger">🗑 Delete Selected</button>
-        <button onclick="testConnection()" class="btn btn-accent">🔧 Test Connection</button>
+        <button onclick="deleteSelected()" class="btn btn-danger">
+            <i class="fas fa-trash-alt"></i> Delete Selected
+        </button>
+        <button onclick="testConnection()" class="btn btn-accent">
+            <i class="fas fa-plug"></i> Test Connection
+        </button>
     </div>
 
+    <!-- Fleet Records Table -->
     <div class="card">
-        <div class="card-header">Fleet Records Table</div>
-        <div class="table-responsive">
-            <table class="table" id="inventoryTable">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="selectAll"></th>
-                        <th>#</th>
-                        <th>Office</th>
-                        <th>Type</th>
-                        <th>Plate</th>
-                        <th>Engine</th>
-                        <th>Chassis</th>
-                        <th>Remarks</th>
-                        <th>Reg. Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="vehicleTable"></tbody>
-            </table>
+        <div class="card-header">
+            <i class="fas fa-table"></i> Fleet Records Database
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table" id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;"><input type="checkbox" id="selectAll"></th>
+                            <th style="width: 60px;">#</th>
+                            <th>Office</th>
+                            <th>Type</th>
+                            <th>Plate</th>
+                            <th>Engine</th>
+                            <th>Chassis</th>
+                            <th>Remarks</th>
+                            <th>Reg. Date</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vehicleTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -332,45 +682,51 @@
 <div id="editModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 style="margin: 0; font-size: 1.25rem;">✏️ Edit Vehicle Record</h2>
+            <h2><i class="fas fa-edit"></i> Edit Vehicle Record</h2>
             <button class="close" onclick="closeEditModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <form id="editForm" class="form-grid">
+            <form id="editForm">
                 <input type="hidden" id="edit_id">
-                <div>
-                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Office</label>
-                    <input id="edit_office" class="form-control" required>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Vehicle Type</label>
-                    <input id="edit_vehicle_type" class="form-control" required>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Plate Number</label>
-                    <input id="edit_plate_number" class="form-control">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Engine Number</label>
-                    <input id="edit_engine_number" class="form-control">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Chassis Number</label>
-                    <input id="edit_chassis_number" class="form-control">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Remarks</label>
-                    <input id="edit_remarks" class="form-control">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500;">Registration Date</label>
-                    <input id="edit_date_of_registration" class="form-control" type="date">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Office *</label>
+                        <input id="edit_office" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vehicle Type *</label>
+                        <input id="edit_vehicle_type" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plate Number</label>
+                        <input id="edit_plate_number" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Engine Number</label>
+                        <input id="edit_engine_number" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chassis Number</label>
+                        <input id="edit_chassis_number" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Remarks</label>
+                        <input id="edit_remarks" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Registration Date</label>
+                        <input id="edit_date_of_registration" class="form-control" type="date">
+                    </div>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-dark" onclick="closeEditModal()">Cancel</button>
-            <button type="button" class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
+            <button type="button" class="btn btn-dark" onclick="closeEditModal()">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="button" class="btn btn-primary" onclick="saveEdit()">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
         </div>
     </div>
 </div>
@@ -389,10 +745,20 @@
         const alertContainer = document.getElementById('alertContainer');
         const alert = document.createElement('div');
         alert.className = 'alert alert-' + type;
-        alert.textContent = message;
+        
+        let icon = '';
+        if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+        else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+        else if (type === 'info') icon = '<i class="fas fa-info-circle"></i>';
+        
+        alert.innerHTML = icon + '<span>' + message + '</span>';
         alertContainer.appendChild(alert);
+        
         setTimeout(function() {
-            alert.remove();
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 300);
         }, 5000);
     }
 
@@ -401,12 +767,12 @@
         try {
             const result = await db.from('vehicles').select('count', { count: 'exact', head: true });
             if (result.error) throw result.error;
-            showAlert('✅ Database connection successful!', 'success');
-            document.getElementById('dbStatus').textContent = '✅ Connected';
+            showAlert('Database connection successful!', 'success');
+            document.getElementById('dbStatus').textContent = '✓ Connected';
             document.getElementById('dbStatus').style.color = '#10b981';
         } catch (err) {
-            showAlert('❌ Connection failed: ' + err.message, 'error');
-            document.getElementById('dbStatus').textContent = '❌ Error';
+            showAlert('Connection failed: ' + err.message, 'error');
+            document.getElementById('dbStatus').textContent = '✗ Error';
             document.getElementById('dbStatus').style.color = '#ef4444';
             console.error('Connection error:', err);
         }
@@ -451,7 +817,7 @@
 
     async function refreshData() {
         const tbody = document.getElementById("vehicleTable");
-        tbody.innerHTML = "<tr><td colspan='10' style='padding:2rem;'>Fetching Data...</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='10' style='padding:2rem;'><i class='fas fa-spinner fa-spin'></i> Loading data...</td></tr>";
 
         try {
             const result = await db
@@ -466,9 +832,9 @@
             tbody.innerHTML = "";
 
             if (!data || data.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='10' style='padding:2rem;'>No records found for " + activeYear + ".</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='10' style='padding:2rem; color: #6b7280;'>No records found for " + activeYear + ".</td></tr>";
                 updateStats([]);
-                document.getElementById('dbStatus').textContent = '✅ Connected';
+                document.getElementById('dbStatus').textContent = '✓ Connected';
                 document.getElementById('dbStatus').style.color = '#10b981';
                 return;
             }
@@ -477,23 +843,23 @@
                 const row = tbody.insertRow();
                 row.dataset.id = v.id;
                 row.innerHTML = '<td><input type="checkbox" class="rowCheckbox"></td>' +
-                    '<td>' + (idx + 1) + '</td>' +
-                    '<td><strong>' + (v.office || '') + '</strong></td>' +
+                    '<td style="font-weight: 600; color: #6b7280;">' + (idx + 1) + '</td>' +
+                    '<td><strong style="color: #1e3a8a;">' + (v.office || '') + '</strong></td>' +
                     '<td>' + (v.vehicle_type || '') + '</td>' +
-                    '<td>' + (v.plate_number || '') + '</td>' +
+                    '<td><strong>' + (v.plate_number || '') + '</strong></td>' +
                     '<td>' + (v.engine_number || '') + '</td>' +
                     '<td>' + (v.chassis_number || '') + '</td>' +
                     '<td>' + (v.remarks || '') + '</td>' +
                     '<td>' + (v.date_of_registration || '') + '</td>' +
-                    '<td><button class="btn btn-edit" onclick="openEditModal(' + v.id + ')">✏️ Edit</button></td>';
+                    '<td><button class="btn btn-edit" onclick="openEditModal(' + v.id + ')"><i class="fas fa-edit"></i> Edit</button></td>';
             });
             updateStats(data);
-            document.getElementById('dbStatus').textContent = '✅ Connected';
+            document.getElementById('dbStatus').textContent = '✓ Connected';
             document.getElementById('dbStatus').style.color = '#10b981';
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="10" style="color:red; padding:2rem;">Error: ' + err.message + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="color: #ef4444; padding:2rem;"><i class="fas fa-exclamation-triangle"></i> Error: ' + err.message + '</td></tr>';
             showAlert('Error loading data: ' + err.message, 'error');
-            document.getElementById('dbStatus').textContent = '❌ Error';
+            document.getElementById('dbStatus').textContent = '✗ Error';
             document.getElementById('dbStatus').style.color = '#ef4444';
             console.error('Refresh error:', err);
         }
@@ -515,11 +881,11 @@
         try {
             const result = await db.from('vehicles').insert([payload]).select();
             if (result.error) throw result.error;
-            showAlert('✅ Vehicle added successfully!', 'success');
+            showAlert('Vehicle added successfully!', 'success');
             document.getElementById("addForm").reset();
             refreshData();
         } catch (err) {
-            showAlert('❌ Error adding vehicle: ' + err.message, 'error');
+            showAlert('Error adding vehicle: ' + err.message, 'error');
             console.error('Insert error:', err);
         }
     };
@@ -549,16 +915,15 @@
                 });
                 const result = await db.from('vehicles').delete().in('id', ids);
                 if (result.error) throw result.error;
-                showAlert('✅ ' + checked.length + ' records deleted successfully!', 'success');
+                showAlert(checked.length + ' records deleted successfully!', 'success');
                 refreshData();
             } catch (err) {
-                showAlert('❌ Error deleting records: ' + err.message, 'error');
+                showAlert('Error deleting records: ' + err.message, 'error');
                 console.error('Delete error:', err);
             }
         }
     }
 
-    // Edit Modal Functions
     async function openEditModal(id) {
         try {
             const result = await db.from('vehicles').select('*').eq('id', id).single();
@@ -576,7 +941,7 @@
             
             document.getElementById('editModal').style.display = 'block';
         } catch (err) {
-            showAlert('❌ Error loading vehicle data: ' + err.message, 'error');
+            showAlert('Error loading vehicle data: ' + err.message, 'error');
             console.error('Load error:', err);
         }
     }
@@ -601,16 +966,15 @@
         try {
             const result = await db.from('vehicles').update(payload).eq('id', id).select();
             if (result.error) throw result.error;
-            showAlert('✅ Vehicle updated successfully!', 'success');
+            showAlert('Vehicle updated successfully!', 'success');
             closeEditModal();
             refreshData();
         } catch (err) {
-            showAlert('❌ Error updating vehicle: ' + err.message, 'error');
+            showAlert('Error updating vehicle: ' + err.message, 'error');
             console.error('Update error:', err);
         }
     }
 
-    // Close modal when clicking outside
     window.onclick = function(event) {
         const modal = document.getElementById('editModal');
         if (event.target === modal) {
@@ -621,7 +985,7 @@
     function exportToExcel() {
         const wb = XLSX.utils.table_to_book(document.getElementById("inventoryTable"));
         XLSX.writeFile(wb, 'PN_Fleet_Inventory_' + activeYear + '.xlsx');
-        showAlert('✅ Excel file exported successfully!', 'success');
+        showAlert('Excel file exported successfully!', 'success');
     }
 
     function downloadTemplate() {
@@ -636,14 +1000,14 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Vehicles');
         XLSX.writeFile(wb, 'Vehicle_Import_Template.xlsx');
-        showAlert('📋 Template downloaded! Fill it out and import back.', 'info');
+        showAlert('Template downloaded! Fill it out and import back.', 'info');
     }
 
     async function importExcel(event) {
         const file = event.target.files[0];
         if (!file) return;
 
-        showAlert('📤 Importing data from Excel...', 'info');
+        showAlert('Importing data from Excel...', 'info');
 
         const reader = new FileReader();
         reader.onload = async function(e) {
@@ -654,7 +1018,7 @@
                 const rows = XLSX.utils.sheet_to_json(firstSheet);
 
                 if (rows.length === 0) {
-                    showAlert('❌ No data found in the Excel file.', 'error');
+                    showAlert('No data found in the Excel file.', 'error');
                     return;
                 }
 
@@ -678,18 +1042,18 @@
                 });
 
                 if (vehicles.length === 0) {
-                    showAlert('❌ No valid vehicle data found in file.', 'error');
+                    showAlert('No valid vehicle data found in file.', 'error');
                     return;
                 }
 
                 const result = await db.from('vehicles').insert(vehicles).select();
                 if (result.error) throw result.error;
 
-                showAlert('✅ Successfully imported ' + vehicles.length + ' vehicles!', 'success');
+                showAlert('Successfully imported ' + vehicles.length + ' vehicles!', 'success');
                 refreshData();
                 event.target.value = '';
             } catch (err) {
-                showAlert('❌ Import error: ' + err.message, 'error');
+                showAlert('Import error: ' + err.message, 'error');
                 console.error('Import error:', err);
                 event.target.value = '';
             }
