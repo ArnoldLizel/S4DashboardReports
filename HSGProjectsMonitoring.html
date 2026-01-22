@@ -1,541 +1,339 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HSG UPR Monitoring</title>
-<link rel="stylesheet" href="navy-dashboard-styles.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSG Monitoring | Expanded View</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-    body {
-        background-image: url('image/bg2.jpg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        min-height: 100vh;
-    }
+    <style>
+        :root {
+            --navy: #0f172a;
+            --indigo: #4338ca;
+            --slate-200: #e2e8f0;
+            --slate-700: #334155;
+            --glass: rgba(255, 255, 255, 0.98);
+        }
 
-    .container {
-        background-color: rgba(255, 255, 255, 0.9); 
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
-    padding: 1rem;
-  }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('image/bg2.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--slate-700);
+            padding: 2rem;
+            min-height: 100vh;
+        }
 
-  .page-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
+        .main-wrapper {
+            max-width: 1750px; /* Wider container for more horizontal breathing room */
+            margin: 0 auto;
+            background: var(--glass);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 2.5rem;
+        }
 
-  .page-header h1 {
-    color: #0b1a3a;
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
+        /* --- SUMMARY SECTION --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .summary-card { padding: 1.5rem; border-radius: 8px; color: white; }
+        .summary-card .amount { font-size: 1.6rem; font-weight: 800; margin-top: 5px; }
+        .card-total { background: var(--navy); }
+        .card-svp { background: #2563eb; }
+        .card-shop { background: #059669; }
+        .card-nego { background: #d97706; }
 
-  .page-header p {
-    color: #6b7280;
-    font-size: 0.95rem;
-  }
+        /* --- ACTION BAR --- */
+        .action-bar {
+            background: #f8fafc;
+            padding: 1.2rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--slate-200);
+        }
 
-  /* Summary Section */
-  .summary-section {
-    margin-bottom: 2rem;
-  }
+        .search-bar {
+            flex-grow: 1;
+            max-width: 400px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--slate-200);
+            font-size: 0.95rem;
+        }
 
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
+        /* --- TABLE FIXES FOR OVERLAP --- */
+        .table-container { 
+            overflow-x: auto; 
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            background: white;
+        }
 
-  .summary-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 8px;
-    padding: 1.25rem;
-    color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: auto; /* Auto layout prevents fixed-width clipping */
+            min-width: 1200px; /* Ensures the table doesn't crush on small screens */
+        }
+        
+        thead th {
+            background: #f1f5f9;
+            padding: 1.2rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #64748b;
+            border-bottom: 2px solid var(--slate-200);
+            text-align: left;
+        }
 
-  .summary-card h3 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    opacity: 0.9;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
+        /* FIXED WIDTH COLUMNS */
+        .col-id { width: 50px; text-align: center; }
+        .col-date { width: 160px; }
+        .col-mode { width: 220px; }
+        .col-money { width: 150px; }
+        .col-action { width: 60px; text-align: center; }
 
-  .summary-card .amount {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
-  }
+        /* FLUID COLUMNS (Will wrap text) */
+        .col-desc { min-width: 350px; }
+        .col-remarks { min-width: 300px; }
 
-  .summary-card .label {
-    font-size: 0.75rem;
-    opacity: 0.8;
-  }
+        td { 
+            padding: 1.2rem 1rem; 
+            border-bottom: 1px solid #f1f5f9; 
+            vertical-align: top; 
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-wrap: break-word; /* Allows long words to break */
+            white-space: normal;  /* Essential for wrapping */
+        }
 
-  .summary-card.total {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  }
+        /* Editable Cells Enhancement */
+        td[contenteditable="true"] {
+            background: #fafbfc;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 45px;
+            transition: 0.2s;
+        }
+        td[contenteditable="true"]:focus { 
+            background: white; 
+            border-color: var(--indigo); 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
+        }
 
-  .summary-card.svp {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  }
+        select, input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--slate-200);
+            border-radius: 4px;
+            font-family: inherit;
+        }
 
-  .summary-card.shopping {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  }
+        /* --- BUTTONS --- */
+        .btn {
+            padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: 700; font-size: 0.85rem;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; transition: 0.2s;
+        }
+        .btn-primary { background: var(--navy); color: white; }
+        .btn-primary:hover { background: #000; }
+        .btn-outline { background: white; border: 1px solid var(--slate-200); color: var(--slate-700); }
+        .btn-danger { color: #be123c; background: #fff1f2; width: 35px; height: 35px; justify-content: center; border-radius: 6px; cursor: pointer; border: none; }
+        .btn-danger:hover { background: #ffe4e6; }
 
-  .summary-card.negotiated {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  }
-
-  .table th:nth-child(1), .table td:nth-child(1) { width: 3%; }
-  .table th:nth-child(2), .table td:nth-child(2) { width: 10%; }
-  .table th:nth-child(3), .table td:nth-child(3) { width: 18%; }
-  .table th:nth-child(4), .table td:nth-child(4) { width: 12%; }
-  .table th:nth-child(5), .table td:nth-child(5) { width: 7%; }
-  .table th:nth-child(6), .table td:nth-child(6) { width: 7%; }
-  .table th:nth-child(7), .table td:nth-child(7) { width: 15%; }
-  .table th:nth-child(8), .table td:nth-child(8) { width: 18%; }
-  .table th:nth-child(9), .table td:nth-child(9) { width: 10%; }
-
-  td[contenteditable="true"] {
-    white-space: normal;
-    word-wrap: break-word;
-    cursor: text;
-    min-height: 2rem;
-  }
-
-  td[contenteditable="true"]:hover {
-    background-color: #fef3c7;
-  }
-
-  td[contenteditable="true"]:focus {
-    outline: 2px solid #2563eb;
-    background-color: #fff;
-  }
-
-  .table td input, .table td select {
-    width: 100%;
-    padding: 0.4rem 0.5rem;
-    font-size: 0.875rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.25rem;
-    box-sizing: border-box;
-  }
-
-  .table td input:focus, .table td select:focus {
-    border-color: #2563eb;
-    outline: 0;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-
-  .btn-table {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.8125rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .toast {
-    position: fixed;
-    top: 2rem;
-    right: 2rem;
-    z-index: 1000;
-    min-width: 300px;
-  }
-</style>
+        @media print {
+            .action-bar, .btn-danger, .btn { display: none !important; }
+            .main-wrapper { box-shadow: none !important; border: none !important; padding: 0; }
+            td[contenteditable="true"] { background: none; padding: 0; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  
-  <div class="page-header">
-    <h1><i class="fas fa-project-diagram"></i> HSG PROJECTS MONITORING</h1>
-    <p>Manage and track HSG project records</p>
-  </div>
-
-  <!-- Summary Section -->
-  <div class="summary-section">
-    <div class="summary-grid" id="summaryGrid">
-      <div class="summary-card total">
-        <h3><i class="fas fa-chart-line"></i> Overall Total</h3>
-        <div class="amount" id="totalABC">₱0.00</div>
-        <div class="label">Total ABC</div>
-        <div class="amount" id="totalBid" style="margin-top: 0.75rem;">₱0.00</div>
-        <div class="label">Total Bid Amount</div>
-      </div>
-
-      <div class="summary-card svp">
-        <h3><i class="fas fa-file-invoice"></i> Small Value Procurement</h3>
-        <div class="amount" id="svpABC">₱0.00</div>
-        <div class="label">ABC</div>
-        <div class="amount" id="svpBid" style="margin-top: 0.75rem;">₱0.00</div>
-        <div class="label">Bid Amount</div>
-      </div>
-
-      <div class="summary-card shopping">
-        <h3><i class="fas fa-shopping-cart"></i> Shopping</h3>
-        <div class="amount" id="shoppingABC">₱0.00</div>
-        <div class="label">ABC</div>
-        <div class="amount" id="shoppingBid" style="margin-top: 0.75rem;">₱0.00</div>
-        <div class="label">Bid Amount</div>
-      </div>
-
-      <div class="summary-card negotiated">
-        <h3><i class="fas fa-handshake"></i> Negotiated</h3>
-        <div class="amount" id="negotiatedABC">₱0.00</div>
-        <div class="label">ABC</div>
-        <div class="amount" id="negotiatedBid" style="margin-top: 0.75rem;">₱0.00</div>
-        <div class="label">Bid Amount</div>
-      </div>
+<div class="main-wrapper">
+    <div class="page-header">
+        <h1 style="color:var(--navy); font-weight: 800; letter-spacing: -0.02em;">HSG PROJECT MONITORING</h1>
+        <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px;">Portfolio Tracking & Fiscal Management</p>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="card-header">
-      <i class="fas fa-table"></i> Project Records
-    </div>
-    <div class="card-body">
-      
-      <div class="d-flex gap-2 mb-3">
-        <button id="addEmptyRowBtn" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Add Empty Row
-        </button>
-        <button id="addRowBtn" class="btn btn-success">
-          <i class="fas fa-save"></i> Save New Records
-        </button>
-        <button id="updateRowBtn" class="btn btn-info">
-          <i class="fas fa-sync-alt"></i> Update All Records
-        </button>
-        <button id="refreshBtn" class="btn btn-secondary">
-          <i class="fas fa-redo"></i> Refresh
-        </button>
-      </div>
-
-      <div class="table-responsive">
-        <table class="table table-striped" id="projectTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>DATE OUT ORS</th>
-              <th>ITEM DESCRIPTION</th>
-              <th>MODE OF PROCUREMENT</th>
-              <th>ABC</th>
-              <th>BID AMOUNT</th>
-              <th>PROPONENT</th>
-              <th>REMARKS</th>
-              <th>ACTION</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr>
-              <td colspan="9" class="text-center">
-                <div class="spinner"></div> Loading data...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="card-footer">
-        <div class="d-flex justify-content-between align-items-center">
-          <span><i class="fas fa-info-circle"></i> Click on cells to edit. Use buttons above to save changes.</span>
-          <span id="recordCount" class="badge badge-primary">0 records</span>
+    <div class="summary-grid">
+        <div class="summary-card card-total">
+            <h3>TOTAL PORTFOLIO ABC</h3>
+            <div class="amount" id="totalABC">₱0.00</div>
         </div>
-      </div>
-
+        <div class="summary-card card-svp">
+            <h3>SVP TOTAL</h3>
+            <div class="amount" id="svpABC">₱0.00</div>
+        </div>
+        <div class="summary-card card-shop">
+            <h3>SHOPPING TOTAL</h3>
+            <div class="amount" id="shoppingABC">₱0.00</div>
+        </div>
+        <div class="summary-card card-nego">
+            <h3>NEGOTIATED TOTAL</h3>
+            <div class="amount" id="negotiatedABC">₱0.00</div>
+        </div>
     </div>
-  </div>
 
+    <div class="action-bar">
+        <input type="text" id="searchInput" class="search-bar" placeholder="Search by description or remarks...">
+        <div style="display:flex; gap:10px;">
+            <button id="addEmptyRowBtn" class="btn btn-outline"><i class="fas fa-plus"></i> Add Entry</button>
+            <button id="updateRowBtn" class="btn btn-primary"><i class="fas fa-save"></i> Sync to Database</button>
+            <button onclick="window.print()" class="btn btn-outline"><i class="fas fa-print"></i> Print</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-id">#</th>
+                    <th class="col-date">Date Out</th>
+                    <th class="col-desc">Item Description</th>
+                    <th class="col-mode">Procurement Mode</th>
+                    <th class="col-money">ABC</th>
+                    <th class="col-money">Bid Amount</th>
+                    <th class="col-remarks">Remarks</th>
+                    <th class="col-action"></th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 </div>
 
-<div id="toastContainer" class="toast"></div>
-
 <script>
-const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-const supabaseHSG = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+    const supabaseHSG = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const tableBody = document.getElementById("tableBody");
-const addRowBtn = document.getElementById("addRowBtn");
-const updateRowBtn = document.getElementById("updateRowBtn");
-const addEmptyRowBtn = document.getElementById("addEmptyRowBtn");
-const refreshBtn = document.getElementById("refreshBtn");
-const recordCount = document.getElementById("recordCount");
-const toastContainer = document.getElementById("toastContainer");
+    const tableBody = document.getElementById("tableBody");
+    const searchInput = document.getElementById("searchInput");
+    let masterData = [];
 
-function showToast(message, type = 'success') {
-  const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
-  toastContainer.innerHTML = `
-    <div class="alert ${alertClass} alert-dismissible">
-      ${message}
-      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
-    </div>
-  `;
-  setTimeout(() => { toastContainer.innerHTML = ''; }, 4000);
-}
-
-function formatCurrency(amount) {
-  return new Intl.NumberFormat('en-PH', {
-    style: 'currency',
-    currency: 'PHP',
-    minimumFractionDigits: 2
-  }).format(amount || 0);
-}
-
-function updateSummary(data) {
-  let totalABC = 0;
-  let totalBid = 0;
-  let svpABC = 0;
-  let svpBid = 0;
-  let shoppingABC = 0;
-  let shoppingBid = 0;
-  let negotiatedABC = 0;
-  let negotiatedBid = 0;
-
-  data.forEach(row => {
-    const abc = parseFloat(row.abc) || 0;
-    const bid = parseFloat(row.bid_amount) || 0;
-    
-    totalABC += abc;
-    totalBid += bid;
-
-    if (row.mode_of_procurement === "Small Value Procurement") {
-      svpABC += abc;
-      svpBid += bid;
-    } else if (row.mode_of_procurement === "Shopping") {
-      shoppingABC += abc;
-      shoppingBid += bid;
-    } else if (row.mode_of_procurement === "Negotiated") {
-      negotiatedABC += abc;
-      negotiatedBid += bid;
-    }
-  });
-
-  document.getElementById("totalABC").textContent = formatCurrency(totalABC);
-  document.getElementById("totalBid").textContent = formatCurrency(totalBid);
-  document.getElementById("svpABC").textContent = formatCurrency(svpABC);
-  document.getElementById("svpBid").textContent = formatCurrency(svpBid);
-  document.getElementById("shoppingABC").textContent = formatCurrency(shoppingABC);
-  document.getElementById("shoppingBid").textContent = formatCurrency(shoppingBid);
-  document.getElementById("negotiatedABC").textContent = formatCurrency(negotiatedABC);
-  document.getElementById("negotiatedBid").textContent = formatCurrency(negotiatedBid);
-}
-
-async function loadData() {
-  try {
-    const { data, error } = await supabaseHSG
-      .from("hsg_project_monitoring")
-      .select("*")
-      .order("id", { ascending: true });
-
-    if (error) throw error;
-
-    updateSummary(data);
-    tableBody.innerHTML = "";
-
-    if (data.length === 0) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="9" class="text-center text-muted">
-            <i class="fas fa-inbox"></i> No records found. Click "Add Empty Row" to start.
-          </td>
-        </tr>
-      `;
-      recordCount.textContent = "0 records";
-      return;
+    function formatCurrency(num) {
+        return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(num || 0);
     }
 
-    data.forEach((row, idx) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${idx + 1}</td>
-        <td><input type="date" value="${row.date_out || ""}"></td>
-        <td contenteditable="true">${row.item_description || ""}</td>
-        <td>
-          <select>
-            <option value="">-- Select Mode --</option>
-            <option ${row.mode_of_procurement === "Small Value Procurement" ? "selected" : ""}>Small Value Procurement</option>
-            <option ${row.mode_of_procurement === "Shopping" ? "selected" : ""}>Shopping</option>
-            <option ${row.mode_of_procurement === "Negotiated" ? "selected" : ""}>Negotiated</option>
-          </select>
-        </td>
-        <td contenteditable="true">${row.abc || ""}</td>
-        <td contenteditable="true">${row.bid_amount || ""}</td>
-        <td contenteditable="true">${row.proponent || ""}</td>
-        <td contenteditable="true">${row.remarks || ""}</td>
-        <td class="actions">
-          <button class="btn btn-sm btn-danger delete-btn" data-id="${row.id}">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      `;
-      tableBody.appendChild(tr);
-    });
-
-    recordCount.textContent = `${data.length} record${data.length !== 1 ? 's' : ''}`;
-    renumberRows();
-  } catch (error) {
-    console.error("Error loading data:", error);
-    showToast("Error loading data: " + error.message, 'error');
-  }
-}
-
-function renumberRows() {
-  const rows = tableBody.querySelectorAll("tr");
-  rows.forEach((row, index) => { 
-    const firstCell = row.querySelector("td");
-    if (firstCell) firstCell.textContent = index + 1; 
-  });
-}
-
-addEmptyRowBtn.addEventListener("click", () => {
-  const newRow = document.createElement("tr");
-  newRow.innerHTML = `
-    <td>—</td>
-    <td><input type="date"></td>
-    <td contenteditable="true"></td>
-    <td>
-      <select>
-        <option value="">-- Select Mode --</option>
-        <option>Small Value Procurement</option>
-        <option>Shopping</option>
-        <option>Negotiated</option>
-      </select>
-    </td>
-    <td contenteditable="true"></td>
-    <td contenteditable="true"></td>
-    <td contenteditable="true"></td>
-    <td contenteditable="true"></td>
-    <td class="actions">
-      <button class="btn btn-sm btn-danger delete-btn">
-        <i class="fas fa-trash"></i>
-      </button>
-    </td>
-  `;
-  tableBody.appendChild(newRow);
-  renumberRows();
-  showToast("Empty row added. Fill in the data and click 'Save New Records'.", 'info');
-});
-
-addRowBtn.addEventListener("click", async () => {
-  const newRows = Array.from(tableBody.querySelectorAll("tr")).filter(r => !r.querySelector(".delete-btn").dataset.id);
-  
-  if (newRows.length === 0) {
-    showToast("No new rows to add.", 'error');
-    return;
-  }
-
-  try {
-    for (let row of newRows) {
-      const cells = row.querySelectorAll("td");
-      const record = {
-        date_out: cells[1].querySelector("input").value || null,
-        item_description: cells[2].innerText.trim() || null,
-        mode_of_procurement: cells[3].querySelector("select").value || null,
-        abc: parseFloat(cells[4].innerText.trim()) || null,
-        bid_amount: parseFloat(cells[5].innerText.trim()) || null,
-        proponent: cells[6].innerText.trim() || null,
-        remarks: cells[7].innerText.trim() || null,
-      };
-      const { error } = await supabaseHSG.from("hsg_project_monitoring").insert([record]);
-      if (error) throw error;
+    async function loadData() {
+        const { data, error } = await supabaseHSG.from("hsg_project_monitoring").select("*").order("id", { ascending: true });
+        if (error) return console.error(error);
+        masterData = data;
+        renderFiltered();
     }
-    showToast(`${newRows.length} record${newRows.length !== 1 ? 's' : ''} added successfully!`, 'success');
+
+    function renderFiltered() {
+        const query = searchInput.value.toLowerCase();
+        const filtered = masterData.filter(row => 
+            (row.item_description || "").toLowerCase().includes(query) || 
+            (row.remarks || "").toLowerCase().includes(query)
+        );
+        
+        tableBody.innerHTML = "";
+        let totals = { abc: 0, svp: 0, shop: 0, nego: 0 };
+
+        filtered.forEach((row, i) => {
+            const val = parseFloat(row.abc) || 0;
+            totals.abc += val;
+            if (row.mode_of_procurement === "Small Value Procurement") totals.svp += val;
+            if (row.mode_of_procurement === "Shopping") totals.shop += val;
+            if (row.mode_of_procurement === "Negotiated") totals.nego += val;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="col-id">${i + 1}</td>
+                <td class="col-date"><input type="date" value="${row.date_out || ""}"></td>
+                <td class="col-desc" contenteditable="true">${row.item_description || ""}</td>
+                <td class="col-mode">
+                    <select>
+                        <option value="">-- Mode --</option>
+                        <option ${row.mode_of_procurement === "Small Value Procurement" ? "selected" : ""}>Small Value Procurement</option>
+                        <option ${row.mode_of_procurement === "Shopping" ? "selected" : ""}>Shopping</option>
+                        <option ${row.mode_of_procurement === "Negotiated" ? "selected" : ""}>Negotiated</option>
+                    </select>
+                </td>
+                <td class="col-money" contenteditable="true" style="font-weight:700;">${row.abc || ""}</td>
+                <td class="col-money" contenteditable="true" style="color:var(--indigo); font-weight:700;">${row.bid_amount || ""}</td>
+                <td class="col-remarks" contenteditable="true">${row.remarks || ""}</td>
+                <td class="col-action">
+                    <button class="btn-danger delete-btn" data-id="${row.id}"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        document.getElementById("totalABC").textContent = formatCurrency(totals.abc);
+        document.getElementById("svpABC").textContent = formatCurrency(totals.svp);
+        document.getElementById("shoppingABC").textContent = formatCurrency(totals.shop);
+        document.getElementById("negotiatedABC").textContent = formatCurrency(totals.nego);
+    }
+
+    searchInput.oninput = renderFiltered;
+
+    document.getElementById("updateRowBtn").onclick = async () => {
+        const rows = tableBody.querySelectorAll("tr");
+        for (let row of rows) {
+            const id = row.querySelector(".delete-btn").dataset.id;
+            const cells = row.querySelectorAll("td");
+            const payload = {
+                date_out: cells[1].querySelector("input").value,
+                item_description: cells[2].innerText.trim(),
+                mode_of_procurement: cells[3].querySelector("select").value,
+                abc: cells[4].innerText.trim(),
+                bid_amount: cells[5].innerText.trim(),
+                remarks: cells[6].innerText.trim()
+            };
+            if (id) await supabaseHSG.from("hsg_project_monitoring").update(payload).eq("id", id);
+            else if (payload.item_description) await supabaseHSG.from("hsg_project_monitoring").insert([payload]);
+        }
+        alert("Portfolio updated successfully.");
+        loadData();
+    };
+
+    document.getElementById("addEmptyRowBtn").onclick = () => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="col-id">*</td>
+            <td class="col-date"><input type="date"></td>
+            <td class="col-desc" contenteditable="true"></td>
+            <td class="col-mode"><select><option value="">-- Mode --</option><option>Small Value Procurement</option><option>Shopping</option><option>Negotiated</option></select></td>
+            <td class="col-money" contenteditable="true"></td>
+            <td class="col-money" contenteditable="true"></td>
+            <td class="col-remarks" contenteditable="true"></td>
+            <td class="col-action"><button class="btn-danger delete-btn"><i class="fas fa-trash"></i></button></td>
+        `;
+        tableBody.prepend(tr);
+    };
+
+    tableBody.onclick = async (e) => {
+        if (e.target.closest(".delete-btn")) {
+            const btn = e.target.closest(".delete-btn");
+            if (btn.dataset.id && confirm("Delete record permanently?")) {
+                await supabaseHSG.from("hsg_project_monitoring").delete().eq("id", btn.dataset.id);
+                loadData();
+            } else if (!btn.dataset.id) btn.closest("tr").remove();
+        }
+    };
+
     loadData();
-  } catch (error) {
-    console.error("Error adding records:", error);
-    showToast("Error adding records: " + error.message, 'error');
-  }
-});
-
-updateRowBtn.addEventListener("click", async () => {
-  const rows = tableBody.querySelectorAll("tr");
-  let updateCount = 0;
-
-  try {
-    for (let row of rows) {
-      const id = row.querySelector(".delete-btn")?.dataset.id;
-      if (!id) continue;
-      
-      const cells = row.querySelectorAll("td");
-      const updatedRecord = {
-        date_out: cells[1].querySelector("input").value || null,
-        item_description: cells[2].innerText.trim() || null,
-        mode_of_procurement: cells[3].querySelector("select").value || null,
-        abc: parseFloat(cells[4].innerText.trim()) || null,
-        bid_amount: parseFloat(cells[5].innerText.trim()) || null,
-        proponent: cells[6].innerText.trim() || null,
-        remarks: cells[7].innerText.trim() || null,
-      };
-      
-      const { error } = await supabaseHSG.from("hsg_project_monitoring").update(updatedRecord).eq("id", id);
-      if (error) throw error;
-      updateCount++;
-    }
-    showToast(`${updateCount} record${updateCount !== 1 ? 's' : ''} updated successfully!`, 'success');
-    loadData();
-  } catch (error) {
-    console.error("Error updating records:", error);
-    showToast("Error updating records: " + error.message, 'error');
-  }
-});
-
-tableBody.addEventListener("click", async (e) => {
-  if (e.target.closest(".delete-btn")) {
-    const btn = e.target.closest(".delete-btn");
-    const id = btn.getAttribute("data-id");
-    
-    if (!confirm("Are you sure you want to delete this record?")) return;
-    
-    if (!id) {
-      btn.closest("tr").remove();
-      renumberRows();
-      showToast("Row removed.", 'info');
-      return;
-    }
-
-    try {
-      const { error } = await supabaseHSG.from("hsg_project_monitoring").delete().eq("id", id);
-      if (error) throw error;
-      
-      btn.closest("tr").remove();
-      renumberRows();
-      showToast("Record deleted successfully!", 'success');
-      
-      const currentCount = parseInt(recordCount.textContent);
-      recordCount.textContent = `${currentCount - 1} record${currentCount - 1 !== 1 ? 's' : ''}`;
-      
-      loadData();
-    } catch (error) {
-      console.error("Error deleting record:", error);
-      showToast("Error deleting record: " + error.message, 'error');
-    }
-  }
-});
-
-refreshBtn.addEventListener("click", () => {
-  loadData();
-  showToast("Data refreshed!", 'info');
-});
-
-loadData();
 </script>
-
 </body>
 </html>
