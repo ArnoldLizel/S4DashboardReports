@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MonitorPro Enterprise | Activity Tracker</title>
+    <title>MonitorPro Enterprise | Quarterly Tracker</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,7 +11,6 @@
 
     <style>
         :root {
-            /* Professional Executive Palette */
             --navy: #0f172a;
             --indigo: #4338ca;
             --indigo-light: #e0e7ff;
@@ -20,7 +19,6 @@
             --slate-200: #e2e8f0;
             --slate-600: #475569;
             --slate-800: #1e293b;
-            --emerald: #059669;
             --rose: #e11d48;
         }
 
@@ -32,10 +30,9 @@
             color: var(--slate-800);
             padding-bottom: 5rem;
             font-size: 1.1rem;
-            line-height: 1.5;
         }
 
-        /* --- NAVIGATION --- */
+        /* --- HEADER --- */
         .nav-header {
             background: var(--navy);
             color: white;
@@ -46,21 +43,43 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
 
         .brand-box { display: flex; align-items: center; gap: 12px; }
-        .brand-logo { background: var(--indigo); padding: 8px; border-radius: 8px; }
         .brand-title { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; }
 
+        /* --- QUARTER FILTER BAR --- */
+        .filter-bar {
+            background: white;
+            padding: 1rem 2.5rem;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            position: sticky;
+            top: 60px;
+            z-index: 999;
+        }
+
+        .filter-label { font-weight: 700; font-size: 0.9rem; color: var(--slate-600); text-transform: uppercase; margin-right: 15px; }
+
+        .btn-filter {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--slate-200);
+            background: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-filter:hover { background: var(--slate-100); }
+        .btn-filter.active { background: var(--indigo); color: white; border-color: var(--indigo); }
+
         /* --- LAYOUT --- */
-        .container { max-width: 1750px; margin: 2.5rem auto; padding: 0 2rem; }
+        .container { max-width: 1750px; margin: 2rem auto; padding: 0 2rem; }
 
-        .page-intro { margin-bottom: 2rem; }
-        .page-intro h2 { font-size: 2.5rem; font-weight: 800; color: var(--navy); letter-spacing: -0.03em; }
-        .page-intro p { color: var(--slate-600); font-size: 1.15rem; }
-
-        /* --- DATA CARD --- */
         .data-card {
             background: white;
             border-radius: 16px;
@@ -79,21 +98,15 @@
         }
 
         .search-input {
-            width: 450px;
-            padding: 12px 12px 12px 45px;
+            width: 400px;
+            padding: 12px 15px;
             border: 1px solid var(--slate-200);
             border-radius: 10px;
-            font-size: 1rem;
             background: var(--slate-50);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: 15px center;
-            background-size: 20px;
         }
 
-        /* --- TABLE ARCHITECTURE --- */
+        /* --- TABLE --- */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        
         thead th {
             background: var(--slate-100);
             color: var(--slate-600);
@@ -101,12 +114,10 @@
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            font-weight: 700;
             border-bottom: 2px solid var(--slate-200);
             text-align: left;
         }
 
-        /* Fixed the overlapping: Increased width of Ref column */
         .col-ref { width: 100px; text-align: center; } 
         .col-act { width: 22%; }
         .col-sub { width: 20%; }
@@ -117,76 +128,54 @@
 
         td { padding: 1.2rem 1rem; border-bottom: 1px solid var(--slate-100); vertical-align: top; }
 
-        /* --- INPUTS --- */
         textarea, select {
             width: 100%; border: 1px solid transparent; border-radius: 8px;
             padding: 12px; font-family: inherit; font-size: 1.05rem; 
-            background: var(--slate-50); transition: 0.2s;
+            background: var(--slate-50);
         }
-        textarea:focus, select:focus { 
-            background: white; border-color: var(--indigo); outline: none; 
-            box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.1); 
-        }
-
-        select { cursor: pointer; color: var(--slate-800); font-weight: 500; }
+        textarea:focus { background: white; border-color: var(--indigo); outline: none; }
 
         /* --- BUTTONS --- */
-        .btn {
-            padding: 0.8rem 1.6rem; border-radius: 10px; font-weight: 700;
-            cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
-            transition: all 0.2s; font-size: 1rem;
-        }
+        .btn { padding: 0.8rem 1.6rem; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; }
         .btn-primary { background: var(--indigo); color: white; border: none; }
-        .btn-primary:hover { background: #3730a3; transform: translateY(-1px); }
         .btn-outline { background: transparent; border: 2px solid var(--slate-200); color: var(--slate-800); }
-        .btn-outline:hover { background: var(--slate-100); border-color: var(--slate-600); }
 
-        /* --- DRAG HANDLE --- */
-        .drag-handle { cursor: grab; color: var(--indigo); font-weight: 800; }
-        .draggable-row.dragging { opacity: 0.5; background: var(--indigo-light); }
-
-        /* --- MONTH GRID --- */
         .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .month-item { 
-            font-size: 0.85rem; padding: 8px 4px; text-align: center; 
-            background: var(--slate-200); border-radius: 6px; font-weight: 700; cursor: pointer;
-            color: var(--slate-600);
-        }
+        .month-item { font-size: 0.85rem; padding: 8px 4px; text-align: center; background: var(--slate-200); border-radius: 6px; font-weight: 700; cursor: pointer; }
         .month-item.active { background: var(--indigo); color: white; }
 
-        @media print {
-            .nav-header, .btn, .col-del, .table-toolbar { display: none !important; }
-            .container { max-width: 100%; margin: 0; }
-            textarea { background: none; border: none; padding: 0; }
-        }
+        @media print { .nav-header, .filter-bar, .btn, .col-del, .table-toolbar { display: none !important; } }
     </style>
 </head>
 <body>
 
 <nav class="nav-header">
     <div class="brand-box">
-        <div class="brand-logo"><i class="fas fa-briefcase"></i></div>
-        <div class="brand-title">MonitorPro Enterprise</div>
+        <div class="brand-title"><i class="fas fa-layer-group"></i> MonitorPro Enterprise</div>
     </div>
-    <div class="nav-actions" style="display:flex; gap:12px;">
-        <button id="printBtn" class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3);"><i class="fas fa-file-export"></i> Export PDF</button>
-        <button id="updateBtn" class="btn btn-primary"><i class="fas fa-cloud-upload-alt"></i> Save All Changes</button>
+    <div style="display:flex; gap:12px;">
+        <button id="printBtn" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3)">Export PDF</button>
+        <button id="updateBtn" class="btn btn-primary">Save Changes</button>
     </div>
 </nav>
 
-<div class="container">
-    <div class="page-intro" style="display: flex; justify-content: space-between; align-items: flex-end;">
-        <div>
-            <h2>Implementation Hub</h2>
-            <p>Institutional tracking for fiscal year milestones and activities.</p>
-        </div>
-        <button id="addRowBtn" class="btn btn-outline"><i class="fas fa-plus-circle"></i> New Row</button>
-    </div>
+<div class="filter-bar">
+    <span class="filter-label">Display View:</span>
+    <button class="btn-filter active" data-filter="All">All Activities</button>
+    <button class="btn-filter" data-filter="First Quarter">1st Quarter</button>
+    <button class="btn-filter" data-filter="Second Quarter">2nd Quarter</button>
+    <button class="btn-filter" data-filter="Third Quarter">3rd Quarter</button>
+    <button class="btn-filter" data-filter="Fourth Quarter">4th Quarter</button>
+</div>
 
+<div class="container">
     <div class="data-card">
         <div class="table-toolbar">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search activities or remarks...">
-            <div id="recordCount" style="font-weight: 800; color: var(--indigo); background: var(--indigo-light); padding: 8px 18px; border-radius: 50px;">0 Activities</div>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search entries...">
+            <div style="display:flex; gap:15px; align-items:center;">
+                <div id="recordCount" style="font-weight: 800; color: var(--indigo); background: var(--indigo-light); padding: 8px 18px; border-radius: 50px;">0 Activities</div>
+                <button id="addRowBtn" class="btn btn-outline" style="padding: 0.5rem 1rem;"><i class="fas fa-plus"></i></button>
+            </div>
         </div>
 
         <div style="overflow-x: auto;">
@@ -194,22 +183,19 @@
                 <thead>
                     <tr>
                         <th class="col-ref">Ref</th>
-                        <th class="col-act">Activity Description</th>
+                        <th class="col-act">Activity</th>
                         <th class="col-sub">Sub-Activity</th>
-                        <th class="col-time">Implementation Timeline</th>
+                        <th class="col-time">Timeline</th>
                         <th class="col-qtr">Quarter</th>
                         <th class="col-remarks">Remarks</th>
                         <th class="col-del"></th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
-                    </tbody>
+                <tbody id="tableBody"></tbody>
             </table>
         </div>
     </div>
 </div>
-
-<div id="toastContainer" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999;"></div>
 
 <script>
     const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
@@ -219,12 +205,19 @@
     const tableBody = document.getElementById("tableBody");
     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     let activityData = [];
-    let draggedRow = null;
+    let currentFilter = "All";
 
     async function fetchData() {
         const { data } = await supabaseClient.from("iapb").select("*").order("id", {ascending: true});
         activityData = data || [];
-        refreshView(activityData);
+        filterAndRefresh();
+    }
+
+    function filterAndRefresh() {
+        const filtered = currentFilter === "All" 
+            ? activityData 
+            : activityData.filter(item => item.quarter_implementation === currentFilter);
+        refreshView(filtered);
     }
 
     function refreshView(data) {
@@ -238,16 +231,11 @@
             `).join("");
 
             const row = document.createElement("tr");
-            row.className = "draggable-row";
-            row.draggable = true;
             row.dataset.id = item.id || "";
             row.innerHTML = `
-                <td class="col-ref drag-handle">
-                    <i class="fas fa-grip-lines" style="opacity:0.4; margin-right:10px;"></i>
-                    <span>${index + 1}</span>
-                </td>
-                <td class="col-act"><textarea oninput="autoResize(this)" placeholder="Enter Activity...">${item.activity_title || ""}</textarea></td>
-                <td class="col-sub"><textarea oninput="autoResize(this)" placeholder="Enter Sub-Activity...">${item.sub_activity_title || ""}</textarea></td>
+                <td class="col-ref"><b>${index + 1}</b></td>
+                <td class="col-act"><textarea oninput="autoResize(this)">${item.activity_title || ""}</textarea></td>
+                <td class="col-sub"><textarea oninput="autoResize(this)">${item.sub_activity_title || ""}</textarea></td>
                 <td class="col-time"><div class="month-grid">${monthsHtml}</div></td>
                 <td class="col-qtr">
                     <select class="qtr-select">
@@ -258,45 +246,30 @@
                         <option ${item.quarter_implementation === "Fourth Quarter" ? "selected" : ""}>Fourth Quarter</option>
                     </select>
                 </td>
-                <td class="col-remarks"><textarea oninput="autoResize(this)" placeholder="Encoding remarks...">${item.remarks || ""}</textarea></td>
-                <td class="col-del"><button class="btn-del" style="border:none; background:none; color:var(--rose); cursor:pointer; font-size:1.2rem;"><i class="fas fa-trash-alt"></i></button></td>
+                <td class="col-remarks"><textarea oninput="autoResize(this)">${item.remarks || ""}</textarea></td>
+                <td class="col-del"><button class="btn-del" style="border:none; background:none; color:var(--rose); cursor:pointer;"><i class="fas fa-trash"></i></button></td>
             `;
-
-            // Drag Events
-            row.addEventListener('dragstart', () => { draggedRow = row; row.classList.add('dragging'); });
-            row.addEventListener('dragend', () => { draggedRow.classList.remove('dragging'); reorderRefs(); });
-            row.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                const afterElement = getDragAfterElement(tableBody, e.clientY);
-                if (afterElement == null) tableBody.appendChild(draggedRow);
-                else tableBody.insertBefore(draggedRow, afterElement);
-            });
-
             tableBody.appendChild(row);
             row.querySelectorAll('textarea').forEach(autoResize);
         });
         document.getElementById("recordCount").innerText = `${data.length} Activities`;
     }
 
-    function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.draggable-row:not(.dragging)')];
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-            else return closest;
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-
-    function reorderRefs() {
-        tableBody.querySelectorAll('.col-ref span').forEach((span, i) => span.innerText = i + 1);
-    }
+    // FILTER LOGIC
+    document.querySelectorAll('.btn-filter').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            filterAndRefresh();
+        };
+    });
 
     function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 
     document.getElementById("updateBtn").onclick = async () => {
         const btn = document.getElementById("updateBtn");
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        btn.innerHTML = "Saving...";
         const rows = tableBody.querySelectorAll("tr");
         for (let r of rows) {
             const payload = {
@@ -309,26 +282,20 @@
             if (r.dataset.id) await supabaseClient.from("iapb").update(payload).eq("id", r.dataset.id);
             else if (payload.activity_title) await supabaseClient.from("iapb").insert([payload]);
         }
-        fetchData();
-        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Save All Changes';
-        alert("Success: Database updated.");
+        await fetchData();
+        btn.innerHTML = "Save Changes";
     };
 
     document.getElementById("addRowBtn").onclick = () => {
-        activityData.push({ activity_title: "", remarks: "" });
-        refreshView(activityData);
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        activityData.push({ activity_title: "", remarks: "", quarter_implementation: currentFilter !== "All" ? currentFilter : "" });
+        filterAndRefresh();
     };
 
     tableBody.addEventListener('change', (e) => {
-        if (e.target.type === 'checkbox') {
-            const label = e.target.parentElement;
-            label.classList.toggle('active', e.target.checked);
-        }
+        if (e.target.type === 'checkbox') e.target.parentElement.classList.toggle('active', e.target.checked);
     });
 
     document.getElementById("printBtn").onclick = () => window.print();
-
     fetchData();
 </script>
 </body>
