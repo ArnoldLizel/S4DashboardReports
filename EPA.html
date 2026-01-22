@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPA Procurement | Auto-Expand View</title>
+    <title>EPA Procurement | Wide Project View</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -71,6 +71,7 @@
         .table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed; /* Ensures specified widths are strictly followed */
         }
 
         .table thead th {
@@ -100,12 +101,13 @@
             font-size: var(--fs-table);
         }
 
-        .col-nr { width: 60px; text-align: center; font-weight: 800; color: var(--brand-gold); }
-        .col-title { width: 350px; }
-        .col-abc { width: 160px; }
-        .col-date { width: 165px; }
-        .col-remarks { min-width: 500px; }
-        .col-action { width: 80px; text-align: center; }
+        /* --- UPDATED COLUMN WIDTHS --- */
+        .col-nr { width: 50px; text-align: center; font-weight: 800; color: var(--brand-gold); }
+        .col-title { width: 550px; } /* MUCH LONGER */
+        .col-abc { width: 140px; }
+        .col-date { width: 145px; }
+        .col-remarks { width: 300px; } /* SHORTER */
+        .col-action { width: 70px; text-align: center; }
 
         .form-control {
             width: 100%;
@@ -117,7 +119,7 @@
             font-size: var(--fs-table);
             transition: 0.2s;
             line-height: 1.4;
-            overflow: hidden; /* Hide scrollbars during auto-expand */
+            overflow: hidden;
         }
 
         .form-control:focus {
@@ -129,7 +131,7 @@
 
         textarea.form-control { 
             min-height: 45px; 
-            resize: none; /* Prevents manual resizing which breaks auto-layout */
+            resize: none; 
             display: block;
         }
 
@@ -185,7 +187,7 @@
                     <th class="col-date">PQ</th>
                     <th class="col-date">NOA</th>
                     <th class="col-date">NTP</th>
-                    <th class="col-remarks">Remarks & Detailed Status</th>
+                    <th class="col-remarks">Remarks</th>
                     <th class="col-action">Action</th>
                 </tr>
             </thead>
@@ -210,7 +212,6 @@
     let items = [{ text: "Goods and Services", colspan: true }];
     let currentYear = new Date().getFullYear().toString();
 
-    // --- HELPER: AUTO EXPAND ---
     const autoExpand = (el) => {
         el.style.height = 'auto';
         el.style.height = el.scrollHeight + 'px';
@@ -229,48 +230,36 @@
             } else {
                 tr.innerHTML = `
                     <td class="col-nr">${idx}</td>
-                    <td><textarea class="form-control" data-field="title" data-idx="${idx}">${item.title || ""}</textarea></td>
-                    <td><input type="number" class="form-control" style="font-weight:700" data-field="abc" data-idx="${idx}" value="${item.abc || ""}"></td>
-                    <td><input type="date" class="form-control" data-field="preProc" data-idx="${idx}" value="${item.preProc || ""}"></td>
-                    <td><input type="date" class="form-control" data-field="preBid" data-idx="${idx}" value="${item.preBid || ""}"></td>
-                    <td><input type="date" class="form-control" data-field="sobe" data-idx="${idx}" value="${item.sobe || ""}"></td>
-                    <td><input type="date" class="form-control" data-field="pq" data-idx="${idx}" value="${item.pq || ""}"></td>
-                    <td><input type="date" class="form-control" data-field="noa" data-idx="${idx}" value="${item.noa || ""}"></td>
-                    <td><input type="date" class="form-control" data-field="ntp" data-idx="${idx}" value="${item.ntp || ""}"></td>
-                    <td><textarea class="form-control" data-field="remarks" data-idx="${idx}">${item.remarks || ""}</textarea></td>
+                    <td class="col-title"><textarea class="form-control" data-field="title" data-idx="${idx}">${item.title || ""}</textarea></td>
+                    <td class="col-abc"><input type="number" class="form-control" style="font-weight:700" data-field="abc" data-idx="${idx}" value="${item.abc || ""}"></td>
+                    <td class="col-date"><input type="date" class="form-control" data-field="preProc" data-idx="${idx}" value="${item.preProc || ""}"></td>
+                    <td class="col-date"><input type="date" class="form-control" data-field="preBid" data-idx="${idx}" value="${item.preBid || ""}"></td>
+                    <td class="col-date"><input type="date" class="form-control" data-field="sobe" data-idx="${idx}" value="${item.sobe || ""}"></td>
+                    <td class="col-date"><input type="date" class="form-control" data-field="pq" data-idx="${idx}" value="${item.pq || ""}"></td>
+                    <td class="col-date"><input type="date" class="form-control" data-field="noa" data-idx="${idx}" value="${item.noa || ""}"></td>
+                    <td class="col-date"><input type="date" class="form-control" data-field="ntp" data-idx="${idx}" value="${item.ntp || ""}"></td>
+                    <td class="col-remarks"><textarea class="form-control" data-field="remarks" data-idx="${idx}">${item.remarks || ""}</textarea></td>
                     <td class="col-action"><button class="delete-btn" data-del-idx="${idx}"><i class="fas fa-trash-alt"></i></button></td>
                 `;
             }
             tbody.appendChild(tr);
         });
-
-        // Trigger expand for all textareas after render
         document.querySelectorAll('textarea.form-control').forEach(autoExpand);
     };
 
-    // --- EVENT DELEGATION FOR INPUTS ---
     document.getElementById("tableBody").addEventListener("input", (e) => {
         const { field, idx } = e.target.dataset;
         if (field && idx) items[idx][field] = e.target.value;
-        
-        // Auto-expand if it's a textarea
-        if (e.target.tagName === 'TEXTAREA') {
-            autoExpand(e.target);
-        }
+        if (e.target.tagName === 'TEXTAREA') autoExpand(e.target);
     });
 
-    // --- EVENT DELEGATION FOR DELETE ---
     document.getElementById("tableBody").addEventListener("click", async (e) => {
         const delBtn = e.target.closest('.delete-btn');
         if (delBtn) {
             const idx = delBtn.dataset.delIdx;
-            if (!confirm("Delete this entry?")) return;
-            
+            if (!confirm("Delete this project?")) return;
             const item = items[idx];
-            if (item.id) {
-                const { error } = await supabase.from(TABLE).delete().eq("id", item.id);
-                if (error) { alert("Error deleting: " + error.message); return; }
-            }
+            if (item.id) await supabase.from(TABLE).delete().eq("id", item.id);
             items.splice(idx, 1);
             render();
         }
@@ -297,7 +286,7 @@
         }));
         const { error } = await supabase.from(TABLE).upsert(rows, { onConflict: 'item_number, year' });
         if (error) alert("Error: " + error.message);
-        else alert("Data synchronized for year " + currentYear);
+        else alert("Data synchronized for " + currentYear);
         loadData();
     };
 
