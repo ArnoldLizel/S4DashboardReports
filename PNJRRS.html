@@ -11,74 +11,92 @@
         background-image: url('image/bg2.jpg');
         background-size: cover;
         background-position: center;
-        background-attachment: fixed; /* Keeps background still while scrolling */
+        background-attachment: fixed;
         background-repeat: no-repeat;
         min-height: 100vh;
     }
 
-    /* Optional: If the background makes text hard to read, 
-       this adds a subtle white overlay to the container */
     .container {
         background-color: rgba(255, 255, 255, 0.9); 
         border-radius: 8px;
         padding: 20px;
         margin-top: 20px;
     }
-</style>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; padding: 1.5rem; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 0; }
-        h1, h2, h3, h4, h5, h6 { color: #0b1a3a; font-weight: 600; margin-bottom: 1rem; }
-        h1 { font-size: 2rem; }
-        p { margin-bottom: 1rem; color: #4b5563; }
-        .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; transition: box-shadow 0.3s ease; }
-        .card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .card-header { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem 0.5rem 0 0; margin: -1.5rem -1.5rem 1.5rem -1.5rem; font-weight: 600; font-size: 1.125rem; border-left: 4px solid #f1c232; }
-        .card-body { padding: 0; }
-        .card-body-form { padding: 1.5rem; }
-        .card-footer { border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem; color: #6b7280; font-size: 0.875rem; }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; padding: 1.5rem; }
-        .summary-box { background: linear-gradient(145deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; transition: transform 0.2s; }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ummary-box:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); }
-        .summary-category-section { grid-column: 1 / -1; margin-top: 1rem; padding-top: 0.75rem; border-top: 2px dashed #e5e7eb; }
-        .summary-category-title { grid-column: 1 / -1; font-size: 1.125rem; font-weight: 600; color: #1e3a8a; margin-bottom: 0.75rem; }
-        .summary-box.inventory-box { background: linear-gradient(145deg, #0891b2 0%, #06b6d4 100%); }
-        .summary-icon { font-size: 1.25rem; margin-right: 0.5rem; color: #f1c232; }
-        .inventory-box .summary-icon { color: white; }
-        .summary-label { font-size: 0.875rem; font-weight: 500; opacity: 0.8; display: flex; align-items: center; }
-        .summary-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-top: 0.5rem; }
-        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; font-size: 0.875rem; font-weight: 500; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s ease; text-decoration: none; text-align: center; white-space: nowrap; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-primary { background-color: #0b1a3a; color: white; }
-        .btn-primary:hover:not(:disabled) { background-color: #1e3a8a; box-shadow: 0 4px 6px -1px rgba(11, 26, 58, 0.3); }
-        .btn-neutral { background-color: #06b6d4; color: white; }
-        .btn-neutral:hover:not(:disabled) { background-color: #0891b2; }
-        .btn-success { background-color: #10b981; color: white; }
-        .btn-group { display: inline-flex; gap: 0.5rem; flex-wrap: wrap; }
-        .form-group { margin-bottom: 1.25rem; }
-        .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem; font-size: 0.875rem; }
-        .form-select { display: block; width: 100%; padding: 0.625rem 2.5rem 0.625rem 0.875rem; font-size: 0.875rem; font-weight: 400; line-height: 1.5; color: #1f2937; background-color: white; border: 1px solid #d1d5db; border-radius: 0.375rem; appearance: none; }
-        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1.5rem; padding: 1.5rem 0; }
-        .table { width: 100%; border-collapse: collapse; background-color: white; font-size: 0.875rem; }
-        .table thead { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; }
-        .table thead th { padding: 0.875rem 1rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f1c232; }
-        .table tbody tr { border-bottom: 1px solid #e5e7eb; transition: background-color 0.15s ease; }
-        .table tbody tr:hover { background-color: #f9fafb; }
-        .table tbody td { padding: 0.875rem 1rem; color: #4b5563; vertical-align: middle; }
-        .table-striped tbody tr:nth-child(odd) { background-color: #f9fafb; }
-        .highlight-row td { background-color: #eef2ff !important; color: #1e3a8a; font-weight: 600; padding: 0.875rem 1rem; text-align: left; border-top: 2px solid #c7d2fe; }
-        #toe-body input, #mrr-body input { width: 60px; padding: 0.4rem 0.2rem; text-align: center; font-size: 0.875rem; border-radius: 0.25rem; height: 32px; border: 1px solid #d1d5db; }
-        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 700; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.025em; white-space: nowrap; }
-        .status-badge.status-active, .status-badge.status-approved { background-color: #d1fae5; color: #065f46; }
-        .status-badge.status-pending { background-color: #fef3c7; color: #92400e; }
-        .status-badge.status-rejected, .status-badge.status-inactive { background-color: #fee2e2; color: #991b1b; }
-        .text-center { text-align: center; }
-        .text-muted { color: #6b7280; }
-        .mt-3 { margin-top: 1rem; }
-        .mb-4 { margin-bottom: 2rem; }
-        .d-flex { display: flex; }
-        .align-items-center { align-items: center; }
-        .justify-content-between { justify-content: space-between; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; padding: 1.5rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 0; }
+    h1, h2, h3, h4, h5, h6 { color: #0b1a3a; font-weight: 600; margin-bottom: 1rem; }
+    h1 { font-size: 2rem; }
+    p { margin-bottom: 1rem; color: #4b5563; }
+    .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; transition: box-shadow 0.3s ease; }
+    .card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .card-header { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem 0.5rem 0 0; margin: -1.5rem -1.5rem 1.5rem -1.5rem; font-weight: 600; font-size: 1.125rem; border-left: 4px solid #f1c232; }
+    .card-body { padding: 0; }
+    .card-body-form { padding: 1.5rem; }
+    .card-footer { border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem; color: #6b7280; font-size: 0.875rem; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; padding: 1.5rem; }
+    .summary-box { background: linear-gradient(145deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; transition: transform 0.2s; }
+    .summary-box:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); }
+    .summary-category-section { grid-column: 1 / -1; margin-top: 1rem; padding-top: 0.75rem; border-top: 2px dashed #e5e7eb; }
+    .summary-category-title { grid-column: 1 / -1; font-size: 1.125rem; font-weight: 600; color: #1e3a8a; margin-bottom: 0.75rem; }
+    .summary-box.inventory-box { background: linear-gradient(145deg, #0891b2 0%, #06b6d4 100%); }
+    .summary-icon { font-size: 1.25rem; margin-right: 0.5rem; color: #f1c232; }
+    .inventory-box .summary-icon { color: white; }
+    .summary-label { font-size: 0.875rem; font-weight: 500; opacity: 0.8; display: flex; align-items: center; }
+    .summary-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-top: 0.5rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; font-size: 0.875rem; font-weight: 500; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s ease; text-decoration: none; text-align: center; white-space: nowrap; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background-color: #0b1a3a; color: white; }
+    .btn-primary:hover:not(:disabled) { background-color: #1e3a8a; box-shadow: 0 4px 6px -1px rgba(11, 26, 58, 0.3); }
+    .btn-neutral { background-color: #06b6d4; color: white; }
+    .btn-neutral:hover:not(:disabled) { background-color: #0891b2; }
+    .btn-success { background-color: #10b981; color: white; }
+    .btn-warning { background-color: #f59e0b; color: white; }
+    .btn-warning:hover:not(:disabled) { background-color: #d97706; }
+    .btn-group { display: inline-flex; gap: 0.5rem; flex-wrap: wrap; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem; font-size: 0.875rem; }
+    .form-select { display: block; width: 100%; padding: 0.625rem 2.5rem 0.625rem 0.875rem; font-size: 0.875rem; font-weight: 400; line-height: 1.5; color: #1f2937; background-color: white; border: 1px solid #d1d5db; border-radius: 0.375rem; appearance: none; }
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1.5rem; padding: 1.5rem 0; }
+    .table { width: 100%; border-collapse: collapse; background-color: white; font-size: 0.875rem; }
+    .table thead { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; }
+    .table thead th { padding: 0.875rem 1rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f1c232; }
+    .table tbody tr { border-bottom: 1px solid #e5e7eb; transition: background-color 0.15s ease; }
+    .table tbody tr:hover { background-color: #f9fafb; }
+    .table tbody td { padding: 0.875rem 1rem; color: #4b5563; vertical-align: middle; }
+    .table-striped tbody tr:nth-child(odd) { background-color: #f9fafb; }
+    .highlight-row td { background-color: #eef2ff !important; color: #1e3a8a; font-weight: 600; padding: 0.875rem 1rem; text-align: left; border-top: 2px solid #c7d2fe; }
+    #toe-body input, #mrr-body input { width: 60px; padding: 0.4rem 0.2rem; text-align: center; font-size: 0.875rem; border-radius: 0.25rem; height: 32px; border: 1px solid #d1d5db; }
+    .status-badge { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 700; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.025em; white-space: nowrap; }
+    .status-badge.status-active, .status-badge.status-approved { background-color: #d1fae5; color: #065f46; }
+    .status-badge.status-pending { background-color: #fef3c7; color: #92400e; }
+    .status-badge.status-rejected, .status-badge.status-inactive { background-color: #fee2e2; color: #991b1b; }
+    .text-center { text-align: center; }
+    .text-muted { color: #6b7280; }
+    .mt-3 { margin-top: 1rem; }
+    .mb-4 { margin-bottom: 2rem; }
+    .d-flex { display: flex; }
+    .align-items-center { align-items: center; }
+    .justify-content-between { justify-content: space-between; }
+
+    /* Modal Styles */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 1000; backdrop-filter: blur(4px); }
+    .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 0.75rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); max-width: 700px; width: 90%; max-height: 80vh; overflow: hidden; z-index: 1001; }
+    .modal-header { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 1.25rem; margin: 0; }
+    .modal-close { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background 0.2s; }
+    .modal-close:hover { background: rgba(255, 255, 255, 0.1); }
+    .modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+    .office-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; }
+    .office-item { padding: 0.75rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 0.5rem; text-align: center; font-weight: 600; transition: all 0.2s; cursor: pointer; }
+    .office-item:hover { background: #eef2ff; border-color: #1e3a8a; transform: translateY(-2px); }
+    .office-item.missing { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+    .office-item.complete { background: #d1fae5; border-color: #10b981; color: #065f46; }
+    .modal-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-box { padding: 1rem; background: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb; }
+    .stat-label { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
+    .stat-value { font-size: 1.75rem; font-weight: 700; color: #0b1a3a; }
     </style>
 </head>
 <body>
@@ -92,55 +110,56 @@
             <div class="form-group">
                 <label for="office-select" class="form-label">Select Office:</label>
                 <select id="office-select" class="form-select" onchange="loadOfficeData()">
-                    <option value="">-- Select Office --</option>       
-            <option value="FOIC">FOIC</option>
-            <option value="VCOM">VCOM</option>
-            <option value="CNS">CNS</option>
-            <option value="N1">N1</option>
-            <option value="N2">N2</option>
-            <option value="N3">N3</option>
-            <option value="N4">N4</option>
-            <option value="N5">N5</option>
-            <option value="N6">N6</option>
-            <option value="N7">N7</option>
-            <option value="N8">N8</option>
-            <option value="N9">N9</option>
-            <option value="N10">N10</option>
-            <option value="N11">N11</option>
-            <option value="HSG">HSG</option>
-            <option value="NIOFC">NIOFC</option>
-            <option value="CMCPO">CMCPO</option>
-            <option value="CRDO">CRDO</option>
-            <option value="CNLE">CNLE</option>
-            <option value="NSPAO">NSPAO</option>
-            <option value="NPAO">NPAO</option>
-            <option value="ONSSSM">ONSSSM</option>
-            <option value="TNJA">TNJA</option>
-            <option value="TNCH">TNCH</option>
-            <option value="TCSN">TCSN</option>
-            <option value="TCNN">TCNN</option>
-            <option value="TCDSN">TCDSN</option>
-            <option value="TNCE">TNCE</option>
-            <option value="PNOLOAC">PNOLOAC</option>
-            <option value="TNIA">TNIA</option>
-            <option value="NSO">NSO</option>
-            <option value="NASO">NASO</option>
-            <option value="TNIG">TNIG</option>
-            <option value="OESPA">OESPA</option>
-            <option value="TNPM">TNPM</option>
-            <option value="OTNA">OTNA</option>
-            <option value="PNGADC">PNGADC</option>
-            <option value="PNREO">PNREO</option>
-            <option value="PNMO">PNMO</option>
-            <option value="ONIA">ONIA</option>
-            <option value="FMWC">FMWC</option>
-            <option value="PNMCMC">PNMCMC</option>
+                    <option value="">-- Select Office --</option>
+                    <option value="FOIC">FOIC</option>
+                    <option value="VCOM">VCOM</option>
+                    <option value="CNS">CNS</option>
+                    <option value="N1">N1</option>
+                    <option value="N2">N2</option>
+                    <option value="N3">N3</option>
+                    <option value="N4">N4</option>
+                    <option value="N5">N5</option>
+                    <option value="N6">N6</option>
+                    <option value="N7">N7</option>
+                    <option value="N8">N8</option>
+                    <option value="N9">N9</option>
+                    <option value="N10">N10</option>
+                    <option value="N11">N11</option>
+                    <option value="HSG">HSG</option>
+                    <option value="NIOFC">NIOFC</option>
+                    <option value="CMCPO">CMCPO</option>
+                    <option value="CRDO">CRDO</option>
+                    <option value="CNLE">CNLE</option>
+                    <option value="NSPAO">NSPAO</option>
+                    <option value="NPAO">NPAO</option>
+                    <option value="ONSSSM">ONSSSM</option>
+                    <option value="NJAG">NJAG</option>
+                    <option value="TNCH">TNCH</option>
+                    <option value="TCSN">TCSN</option>
+                    <option value="TCNN">TCNN</option>
+                    <option value="TCDSN">TCDSN</option>
+                    <option value="TNCE">TNCE</option>
+                    <option value="PNOLOAC">PNOLOAC</option>
+                    <option value="TNIA">TNIA</option>
+                    <option value="NSO">NSO</option>
+                    <option value="NASO">NASO</option>
+                    <option value="TNIG">TNIG</option>
+                    <option value="OESPA">OESPA</option>
+                    <option value="TNPM">TNPM</option>
+                    <option value="OTNA">OTNA</option>
+                    <option value="PNGADC">PNGADC</option>
+                    <option value="PNREO">PNREO</option>
+                    <option value="PNMO">PNMO</option>
+                    <option value="ONIA">ONIA</option>
+                    <option value="FMWC">FMWC</option>
+                    <option value="PNMCMC">PNMCMC</option>
                 </select>
             </div>
             <div class="d-flex align-items-center justify-content-between mt-3">
                 <div class="btn-group">
                     <button class="btn btn-success" onclick="computeAllRatings()">Compute Ratings</button>
                     <button class="btn btn-neutral" onclick="updateOfficeData()">Update (Save)</button>
+                    <button class="btn btn-warning" onclick="showOfficeStatusModal()">📊 View Office Status</button>
                 </div>
                 <div class="text-muted" id="statusMsg" style="font-weight: 500;">Ready. Select an Office to load or start a new rating.</div>
             </div>
@@ -283,17 +302,79 @@
     </div>
 </div>
 
+<!-- Office Status Modal -->
+<div id="officeStatusModal" class="modal-overlay" onclick="closeOfficeStatusModal(event)">
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>📊 Office Data Status Report</h3>
+            <button class="modal-close" onclick="closeOfficeStatusModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Offices with Data</div>
+                    <div class="stat-value" id="offices-with-data">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Offices Missing Data</div>
+                    <div class="stat-value" id="offices-missing-data" style="color: #ef4444;">0</div>
+                </div>
+            </div>
+            <h4 style="margin-bottom: 1rem; color: #0b1a3a;">All Offices</h4>
+            <div class="office-list" id="officeStatusList"></div>
+        </div>
+    </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
 const TABLE = "office_performance";
 
-// ✅ FIXED: Changed from 'supabase' to 'supabasePNJRRS' to avoid conflict
 const supabasePNJRRS = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const ALL_OFFICES = ['FOIC', 'VCOM', 'CNS', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10', 'N11', 'HSG', 'NIOFC', 'CMCPO', 'CRDO', 'CNLE', 'NSPAO', 'NPAO', 'ONSSSM', 'NJAG', 'TNCH', 'TCSN', 'TCNN', 'TCDSN', 'TNCE', 'PNOLOAC', 'TNIA', 'NSO', 'NASO', 'TNIG', 'OESPA', 'TNPM', 'OTNA', 'PNGADC', 'PNREO', 'PNMO', 'ONIA', 'FMWC', 'PNMCMC'];
 
 const limitTo100 = v => Math.min(v, 100);
 const parseNumber = (value) => parseFloat(value) || 0;
 const INVENTORY_IDS = ['inventory-mobility','inventory-firepower','inventory-communication','inventory-medical','inventory-dental','inventory-quartermaster'];
+
+async function showOfficeStatusModal() {
+    try {
+        const { data: allRecords, error } = await supabasePNJRRS.from(TABLE).select("office");
+        if (error) throw error;
+
+        const officesWithData = new Set(allRecords ? allRecords.map(r => r.office) : []);
+        const officesMissingData = ALL_OFFICES.filter(office => !officesWithData.has(office));
+
+        document.getElementById('offices-with-data').textContent = officesWithData.size;
+        document.getElementById('offices-missing-data').textContent = officesMissingData.length;
+
+        const listContainer = document.getElementById('officeStatusList');
+        listContainer.innerHTML = ALL_OFFICES.map(office => {
+            const hasData = officesWithData.has(office);
+            const cssClass = hasData ? 'complete' : 'missing';
+            const title = hasData ? 'Has data' : 'Missing data - Click to load';
+            return `<div class="office-item ${cssClass}" title="${title}" onclick="selectOfficeFromModal('${office}')">${office}</div>`;
+        }).join('');
+
+        document.getElementById('officeStatusModal').style.display = 'block';
+    } catch (err) {
+        showMessageModal("Error", "Failed to load office status", true);
+    }
+}
+
+function closeOfficeStatusModal(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('officeStatusModal').style.display = 'none';
+    }
+}
+
+function selectOfficeFromModal(office) {
+    document.getElementById('office-select').value = office;
+    closeOfficeStatusModal();
+    loadOfficeData();
+}
 
 function applyStatusBadge(elementId, ratingValue) {
     const el = document.getElementById(elementId);
@@ -485,16 +566,13 @@ async function loadOfficeData() {
         statusEl.textContent = "Loading..."; statusEl.style.color = '#f59e0b';
         const { data, error } = await supabasePNJRRS.from(TABLE).select("payload").eq("office", office).single();
         
-        // ✅ FIXED: Check for errors FIRST before checking data
         if (error) {
-            // Handle PGRST116 error (no rows) as a non-critical case
             if (error.code === 'PGRST116') {
                 console.warn(`No saved data found for ${office}.`);
                 populateTable("toe-body", []); populateTable("mrr-body", []); computeAllRatings();
                 showMessageModal("Info", `No saved data found for ${office}.`);
                 return;
             }
-            // For all other errors, throw
             throw error;
         }
 
@@ -527,6 +605,4 @@ async function loadOfficeData() {
 window.onload = () => { computeAllRatings(); loadAggregatedDashboardData(); };
 </script>
 </body>
-
 </html>
-
