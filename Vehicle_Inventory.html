@@ -411,15 +411,16 @@
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
         const db = window.supabase.createClient(SB_URL, SB_KEY);
 
-        // --- UPDATED: AUTOMATIC SORTING & GROUPING ---
         async function refreshData() {
-            // First sort by Office, then by Vehicle Type within each office
             const { data, error } = await db.from('vehicles')
                 .select('*')
                 .order('office', { ascending: true })
                 .order('vehicle_type', { ascending: true });
 
-            if (error) return console.error(error);
+            if (error) {
+                console.error('Error fetching data:', error);
+                return;
+            }
 
             const tbody = document.getElementById("vehicleTable");
             tbody.innerHTML = "";
@@ -428,7 +429,6 @@
             let counter = 1;
 
             data.forEach((v) => {
-                // If office changes, add a Group Header Row
                 if (v.office !== currentOffice) {
                     currentOffice = v.office;
                     const groupRow = tbody.insertRow();
@@ -462,13 +462,11 @@
             document.getElementById('statOffices').innerText = [...new Set(data.map(v => v.office))].length;
         }
 
-        // --- FILTERING (Search) ---
         function filterTable() {
             const filter = document.getElementById('searchInput').value.toUpperCase();
             const rows = document.getElementById('vehicleTable').getElementsByTagName('tr');
 
             for (let i = 0; i < rows.length; i++) {
-                // Skip the grouping headers during search for better clarity
                 if(rows[i].classList.contains('office-group-row')) {
                     rows[i].style.display = filter === "" ? "" : "none";
                     continue;
@@ -480,18 +478,43 @@
         }
 
         async function addData() {
-            const payload = {
-                office: document.getElementById('office').value,
-                vehicle_type: document.getElementById('vehicle_type').value,
-                plate_number: document.getElementById('plate_number').value,
-                engine_number: document.getElementById('engine_number').value,
-                chassis_number: document.getElementById('chassis_number').value,
-                remarks: document.getElementById('remarks').value,
-                date_of_registration: document.getElementById('date_of_registration').value || null
-            };
+            try {
+                // Validate required fields
+                const office = document.getElementById('office').value;
+                const vehicleType = document.getElementById('vehicle_type').value.trim();
+                const plateNumber = document.getElementById('plate_number').value.trim();
+                
+                if (!vehicleType || !plateNumber) {
+                    alert('Please fill in Vehicle Type and Plate Number');
+                    return;
+                }
 
-            const { error } = await db.from('vehicles').insert([payload]);
-            if(!error) { clearForm(); refreshData(); }
+                const payload = {
+                    office: office,
+                    vehicle_type: vehicleType,
+                    plate_number: plateNumber,
+                    engine_number: document.getElementById('engine_number').value.trim(),
+                    chassis_number: document.getElementById('chassis_number').value.trim(),
+                    remarks: document.getElementById('remarks').value.trim(),
+                    date_of_registration: document.getElementById('date_of_registration').value || null
+                };
+
+                const { data, error } = await db.from('vehicles').insert([payload]);
+                
+                if (error) {
+                    console.error('Error adding record:', error);
+                    alert('Error adding record: ' + error.message);
+                    return;
+                }
+
+                clearForm();
+                await refreshData();
+                alert('Asset registered successfully!');
+                
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                alert('An unexpected error occurred. Please try again.');
+            }
         }
 
         async function editRecord(id) {
@@ -526,7 +549,11 @@
             };
 
             const { error } = await db.from('vehicles').update(payload).eq('id', id);
-            if(!error) { cancelEdit(); refreshData(); }
+            if(!error) { 
+                cancelEdit(); 
+                await refreshData();
+                alert('Asset updated successfully!');
+            }
         }
 
         function toggleSelectAll() {
@@ -539,7 +566,7 @@
             if (ids.length === 0) return alert('Select records first');
             if (confirm(`Delete ${ids.length} records?`)) {
                 await db.from('vehicles').delete().in('id', ids);
-                refreshData();
+                await refreshData();
             }
         }
 
@@ -554,7 +581,7 @@
             });
             if (dups.length > 0 && confirm(`Delete ${dups.length} duplicates?`)) {
                 await db.from('vehicles').delete().in('id', dups);
-                refreshData();
+                await refreshData();
             } else { alert('No duplicates found'); }
         }
 
@@ -566,9 +593,11 @@
         }
 
         function clearForm() {
+            document.getElementById('edit_id').value = '';
             ['vehicle_type', 'plate_number', 'engine_number', 'chassis_number', 'remarks', 'date_of_registration'].forEach(id => {
                 document.getElementById(id).value = "";
             });
+            document.getElementById('office').value = 'FOIC';
         }
 
         function downloadTemplate() {
@@ -594,7 +623,8 @@
                     remarks: (r['Remarks'] || '').toString()
                 }));
                 await db.from('vehicles').insert(vehicles);
-                refreshData();
+                await refreshData();
+                alert('Excel data imported successfully!');
             };
             reader.readAsArrayBuffer(file);
         }
