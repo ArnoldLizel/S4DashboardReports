@@ -353,6 +353,10 @@
                         </div>
                     </div>
                     <div class="group">
+                        <label>Year Model</label>
+                        <input type="number" id="year" class="field" placeholder="e.g., 2020" min="1900" max="2099">
+                    </div>
+                    <div class="group">
                         <label>Status / Remarks</label>
                         <input type="text" id="remarks" class="field">
                     </div>
@@ -483,9 +487,10 @@
                 const office = document.getElementById('office').value;
                 const vehicleType = document.getElementById('vehicle_type').value.trim();
                 const plateNumber = document.getElementById('plate_number').value.trim();
+                const year = document.getElementById('year').value.trim();
                 
-                if (!vehicleType || !plateNumber) {
-                    alert('Please fill in Vehicle Type and Plate Number');
+                if (!vehicleType || !plateNumber || !year) {
+                    alert('Please fill in Vehicle Type, Plate Number, and Year');
                     return;
                 }
 
@@ -493,6 +498,7 @@
                     office: office,
                     vehicle_type: vehicleType,
                     plate_number: plateNumber,
+                    year: parseInt(year),
                     engine_number: document.getElementById('engine_number').value.trim(),
                     chassis_number: document.getElementById('chassis_number').value.trim(),
                     remarks: document.getElementById('remarks').value.trim(),
@@ -525,6 +531,7 @@
             document.getElementById('office').value = data.office || '';
             document.getElementById('vehicle_type').value = data.vehicle_type || '';
             document.getElementById('plate_number').value = data.plate_number || '';
+            document.getElementById('year').value = data.year || '';
             document.getElementById('engine_number').value = data.engine_number || '';
             document.getElementById('chassis_number').value = data.chassis_number || '';
             document.getElementById('remarks').value = data.remarks || '';
@@ -542,6 +549,7 @@
                 office: document.getElementById('office').value,
                 vehicle_type: document.getElementById('vehicle_type').value,
                 plate_number: document.getElementById('plate_number').value,
+                year: parseInt(document.getElementById('year').value),
                 engine_number: document.getElementById('engine_number').value,
                 chassis_number: document.getElementById('chassis_number').value,
                 remarks: document.getElementById('remarks').value,
@@ -594,14 +602,14 @@
 
         function clearForm() {
             document.getElementById('edit_id').value = '';
-            ['vehicle_type', 'plate_number', 'engine_number', 'chassis_number', 'remarks', 'date_of_registration'].forEach(id => {
+            ['vehicle_type', 'plate_number', 'year', 'engine_number', 'chassis_number', 'remarks', 'date_of_registration'].forEach(id => {
                 document.getElementById(id).value = "";
             });
             document.getElementById('office').value = 'FOIC';
         }
 
         function downloadTemplate() {
-            const template = [['Office', 'Vehicle Type', 'Plate Number', 'Engine Number', 'Chassis Number', 'Remarks']];
+            const template = [['Office', 'Vehicle Type', 'Plate Number', 'Year', 'Engine Number', 'Chassis Number', 'Remarks']];
             const ws = XLSX.utils.aoa_to_sheet(template);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Vehicles');
