@@ -7,11 +7,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --sidebar-width: 280px;
+            --sidebar-width: 300px;
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --bg-gradient: linear-gradient(135deg, #5c6bc0 0%, #311b92 100%);
             --accent-green: #2ecc71;
@@ -20,27 +20,33 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); min-height: 100vh; color: var(--text-dark); display: flex; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); min-height: 100vh; color: var(--text-dark); display: flex; font-size: 16px; }
 
         /* UI COMPONENTS */
-        .sidebar { width: var(--sidebar-width); background: white; margin: 20px; border-radius: 15px; padding: 30px 20px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: sticky; top: 20px; height: calc(100vh - 40px); }
+        .sidebar { width: var(--sidebar-width); background: white; margin: 20px; border-radius: 15px; padding: 35px 25px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: sticky; top: 20px; height: calc(100vh - 40px); }
         .brand { text-align: center; margin-bottom: 40px; }
-        .brand-icon { background: #764ba2; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; margin: 0 auto 15px; }
-        .brand h1 { font-size: 1.4rem; font-weight: 800; }
-        .section-label { font-size: 0.7rem; font-weight: 800; color: #b2bec3; text-transform: uppercase; margin: 20px 0 10px 5px; }
-        .office-select { width: 100%; padding: 12px; border: 1px solid #dfe6e9; border-radius: 8px; font-weight: 600; background: #f8f9fa; cursor: pointer; margin-bottom: 20px; }
+        .brand-icon { background: #764ba2; width: 70px; height: 70px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto 15px; }
+        .brand h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; }
+        .brand p { font-size: 1rem; color: var(--text-muted); font-weight: 500; }
+        .section-label { font-size: 0.85rem; font-weight: 800; color: #b2bec3; text-transform: uppercase; margin: 25px 0 12px 5px; letter-spacing: 0.5px; }
+        .office-select { width: 100%; padding: 15px; border: 2px solid #dfe6e9; border-radius: 10px; font-weight: 600; font-size: 1.05rem; background: #f8f9fa; cursor: pointer; margin-bottom: 25px; }
 
-        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .btn-stack { display: flex; flex-direction: column; gap: 12px; }
+        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.2s; }
+        .btn i { font-size: 1.1rem; }
         .btn-purple { background: var(--primary-gradient); color: white; }
         .btn-green { background: var(--accent-green); color: white; }
-        .btn-outline { background: transparent; border: 1px solid #dfe6e9; color: var(--text-muted); }
+        .btn-outline { background: transparent; border: 2px solid #dfe6e9; color: var(--text-muted); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 
         /* MAIN CONTENT */
         .main-content { flex: 1; margin: 20px 20px 20px 0; display: flex; flex-direction: column; min-width: 0; }
         .inventory-panel { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; height: 100%; }
-        .panel-header { background: linear-gradient(to right, #667eea, #764ba2); padding: 25px 35px; color: white; display: flex; justify-content: space-between; align-items: center; }
-        .toolbar { padding: 20px 35px; border-bottom: 1px solid #f1f2f6; }
-        .search-input { width: 100%; padding: 12px 15px 12px 45px; border: 1px solid #3498db; border-radius: 8px; outline: none; }
+        .panel-header { background: linear-gradient(to right, #667eea, #764ba2); padding: 30px 40px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .panel-header h2 { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+        .panel-header p { font-size: 1.1rem; opacity: 0.9; }
+        .toolbar { padding: 25px 40px; border-bottom: 2px solid #f1f2f6; }
+        .search-input { width: 100%; padding: 15px 15px 15px 50px; border: 2px solid #3498db; border-radius: 10px; outline: none; font-size: 1.05rem; font-weight: 500; }
 
         /* TABLE */
         .data-container { padding: 0; overflow-y: auto; flex: 1; }
@@ -48,19 +54,21 @@
         .col-desc { width: 50%; }
         .col-qty { width: 16.66%; }
 
-        th { position: sticky; top: 0; background: #f8fafc; z-index: 10; padding: 15px; text-align: center; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid #edf2f7; }
-        th:first-child { text-align: left; padding-left: 35px; }
-        td { padding: 10px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        td:first-child { padding-left: 35px; font-weight: 500; }
-        .category-row td { background: #f1f5f9 !important; color: #764ba2 !important; font-weight: 800; font-size: 0.9rem; padding: 15px 35px; }
-        .qty-input { width: 100%; padding: 8px; border: 1px solid #dfe6e9; border-radius: 6px; text-align: center; font-weight: 700; }
+        th { position: sticky; top: 0; background: #f8fafc; z-index: 10; padding: 18px 15px; text-align: center; font-size: 0.95rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); border-bottom: 3px solid #edf2f7; letter-spacing: 0.5px; }
+        th:first-child { text-align: left; padding-left: 40px; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 1.05rem; }
+        td:first-child { padding-left: 40px; font-weight: 600; font-size: 1.1rem; }
+        .category-row td { background: #f1f5f9 !important; color: #764ba2 !important; font-weight: 800; font-size: 1.15rem; padding: 20px 40px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .qty-input { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 8px; text-align: center; font-weight: 700; font-size: 1.1rem; transition: all 0.2s; }
+        .qty-input:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
 
         /* MODAL */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; padding: 40px; }
-        .modal-content { background: white; max-width: 1100px; margin: 0 auto; border-radius: 15px; padding: 40px; height: 90vh; display: flex; flex-direction: column; }
+        .modal-content { background: white; max-width: 1200px; margin: 0 auto; border-radius: 15px; padding: 45px; height: 90vh; display: flex; flex-direction: column; }
+        .modal-content h2 { font-size: 2rem; font-weight: 800; }
         
-        .signature-section { display: none; margin-top: 50px; grid-template-columns: 1fr 1fr; gap: 50px; padding: 20px; }
-        .sig-box { border-top: 1px solid #000; text-align: center; padding-top: 10px; font-weight: 700; font-size: 10pt; }
+        .signature-section { display: none; margin-top: 60px; grid-template-columns: 1fr 1fr; gap: 60px; padding: 25px; }
+        .sig-box { border-top: 2px solid #000; text-align: center; padding-top: 12px; font-weight: 700; font-size: 11pt; }
 
         /* PRINT ENGINE */
         @media print {
@@ -71,21 +79,24 @@
             body.printing-office .main-content { display: block !important; margin: 0 !important; width: 100% !important; }
             body.printing-office .inventory-panel { box-shadow: none !important; border: none !important; }
             body.printing-office .panel-header { background: white !important; color: black !important; border-bottom: 2px solid #000; }
+            body.printing-office .panel-header h2 { font-size: 14pt !important; }
+            body.printing-office .panel-header p { font-size: 11pt !important; }
             body.printing-office .modal { display: none !important; }
 
             /* Global Print Mode */
             body.printing-global .main-content { display: none !important; }
             body.printing-global .modal { display: block !important; position: static !important; background: white !important; padding: 0 !important; }
-            body.printing-global .modal-content { height: auto !important; width: 100% !important; padding: 0 !important; box-shadow: none !important; }
+            body.printing-global .modal-content { height: auto !important; width: 100% !important; padding: 20px !important; box-shadow: none !important; }
 
             table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
-            th { background: #eee !important; border: 1px solid #000 !important; font-size: 10pt !important; color: black !important; }
-            td { border: 1px solid #000 !important; font-size: 10pt !important; color: black !important; }
+            th { background: #eee !important; border: 1px solid #000 !important; font-size: 11pt !important; color: black !important; padding: 10px !important; }
+            td { border: 1px solid #000 !important; font-size: 11pt !important; color: black !important; padding: 8px !important; }
+            td:first-child { font-size: 10pt !important; }
             .signature-section { display: grid !important; }
             
             /* Hide input boxes, show text values */
             .qty-input { display: none !important; }
-            .print-val { display: block !important; text-align: center; font-weight: bold; }
+            .print-val { display: block !important; text-align: center; font-weight: bold; font-size: 11pt !important; }
         }
 
         .print-val { display: none; }
@@ -115,7 +126,7 @@
                     <h2 id="officeTitle">Inventory Overview</h2>
                     <p id="officeSubtitle">Official Unit Record</p>
                 </div>
-                <button class="btn btn-outline no-print" id="printOfficeBtn" style="display:none; background:white; color:black; width:auto;" onclick="printOfficeReport()">
+                <button class="btn btn-outline no-print" id="printOfficeBtn" style="display:none; background:white; color:black; width:auto; padding: 12px 24px; font-size: 1rem;" onclick="printOfficeReport()">
                     <i class="fas fa-print"></i> Print Office
                 </button>
             </div>
@@ -128,7 +139,7 @@
                         <tr><th class="col-desc">Equipment Description</th><th class="col-qty">TE 2019</th><th class="col-qty">On Hand</th><th class="col-qty">TE 2025</th></tr>
                     </thead>
                     <tbody id="editorContent">
-                        <tr><td colspan="4" style="text-align:center; padding:100px; color:#b2bec3;">Please select an office from the sidebar.</td></tr>
+                        <tr><td colspan="4" style="text-align:center; padding:100px; color:#b2bec3; font-size: 1.2rem;">Please select an office from the sidebar.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -138,11 +149,11 @@
 
     <div id="summaryModal" class="modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="no-print">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;" class="no-print">
                 <h2 style="color: #764ba2;">Global Consolidated Summary</h2>
-                <div style="gap: 10px; display: flex;">
-                    <button class="btn btn-purple" onclick="printGlobalReport()" style="width:auto;"><i class="fas fa-print"></i> Print Report</button>
-                    <button class="btn btn-outline" onclick="closeSummary()" style="width:auto;">Close</button>
+                <div style="gap: 12px; display: flex;">
+                    <button class="btn btn-purple" onclick="printGlobalReport()" style="width:auto; padding: 12px 24px;"><i class="fas fa-print"></i> Print Report</button>
+                    <button class="btn btn-outline" onclick="closeSummary()" style="width:auto; padding: 12px 24px;">Close</button>
                 </div>
             </div>
             <div id="summaryTableArea" style="overflow-y: auto; flex: 1;"></div>
@@ -201,7 +212,7 @@
             if(item.colspan) html += `<tr class="category-row"><td colspan="4">${item.item_name}</td></tr>`;
             else {
                 const recs = ALL_DATA.filter(d => d.item_id === item.id);
-                html += `<tr><td>${item.item_name}</td><td style="text-align:center;">${recs.reduce((a,b)=>a+(b.te_2019||0),0)}</td><td style="text-align:center; font-weight:700;">${recs.reduce((a,b)=>a+(b.onhand||0),0)}</td><td style="text-align:center;">${recs.reduce((a,b)=>a+(b.proposed_te_2025||0),0)}</td></tr>`;
+                html += `<tr><td>${item.item_name}</td><td style="text-align:center; font-weight:600; font-size:1.05rem;">${recs.reduce((a,b)=>a+(b.te_2019||0),0)}</td><td style="text-align:center; font-weight:700; font-size:1.05rem;">${recs.reduce((a,b)=>a+(b.onhand||0),0)}</td><td style="text-align:center; font-weight:600; font-size:1.05rem;">${recs.reduce((a,b)=>a+(b.proposed_te_2025||0),0)}</td></tr>`;
             }
         });
         html += `</tbody></table>`;
@@ -247,5 +258,3 @@
 </script>
 </body>
 </html>
-
-
