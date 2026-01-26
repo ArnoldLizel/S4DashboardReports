@@ -202,12 +202,83 @@
       box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
     }
 
+    /* Autocomplete dropdown styles */
+    .autocomplete-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+
+    .autocomplete-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .autocomplete-item:hover {
+      background: #f1f5f9;
+    }
+
+    .autocomplete-item-email {
+      color: #1e293b;
+      font-weight: 500;
+    }
+
+    .autocomplete-item-remove {
+      color: #ef4444;
+      font-size: 0.85rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+
+    .autocomplete-item-remove:hover {
+      background: #fee2e2;
+    }
+
+    .options-row {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #64748b;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .remember-me input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #0284c7;
+    }
+
     .forgot-password {
       font-size: 0.8rem;
       color: #64748b;
       text-decoration: none;
-      margin-bottom: 20px;
-      display: inline-block;
       transition: color 0.3s ease;
     }
 
@@ -392,13 +463,20 @@
 
           <div class="input-group">
             <input type="email" id="username" name="username" placeholder="Email" required autocomplete="email" />
+            <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
           </div>
 
           <div class="input-group">
             <input type="password" id="password" name="password" placeholder="Password" required autocomplete="current-password" />
           </div>
 
-          <a href="#" class="forgot-password">Forgot your password?</a>
+          <div class="options-row">
+            <label class="remember-me">
+              <input type="checkbox" id="rememberMe" />
+              <span>Remember me</span>
+            </label>
+            <a href="#" class="forgot-password">Forgot password?</a>
+          </div>
 
           <button type="submit" id="login-btn">Sign In</button>
 
@@ -438,6 +516,96 @@
     const LOCKOUT_DURATION = 15 * 60 * 1000;
     const ATTEMPT_WINDOW = 5 * 60 * 1000;
 
+    // SAVED EMAILS MANAGEMENT
+    function getSavedEmails() {
+      const saved = localStorage.getItem('saved_emails');
+      return saved ? JSON.parse(saved) : [];
+    }
+
+    function saveEmail(email) {
+      let emails = getSavedEmails();
+      emails = emails.filter(e => e !== email);
+      emails.unshift(email);
+      emails = emails.slice(0, 5); // Keep max 5 emails
+      localStorage.setItem('saved_emails', JSON.stringify(emails));
+    }
+
+    function removeEmail(email) {
+      let emails = getSavedEmails();
+      emails = emails.filter(e => e !== email);
+      localStorage.setItem('saved_emails', JSON.stringify(emails));
+    }
+
+    function loadRememberedUser() {
+      const remembered = localStorage.getItem('remembered_user');
+      if (remembered) {
+        const { email, timestamp } = JSON.parse(remembered);
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+        
+        if (Date.now() - timestamp < thirtyDays) {
+          document.getElementById('username').value = email;
+          document.getElementById('rememberMe').checked = true;
+        } else {
+          localStorage.removeItem('remembered_user');
+        }
+      }
+    }
+
+    // AUTOCOMPLETE DROPDOWN
+    const usernameInput = document.getElementById('username');
+    const dropdown = document.getElementById('autocomplete-dropdown');
+
+    function showAutocomplete() {
+      const emails = getSavedEmails();
+      if (emails.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+      }
+
+      const query = usernameInput.value.toLowerCase();
+      const filtered = emails.filter(email => email.toLowerCase().includes(query));
+
+      if (filtered.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+      }
+
+      dropdown.innerHTML = filtered.map(email => `
+        <div class="autocomplete-item" data-email="${email}">
+          <span class="autocomplete-item-email">${email}</span>
+          <span class="autocomplete-item-remove" data-remove="${email}">✕</span>
+        </div>
+      `).join('');
+
+      dropdown.style.display = 'block';
+    }
+
+    usernameInput.addEventListener('focus', showAutocomplete);
+    usernameInput.addEventListener('input', showAutocomplete);
+
+    dropdown.addEventListener('click', (e) => {
+      if (e.target.classList.contains('autocomplete-item-remove')) {
+        const email = e.target.dataset.remove;
+        removeEmail(email);
+        showAutocomplete();
+      } else {
+        const item = e.target.closest('.autocomplete-item');
+        if (item) {
+          const email = item.dataset.email;
+          usernameInput.value = email;
+          dropdown.style.display = 'none';
+          document.getElementById('password').focus();
+        }
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!usernameInput.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    // RATE LIMITING
     function getRateLimitData() {
       const data = localStorage.getItem('login_attempts');
       if (!data) return { attempts: [], lockedUntil: null };
@@ -513,6 +681,7 @@
 
       const email = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
+      const rememberMe = document.getElementById("rememberMe").checked;
 
       if (!email || !password) {
         showError("❌ Please enter both email and password.");
@@ -541,7 +710,19 @@
           return;
         }
 
+        // Success - save email and remember me
         recordLoginAttempt(true);
+        saveEmail(email);
+
+        if (rememberMe) {
+          localStorage.setItem('remembered_user', JSON.stringify({
+            email: email,
+            timestamp: Date.now()
+          }));
+        } else {
+          localStorage.removeItem('remembered_user');
+        }
+
         window.location.href = "Dashboard.html";
         
       } catch (err) {
@@ -552,6 +733,8 @@
     });
 
     window.addEventListener('load', () => {
+      loadRememberedUser();
+      
       const lockStatus = isAccountLocked();
       if (lockStatus.locked) {
         showError(`⚠️ Account locked. Try again in ${lockStatus.minutesLeft} minutes.`);
@@ -559,7 +742,7 @@
       }
     });
 
-    // Social icon interactions (placeholder for future OAuth integration)
+    // Social icon interactions
     document.querySelectorAll('.social-icon').forEach(icon => {
       icon.addEventListener('click', (e) => {
         e.preventDefault();
