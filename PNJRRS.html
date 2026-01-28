@@ -54,6 +54,10 @@
     .btn-success { background-color: #10b981; color: white; }
     .btn-warning { background-color: #f59e0b; color: white; }
     .btn-warning:hover:not(:disabled) { background-color: #d97706; }
+    .btn-print { background-color: #8b5cf6; color: white; }
+    .btn-print:hover:not(:disabled) { background-color: #7c3aed; }
+    .btn-summary { background-color: #f1c232; color: #0b1a3a; }
+    .btn-summary:hover:not(:disabled) { background-color: #d9a825; }
     .btn-group { display: inline-flex; gap: 0.5rem; flex-wrap: wrap; }
     .form-group { margin-bottom: 1.25rem; }
     .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem; font-size: 0.875rem; }
@@ -82,12 +86,12 @@
 
     /* Modal Styles */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 1000; backdrop-filter: blur(4px); }
-    .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 0.75rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); max-width: 700px; width: 90%; max-height: 80vh; overflow: hidden; z-index: 1001; }
+    .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 0.75rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); max-width: 900px; width: 90%; max-height: 85vh; overflow: hidden; z-index: 1001; }
     .modal-header { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-size: 1.25rem; margin: 0; }
     .modal-close { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background 0.2s; }
     .modal-close:hover { background: rgba(255, 255, 255, 0.1); }
-    .modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+    .modal-body { padding: 1.5rem; max-height: 65vh; overflow-y: auto; }
     .office-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; }
     .office-item { padding: 0.75rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 0.5rem; text-align: center; font-weight: 600; transition: all 0.2s; cursor: pointer; }
     .office-item:hover { background: #eef2ff; border-color: #1e3a8a; transform: translateY(-2px); }
@@ -97,6 +101,237 @@
     .stat-box { padding: 1rem; background: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb; }
     .stat-label { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
     .stat-value { font-size: 1.75rem; font-weight: 700; color: #0b1a3a; }
+
+    /* Summary Report Modal Styles */
+    .summary-report-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .summary-report-stat { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 1.25rem; border-radius: 0.75rem; border: 2px solid #e2e8f0; text-align: center; }
+    .summary-report-stat-label { color: #64748b; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .summary-report-stat-value { color: #0b1a3a; font-size: 1.75rem; font-weight: 700; }
+    .summary-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.875rem; }
+    .summary-table th { background: #f8fafc; padding: 0.75rem; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
+    .summary-table td { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
+    .summary-table tr:hover { background: #f8fafc; }
+    .summary-section-title { font-size: 1.125rem; font-weight: 600; color: #0b1a3a; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; }
+
+    /* Compact Print Styles */
+    @media print {
+        @page { size: A4; margin: 0.5cm; }
+        
+        body { background: white !important; padding: 0; }
+        .container { background-color: white !important; box-shadow: none; padding: 0.5cm; }
+        
+        /* Hide elements */
+        .no-print, .btn, .btn-group, .form-group, .form-select, .modal-overlay, #statusMsg { display: none !important; }
+        .card-body-form { display: none !important; }
+        
+        /* Show only cards and tables */
+        h1 { font-size: 1.25rem; margin-bottom: 0.5rem; page-break-after: avoid; }
+        
+        .card { page-break-inside: avoid; box-shadow: none; border: 1px solid #ddd; margin-bottom: 1rem; padding: 0.75rem; }
+        .card-header { font-size: 0.875rem; padding: 0.5rem 0.75rem; margin: -0.75rem -0.75rem 0.5rem -0.75rem; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        
+        /* Compact summary boxes */
+        .summary-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; padding: 0.75rem; }
+        .summary-box { min-height: 60px; padding: 0.5rem; font-size: 0.75rem; }
+        .summary-label { font-size: 0.65rem; }
+        .summary-value { font-size: 1.25rem; margin-top: 0.25rem; }
+        .summary-icon { font-size: 0.875rem; margin-right: 0.25rem; }
+        .summary-category-title { font-size: 0.875rem; margin-bottom: 0.5rem; }
+        
+        /* Compact tables */
+        .table-responsive { padding: 0; overflow: visible !important; }
+        .table { font-size: 0.7rem; }
+        .table thead th { padding: 0.4rem 0.5rem; font-size: 0.65rem; }
+        .table tbody td { padding: 0.4rem 0.5rem; }
+        .highlight-row td { padding: 0.4rem 0.5rem; font-size: 0.7rem; }
+        
+        /* Input fields in print */
+        input { 
+            border: none !important; 
+            background: transparent !important; 
+            text-align: center; 
+            font-weight: 600;
+            width: auto !important;
+            padding: 0 !important;
+        }
+        
+        /* Status badges */
+        .status-badge { 
+            print-color-adjust: exact; 
+            -webkit-print-color-adjust: exact;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.65rem;
+        }
+        
+        /* Ensure colors print */
+        * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+
+    /* Print styles specifically for Summary Report Modal */
+    @media print {
+        /* Hide everything first */
+        body.printing-summary * { 
+            visibility: hidden !important; 
+        }
+        
+        body.printing-summary { 
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* Show only the summary modal content */
+        body.printing-summary #summaryReportModal,
+        body.printing-summary #summaryReportModal * { 
+            visibility: visible !important; 
+        }
+        
+        body.printing-summary #summaryReportModal { 
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+            display: block !important;
+        }
+        
+        body.printing-summary #summaryReportModal .modal-overlay { 
+            display: none !important; 
+            visibility: hidden !important;
+        }
+        
+        body.printing-summary #summaryReportModal .modal-container { 
+            position: static !important; 
+            transform: none !important; 
+            max-width: 100% !important; 
+            width: 100% !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        body.printing-summary #summaryReportModal .modal-header {
+            background: white !important;
+            color: #0b1a3a !important;
+            border-bottom: 3px solid #0b1a3a !important;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            padding: 1rem !important;
+            page-break-after: avoid;
+        }
+        
+        body.printing-summary #summaryReportModal .modal-header h3 {
+            font-size: 1.25rem !important;
+            margin: 0 !important;
+        }
+        
+        body.printing-summary #summaryReportModal .modal-close { 
+            display: none !important; 
+            visibility: hidden !important;
+        }
+        
+        body.printing-summary #summaryReportModal .modal-body { 
+            padding: 1rem !important; 
+            max-height: none !important; 
+            overflow: visible !important;
+        }
+        
+        body.printing-summary #summaryReportModal .btn,
+        body.printing-summary button { 
+            display: none !important; 
+            visibility: hidden !important;
+        }
+        
+        /* Summary report specific print styles */
+        body.printing-summary .summary-report-stats { 
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important; 
+            gap: 0.75rem !important; 
+            page-break-inside: avoid !important;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        body.printing-summary .summary-report-stat { 
+            padding: 0.75rem !important; 
+            border: 1px solid #ddd !important;
+            background: #f9f9f9 !important;
+            border-radius: 0.5rem !important;
+        }
+        
+        body.printing-summary .summary-report-stat-label { 
+            font-size: 0.75rem !important; 
+            display: block !important;
+        }
+        
+        body.printing-summary .summary-report-stat-value { 
+            font-size: 1.5rem !important; 
+            display: block !important;
+        }
+        
+        body.printing-summary .summary-section-title { 
+            font-size: 1rem !important; 
+            margin-top: 1.5rem !important; 
+            margin-bottom: 0.75rem !important;
+            page-break-after: avoid !important;
+            font-weight: 600 !important;
+            color: #0b1a3a !important;
+            border-bottom: 2px solid #e2e8f0 !important;
+            padding-bottom: 0.5rem !important;
+        }
+        
+        body.printing-summary .summary-table { 
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 0.7rem !important; 
+            margin-bottom: 1.5rem !important;
+        }
+        
+        body.printing-summary .summary-table thead {
+            display: table-header-group !important;
+        }
+        
+        body.printing-summary .summary-table tbody {
+            display: table-row-group !important;
+        }
+        
+        body.printing-summary .summary-table tr {
+            display: table-row !important;
+            page-break-inside: avoid !important;
+        }
+        
+        body.printing-summary .summary-table th { 
+            padding: 0.5rem 0.4rem !important; 
+            font-size: 0.65rem !important;
+            background: #f0f0f0 !important;
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+            border: 1px solid #ddd !important;
+            text-align: left !important;
+            font-weight: 600 !important;
+        }
+        
+        body.printing-summary .summary-table td { 
+            padding: 0.4rem !important; 
+            font-size: 0.7rem !important;
+            border: 1px solid #ddd !important;
+        }
+        
+        body.printing-summary .summary-table .status-badge {
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+            padding: 0.15rem 0.5rem !important;
+            font-size: 0.65rem !important;
+        }
+        
+        /* Ensure table containers are visible */
+        body.printing-summary div[style*="overflow"] {
+            overflow: visible !important;
+        }
+    }
     </style>
 </head>
 <body>
@@ -104,7 +339,7 @@
 <div class="container">
     <h1 class="mb-4">Philippine Navy Office Performance Rating System</h1>
 
-    <div class="card">
+    <div class="card no-print">
         <div class="card-header">Select Office and Action Center</div>
         <div class="card-body card-body-form">
             <div class="form-group">
@@ -133,7 +368,7 @@
                     <option value="NSPAO">NSPAO</option>
                     <option value="NPAO">NPAO</option>
                     <option value="ONSSSM">ONSSSM</option>
-                    <option value="TNJA">TNJA</option>
+                    <option value="NJAG">NJAG</option>
                     <option value="TNCH">TNCH</option>
                     <option value="TCSN">TCSN</option>
                     <option value="TCNN">TCNN</option>
@@ -159,7 +394,9 @@
                 <div class="btn-group">
                     <button class="btn btn-success" onclick="computeAllRatings()">Compute Ratings</button>
                     <button class="btn btn-neutral" onclick="updateOfficeData()">Update (Save)</button>
-                    <button class="btn btn-warning" onclick="showOfficeStatusModal()">📊 View Office Status</button>
+                    <button class="btn btn-summary" onclick="showSummaryReport()">📊 Summary Report</button>
+                    <button class="btn btn-warning" onclick="showOfficeStatusModal()">📋 Office Status</button>
+                    <button class="btn btn-print" onclick="window.print()">🖨️ Print Report</button>
                 </div>
                 <div class="text-muted" id="statusMsg" style="font-weight: 500;">Ready. Select an Office to load or start a new rating.</div>
             </div>
@@ -219,7 +456,7 @@
 
     <p style="margin-top: 1rem;">The final Office Performance Rating is a composite of the Equipment Readiness (TOE) and Maintenance Readiness (MRR) reports below.</p>
 
-    <div class="card">
+    <div class="card" id="toe-card">
         <div class="card-header">1. Equipment Readiness Report (TOE) - Current Office: <span id="current-office-name">N/A</span></div>
         <div class="card-body">
             <div class="table-responsive">
@@ -260,7 +497,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="mrr-card">
         <div class="card-header">2. Maintenance Readiness Report (MRR) - Current Office: <span id="current-office-name-mrr">N/A</span></div>
         <div class="card-body">
             <div class="table-responsive">
@@ -303,10 +540,10 @@
 </div>
 
 <!-- Office Status Modal -->
-<div id="officeStatusModal" class="modal-overlay" onclick="closeOfficeStatusModal(event)">
+<div id="officeStatusModal" class="modal-overlay no-print" onclick="closeOfficeStatusModal(event)">
     <div class="modal-container" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h3>📊 Office Data Status Report</h3>
+            <h3>📋 Office Data Status Report</h3>
             <button class="modal-close" onclick="closeOfficeStatusModal()">&times;</button>
         </div>
         <div class="modal-body">
@@ -326,6 +563,85 @@
     </div>
 </div>
 
+<!-- Summary Report Modal -->
+<div id="summaryReportModal" class="modal-overlay no-print" onclick="closeSummaryReport(event)">
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>📊 Comprehensive Summary Report - All Offices</h3>
+            <button class="modal-close" onclick="closeSummaryReport()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="summary-report-stats">
+                <div class="summary-report-stat">
+                    <div class="summary-report-stat-label">Total Offices</div>
+                    <div class="summary-report-stat-value" id="summary-total-offices">0</div>
+                </div>
+                <div class="summary-report-stat">
+                    <div class="summary-report-stat-label">Offices with Data</div>
+                    <div class="summary-report-stat-value" id="summary-offices-data">0</div>
+                </div>
+                <div class="summary-report-stat">
+                    <div class="summary-report-stat-label">Total Equipment Required</div>
+                    <div class="summary-report-stat-value" id="summary-equip-required">0</div>
+                </div>
+                <div class="summary-report-stat">
+                    <div class="summary-report-stat-label">Total Equipment Actual</div>
+                    <div class="summary-report-stat-value" id="summary-equip-actual">0</div>
+                </div>
+                <div class="summary-report-stat">
+                    <div class="summary-report-stat-label">Total Serviceable</div>
+                    <div class="summary-report-stat-value" id="summary-equip-serviceable">0</div>
+                </div>
+                <div class="summary-report-stat">
+                    <div class="summary-report-stat-label">Overall Fleet Readiness</div>
+                    <div class="summary-report-stat-value" id="summary-fleet-readiness">0.00%</div>
+                </div>
+            </div>
+
+            <div class="summary-section-title">Office-by-Office Performance Breakdown</div>
+            <div style="overflow-x: auto;">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Office</th>
+                            <th>TOE Rating</th>
+                            <th>MRR Rating</th>
+                            <th>Avg Rating</th>
+                            <th>Required</th>
+                            <th>Actual</th>
+                            <th>Serviceable</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="summary-section-title">Performance by Category</div>
+            <div style="overflow-x: auto;">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Total Required</th>
+                            <th>Total Actual</th>
+                            <th>Total Serviceable</th>
+                            <th>Readiness %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTableBody"></tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn btn-print" onclick="printSummaryReport()">🖨️ Print Summary</button>
+                <button class="btn btn-print" onclick="exportSummaryCSV()">📥 Export CSV</button>
+                <button class="btn btn-primary" onclick="closeSummaryReport()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
@@ -334,10 +650,176 @@ const TABLE = "office_performance";
 const supabasePNJRRS = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ALL_OFFICES = ['FOIC', 'VCOM', 'CNS', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10', 'N11', 'HSG', 'NIOFC', 'CMCPO', 'CRDO', 'CNLE', 'NSPAO', 'NPAO', 'ONSSSM', 'NJAG', 'TNCH', 'TCSN', 'TCNN', 'TCDSN', 'TNCE', 'PNOLOAC', 'TNIA', 'NSO', 'NASO', 'TNIG', 'OESPA', 'TNPM', 'OTNA', 'PNGADC', 'PNREO', 'PNMO', 'ONIA', 'FMWC', 'PNMCMC'];
+const CATEGORIES = ['MOBILITY', 'FIREPOWER', 'COMMUNICATION', 'MEDICAL', 'DENTAL', 'QUARTERMASTER'];
 
 const limitTo100 = v => Math.min(v, 100);
 const parseNumber = (value) => parseFloat(value) || 0;
 const INVENTORY_IDS = ['inventory-mobility','inventory-firepower','inventory-communication','inventory-medical','inventory-dental','inventory-quartermaster'];
+
+// Store all office data for summary
+let allOfficeData = [];
+
+async function showSummaryReport() {
+    try {
+        const { data: allRecords, error } = await supabasePNJRRS.from(TABLE).select("*");
+        if (error) throw error;
+
+        allOfficeData = allRecords || [];
+
+        // Calculate overall statistics
+        let totalOffices = ALL_OFFICES.length;
+        let officesWithData = allOfficeData.length;
+        let grandTotalRequired = 0;
+        let grandTotalActual = 0;
+        let grandTotalServiceable = 0;
+
+        // Category totals
+        let categoryTotals = CATEGORIES.map(() => ({ required: 0, actual: 0, serviceable: 0 }));
+
+        // Build office breakdown table
+        const tableBody = document.getElementById('summaryTableBody');
+        tableBody.innerHTML = '';
+
+        allOfficeData.forEach(record => {
+            const payload = record.payload;
+            if (payload && payload.toe && payload.mrr) {
+                let officeRequired = 0, officeActual = 0, officeServiceable = 0;
+
+                for (let i = 0; i < 6; i++) {
+                    const toeA = parseNumber(payload.toe[i]?.[0]);
+                    const mrrA = parseNumber(payload.mrr[i]?.[0]);
+                    const mrrB = parseNumber(payload.mrr[i]?.[1]);
+
+                    officeRequired += toeA;
+                    officeActual += mrrA;
+                    officeServiceable += mrrB;
+
+                    grandTotalRequired += toeA;
+                    grandTotalActual += mrrA;
+                    grandTotalServiceable += mrrB;
+
+                    categoryTotals[i].required += toeA;
+                    categoryTotals[i].actual += mrrA;
+                    categoryTotals[i].serviceable += mrrB;
+                }
+
+                const toeRating = parseFloat(payload.computed?.toe?.total || 0);
+                const mrrRating = parseFloat(payload.computed?.mrr?.total || 0);
+                const avgRating = (toeRating + mrrRating) / 2;
+
+                let statusClass = 'status-pending';
+                if (avgRating >= 80) statusClass = 'status-active';
+                else if (avgRating < 60) statusClass = 'status-rejected';
+
+                const row = `
+                    <tr>
+                        <td><strong>${record.office}</strong></td>
+                        <td>${toeRating > 0 ? toeRating.toFixed(2) + '%' : 'N/A'}</td>
+                        <td>${mrrRating > 0 ? mrrRating.toFixed(2) + '%' : 'N/A'}</td>
+                        <td><strong>${avgRating > 0 ? avgRating.toFixed(2) + '%' : 'N/A'}</strong></td>
+                        <td>${officeRequired.toLocaleString()}</td>
+                        <td>${officeActual.toLocaleString()}</td>
+                        <td>${officeServiceable.toLocaleString()}</td>
+                        <td><span class="status-badge ${statusClass}">${avgRating >= 80 ? 'READY' : avgRating >= 60 ? 'PARTIAL' : 'LOW'}</span></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            }
+        });
+
+        // Update summary stats
+        const fleetReadiness = grandTotalActual > 0 ? (grandTotalServiceable / grandTotalActual) * 100 : 0;
+        document.getElementById('summary-total-offices').textContent = totalOffices;
+        document.getElementById('summary-offices-data').textContent = officesWithData;
+        document.getElementById('summary-equip-required').textContent = grandTotalRequired.toLocaleString();
+        document.getElementById('summary-equip-actual').textContent = grandTotalActual.toLocaleString();
+        document.getElementById('summary-equip-serviceable').textContent = grandTotalServiceable.toLocaleString();
+        document.getElementById('summary-fleet-readiness').textContent = limitTo100(fleetReadiness).toFixed(2) + '%';
+
+        // Build category table
+        const categoryBody = document.getElementById('categoryTableBody');
+        categoryBody.innerHTML = '';
+        CATEGORIES.forEach((category, index) => {
+            const cat = categoryTotals[index];
+            const readiness = cat.actual > 0 ? (cat.serviceable / cat.actual) * 100 : 0;
+            const row = `
+                <tr>
+                    <td><strong>${category}</strong></td>
+                    <td>${cat.required.toLocaleString()}</td>
+                    <td>${cat.actual.toLocaleString()}</td>
+                    <td>${cat.serviceable.toLocaleString()}</td>
+                    <td><strong>${readiness.toFixed(2)}%</strong></td>
+                </tr>
+            `;
+            categoryBody.innerHTML += row;
+        });
+
+        // Show modal
+        document.getElementById('summaryReportModal').style.display = 'block';
+
+    } catch (err) {
+        console.error('Summary Report Error:', err);
+        showMessageModal("Error", "Failed to generate summary report", true);
+    }
+}
+
+function closeSummaryReport(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('summaryReportModal').style.display = 'none';
+    }
+}
+
+function exportSummaryCSV() {
+    if (allOfficeData.length === 0) {
+        showMessageModal("Error", "No data to export", true);
+        return;
+    }
+
+    let csv = 'Office,TOE Rating,MRR Rating,Average Rating,Required,Actual,Serviceable,Status\n';
+
+    allOfficeData.forEach(record => {
+        const payload = record.payload;
+        if (payload && payload.toe && payload.mrr) {
+            let officeRequired = 0, officeActual = 0, officeServiceable = 0;
+
+            for (let i = 0; i < 6; i++) {
+                officeRequired += parseNumber(payload.toe[i]?.[0]);
+                officeActual += parseNumber(payload.mrr[i]?.[0]);
+                officeServiceable += parseNumber(payload.mrr[i]?.[1]);
+            }
+
+            const toeRating = parseFloat(payload.computed?.toe?.total || 0);
+            const mrrRating = parseFloat(payload.computed?.mrr?.total || 0);
+            const avgRating = (toeRating + mrrRating) / 2;
+            const status = avgRating >= 80 ? 'READY' : avgRating >= 60 ? 'PARTIAL' : 'LOW';
+
+            csv += `${record.office},${toeRating.toFixed(2)}%,${mrrRating.toFixed(2)}%,${avgRating.toFixed(2)}%,${officeRequired},${officeActual},${officeServiceable},${status}\n`;
+        }
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `PN_Summary_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+
+    showMessageModal("Success", "Summary report exported to CSV");
+}
+
+function printSummaryReport() {
+    // Add special class to body for print-specific styling
+    document.body.classList.add('printing-summary');
+    
+    // Small delay to ensure styles are applied
+    setTimeout(() => {
+        window.print();
+        // Remove the class after printing
+        setTimeout(() => {
+            document.body.classList.remove('printing-summary');
+        }, 100);
+    }, 100);
+}
 
 async function showOfficeStatusModal() {
     try {
@@ -606,4 +1088,3 @@ window.onload = () => { computeAllRatings(); loadAggregatedDashboardData(); };
 </script>
 </body>
 </html>
-
