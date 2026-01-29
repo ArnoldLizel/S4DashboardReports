@@ -38,6 +38,8 @@
     .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; padding: 1.5rem; }
     .summary-box { background: linear-gradient(145deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; transition: transform 0.2s; }
     .summary-box:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); }
+    .summary-box.clickable { cursor: pointer; }
+    .summary-box.clickable:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 8px 14px rgba(0, 0, 0, 0.4); }
     .summary-category-section { grid-column: 1 / -1; margin-top: 1rem; padding-top: 0.75rem; border-top: 2px dashed #e5e7eb; }
     .summary-category-title { grid-column: 1 / -1; font-size: 1.125rem; font-weight: 600; color: #1e3a8a; margin-bottom: 0.75rem; }
     .summary-box.inventory-box { background: linear-gradient(145deg, #0891b2 0%, #06b6d4 100%); }
@@ -112,6 +114,13 @@
     .summary-table td { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
     .summary-table tr:hover { background: #f8fafc; }
     .summary-section-title { font-size: 1.125rem; font-weight: 600; color: #0b1a3a; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; }
+
+    /* Category Detail Modal Styles */
+    .category-icon-large { font-size: 2.5rem; margin-bottom: 1rem; }
+    .category-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .category-stat-box { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 1rem; border-radius: 0.5rem; text-align: center; border: 2px solid #e2e8f0; }
+    .category-stat-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .category-stat-value { font-size: 1.5rem; font-weight: 700; color: #0b1a3a; }
 
     /* Compact Print Styles */
     @media print {
@@ -368,7 +377,7 @@
                     <option value="NSPAO">NSPAO</option>
                     <option value="NPAO">NPAO</option>
                     <option value="ONSSSM">ONSSSM</option>
-                    <option value="TNJA">TNJA</option>
+                    <option value="NJAG">NJAG</option>
                     <option value="TNCH">TNCH</option>
                     <option value="TCSN">TCSN</option>
                     <option value="TCNN">TCNN</option>
@@ -425,28 +434,28 @@
                     <div class="summary-value" id="overall-readiness-percent">0.00%</div>
                 </div>
                 <div class="summary-category-section"></div>
-                <div class="summary-category-title">Total Actual Inventory (On Hand Count) by Category</div>
-                <div class="summary-box inventory-box">
+                <div class="summary-category-title">Total Actual Inventory (On Hand Count) by Category - Click to View Details</div>
+                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('MOBILITY', 0)" title="Click to view office-by-office breakdown">
                     <div class="summary-label"><span class="summary-icon">🚗</span> MOBILITY INVENTORY</div>
                     <div class="summary-value" id="inventory-mobility">0</div>
                 </div>
-                <div class="summary-box inventory-box">
+                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('FIREPOWER', 1)" title="Click to view office-by-office breakdown">
                     <div class="summary-label"><span class="summary-icon">🔫</span> FIREPOWER INVENTORY</div>
                     <div class="summary-value" id="inventory-firepower">0</div>
                 </div>
-                <div class="summary-box inventory-box">
+                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('COMMUNICATION', 2)" title="Click to view office-by-office breakdown">
                     <div class="summary-label"><span class="summary-icon">📡</span> COMMUNICATION INVENTORY</div>
                     <div class="summary-value" id="inventory-communication">0</div>
                 </div>
-                <div class="summary-box inventory-box">
+                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('MEDICAL', 3)" title="Click to view office-by-office breakdown">
                     <div class="summary-label"><span class="summary-icon">⚕️</span> MEDICAL INVENTORY</div>
                     <div class="summary-value" id="inventory-medical">0</div>
                 </div>
-                <div class="summary-box inventory-box">
+                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('DENTAL', 4)" title="Click to view office-by-office breakdown">
                     <div class="summary-label"><span class="summary-icon">🦷</span> DENTAL INVENTORY</div>
                     <div class="summary-value" id="inventory-dental">0</div>
                 </div>
-                <div class="summary-box inventory-box">
+                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('QUARTERMASTER', 5)" title="Click to view office-by-office breakdown">
                     <div class="summary-label"><span class="summary-icon">🪖</span> QUARTERMASTER INVENTORY</div>
                     <div class="summary-value" id="inventory-quartermaster">0</div>
                 </div>
@@ -642,6 +651,61 @@
     </div>
 </div>
 
+<!-- Category Detail Modal -->
+<div id="categoryDetailModal" class="modal-overlay no-print" onclick="closeCategoryDetail(event)">
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 id="categoryDetailTitle">📦 Category Breakdown by Office</h3>
+            <button class="modal-close" onclick="closeCategoryDetail()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div class="category-icon-large" id="categoryDetailIcon">🚗</div>
+            </div>
+            
+            <div class="category-stats-grid">
+                <div class="category-stat-box">
+                    <div class="category-stat-label">Total Required (TOE)</div>
+                    <div class="category-stat-value" id="category-total-required">0</div>
+                </div>
+                <div class="category-stat-box">
+                    <div class="category-stat-label">Total Actual (MRR)</div>
+                    <div class="category-stat-value" id="category-total-actual">0</div>
+                </div>
+                <div class="category-stat-box">
+                    <div class="category-stat-label">Total Serviceable</div>
+                    <div class="category-stat-value" id="category-total-serviceable">0</div>
+                </div>
+                <div class="category-stat-box">
+                    <div class="category-stat-label">Readiness Rate</div>
+                    <div class="category-stat-value" id="category-readiness-rate">0%</div>
+                </div>
+            </div>
+
+            <div class="summary-section-title">Office-by-Office Breakdown</div>
+            <div style="overflow-x: auto;">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Office</th>
+                            <th>Required (TOE A)</th>
+                            <th>Actual (MRR A)</th>
+                            <th>Serviceable (MRR B)</th>
+                            <th>Readiness %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryDetailTableBody"></tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn btn-print" onclick="exportCategoryCSV()">📥 Export CSV</button>
+                <button class="btn btn-primary" onclick="closeCategoryDetail()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
@@ -649,8 +713,9 @@ const TABLE = "office_performance";
 
 const supabasePNJRRS = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const ALL_OFFICES = ['FOIC', 'VCOM', 'CNS', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10', 'N11', 'HSG', 'NIOFC', 'CMCPO', 'CRDO', 'CNLE', 'NSPAO', 'NPAO', 'ONSSSM', 'TNJA', 'TNCH', 'TCSN', 'TCNN', 'TCDSN', 'TNCE', 'PNOLOAC', 'TNIA', 'NSO', 'NASO', 'TNIG', 'OESPA', 'TNPM', 'OTNA', 'PNGADC', 'PNREO', 'PNMO', 'ONIA', 'FMWC', 'PNMCMC'];
+const ALL_OFFICES = ['FOIC', 'VCOM', 'CNS', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10', 'N11', 'HSG', 'NIOFC', 'CMCPO', 'CRDO', 'CNLE', 'NSPAO', 'NPAO', 'ONSSSM', 'NJAG', 'TNCH', 'TCSN', 'TCNN', 'TCDSN', 'TNCE', 'PNOLOAC', 'TNIA', 'NSO', 'NASO', 'TNIG', 'OESPA', 'TNPM', 'OTNA', 'PNGADC', 'PNREO', 'PNMO', 'ONIA', 'FMWC', 'PNMCMC'];
 const CATEGORIES = ['MOBILITY', 'FIREPOWER', 'COMMUNICATION', 'MEDICAL', 'DENTAL', 'QUARTERMASTER'];
+const CATEGORY_ICONS = ['🚗', '🔫', '📡', '⚕️', '🦷', '🪖'];
 
 const limitTo100 = v => Math.min(v, 100);
 const parseNumber = (value) => parseFloat(value) || 0;
@@ -658,6 +723,106 @@ const INVENTORY_IDS = ['inventory-mobility','inventory-firepower','inventory-com
 
 // Store all office data for summary
 let allOfficeData = [];
+let currentCategoryData = { name: '', index: 0, data: [] };
+
+// Show category detail modal
+async function showCategoryDetail(categoryName, categoryIndex) {
+    try {
+        const { data: allRecords, error } = await supabasePNJRRS.from(TABLE).select("*");
+        if (error) throw error;
+
+        currentCategoryData = { name: categoryName, index: categoryIndex, data: [] };
+
+        let totalRequired = 0;
+        let totalActual = 0;
+        let totalServiceable = 0;
+
+        // Build office breakdown
+        const tableBody = document.getElementById('categoryDetailTableBody');
+        tableBody.innerHTML = '';
+
+        if (allRecords && allRecords.length > 0) {
+            allRecords.forEach(record => {
+                const payload = record.payload;
+                if (payload && payload.toe && payload.mrr) {
+                    const toeA = parseNumber(payload.toe[categoryIndex]?.[0]);
+                    const mrrA = parseNumber(payload.mrr[categoryIndex]?.[0]);
+                    const mrrB = parseNumber(payload.mrr[categoryIndex]?.[1]);
+
+                    totalRequired += toeA;
+                    totalActual += mrrA;
+                    totalServiceable += mrrB;
+
+                    const readiness = mrrA > 0 ? (mrrB / mrrA) * 100 : 0;
+                    
+                    currentCategoryData.data.push({
+                        office: record.office,
+                        required: toeA,
+                        actual: mrrA,
+                        serviceable: mrrB,
+                        readiness: readiness
+                    });
+
+                    const row = `
+                        <tr>
+                            <td><strong>${record.office}</strong></td>
+                            <td>${toeA.toLocaleString()}</td>
+                            <td>${mrrA.toLocaleString()}</td>
+                            <td>${mrrB.toLocaleString()}</td>
+                            <td><strong>${readiness.toFixed(2)}%</strong></td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                }
+            });
+        }
+
+        // Update summary statistics
+        const overallReadiness = totalActual > 0 ? (totalServiceable / totalActual) * 100 : 0;
+        
+        document.getElementById('categoryDetailTitle').innerHTML = `${CATEGORY_ICONS[categoryIndex]} ${categoryName} - Office Breakdown`;
+        document.getElementById('categoryDetailIcon').textContent = CATEGORY_ICONS[categoryIndex];
+        document.getElementById('category-total-required').textContent = totalRequired.toLocaleString();
+        document.getElementById('category-total-actual').textContent = totalActual.toLocaleString();
+        document.getElementById('category-total-serviceable').textContent = totalServiceable.toLocaleString();
+        document.getElementById('category-readiness-rate').textContent = limitTo100(overallReadiness).toFixed(2) + '%';
+
+        // Show modal
+        document.getElementById('categoryDetailModal').style.display = 'block';
+
+    } catch (err) {
+        console.error('Category Detail Error:', err);
+        showMessageModal("Error", "Failed to load category details", true);
+    }
+}
+
+function closeCategoryDetail(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('categoryDetailModal').style.display = 'none';
+    }
+}
+
+function exportCategoryCSV() {
+    if (currentCategoryData.data.length === 0) {
+        showMessageModal("Error", "No data to export", true);
+        return;
+    }
+
+    let csv = `Office,Required (TOE A),Actual (MRR A),Serviceable (MRR B),Readiness %\n`;
+
+    currentCategoryData.data.forEach(item => {
+        csv += `${item.office},${item.required},${item.actual},${item.serviceable},${item.readiness.toFixed(2)}%\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `PN_${currentCategoryData.name}_Breakdown_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+
+    showMessageModal("Success", `${currentCategoryData.name} breakdown exported to CSV`);
+}
 
 async function showSummaryReport() {
     try {
@@ -1088,5 +1253,3 @@ window.onload = () => { computeAllRatings(); loadAggregatedDashboardData(); };
 </script>
 </body>
 </html>
-
-
