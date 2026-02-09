@@ -11,13 +11,11 @@
         background-image: url('image/bg2.jpg');
         background-size: cover;
         background-position: center;
-        background-attachment: fixed; /* Keeps background still while scrolling */
+        background-attachment: fixed;
         background-repeat: no-repeat;
         min-height: 100vh;
     }
 
-    /* Optional: If the background makes text hard to read, 
-       this adds a subtle white overlay to the container */
     .container {
         background-color: rgba(255, 255, 255, 0.9); 
         border-radius: 8px;
@@ -581,10 +579,13 @@ h1 { font-size: 2rem; }
       const row = document.createElement("tr");
       const saved = electricityData[idx] || {};
       
+      // Keep perKwh EXACTLY as stored - no conversion
+      const perKwhValue = saved.perKwh || '';
+      
       row.innerHTML = `
         <td><strong>${month}</strong></td>
         <td contenteditable="true">${saved.location || 'HPN, NSJA'}</td>
-        <td contenteditable="true">${saved.perKwh || ''}</td>
+        <td contenteditable="true" class="per-kwh-cell">${perKwhValue}</td>
         <td contenteditable="true">${saved.totalKwh || ''}</td>
         <td class="amount">${saved.amount || ''}</td>
       `;
@@ -596,16 +597,44 @@ h1 { font-size: 2rem; }
     updateChart();
   };
 
+  // Limit decimal places to 7 digits for Per KWH field
+  tbody.addEventListener("keydown", e => {
+    if (e.target.classList.contains("per-kwh-cell")) {
+      // Allow navigation and control keys
+      if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key)) return;
+      
+      // Only allow numbers and decimal point
+      if (!e.key.match(/[0-9.]/)) {
+        e.preventDefault();
+        return;
+      }
+      
+      const text = e.target.innerText;
+      
+      // Prevent multiple decimal points
+      if (e.key === '.' && text.includes('.')) {
+        e.preventDefault();
+        return;
+      }
+      
+      // Limit to 7 decimal places
+      if (text.includes('.') && text.split('.')[1].length >= 7 && e.key.match(/[0-9]/)) {
+        e.preventDefault();
+      }
+    }
+  });
+
   tbody.addEventListener("input", e => {
     const row = e.target.closest("tr");
     const monthIndex = parseInt(row.dataset.monthIndex);
     const cells = row.children;
     
+    // Store EXACTLY what user typed - NO conversions
     const data = {
-      location: cells[1].innerText.trim(),
-      perKwh: cells[2].innerText.trim(),
-      totalKwh: cells[3].innerText.trim(),
-      amount: cells[4].innerText.trim()
+      location: cells[1].textContent.trim(),
+      perKwh: cells[2].textContent.trim(),  // Keep as exact string
+      totalKwh: cells[3].textContent.trim(),
+      amount: cells[4].textContent.trim()
     };
     
     electricityData[monthIndex] = data;
@@ -618,22 +647,33 @@ h1 { font-size: 2rem; }
     let validMonths = 0;
     
     tbody.querySelectorAll("tr").forEach(row => {
-      const kwh = parseFloat(row.cells[3].innerText) || 0;
-      const perKwh = parseFloat(row.cells[2].innerText) || 0;
+      const cells = row.children;
+      
+      // Get the EXACT text value without any conversion/rounding
+      const perKwhText = cells[2].textContent.trim();
+      const kwhText = cells[3].textContent.trim();
+      
+      // Only convert to number for calculation, never modify the original text
+      const perKwh = perKwhText === '' ? 0 : parseFloat(perKwhText);
+      const kwh = kwhText === '' ? 0 : parseFloat(kwhText);
+      
       const amount = kwh * perKwh;
-      row.cells[4].innerText = amount ? amount.toFixed(2) : '';
+      // Display exact calculated value without rounding
+      cells[4].textContent = amount > 0 ? amount.toString() : '';
+      
       totalKwh += kwh;
       totalAmount += amount;
       if (kwh > 0) validMonths++;
     });
     
-    document.getElementById("totalKwh").innerText = totalKwh.toFixed(2);
-    document.getElementById("totalAmount").innerText = totalAmount.toFixed(2);
+    // Display exact values without rounding
+    document.getElementById("totalKwh").textContent = totalKwh.toString();
+    document.getElementById("totalAmount").textContent = totalAmount.toString();
     
-    document.getElementById("summaryTotalKwh").innerText = totalKwh.toFixed(2);
-    document.getElementById("summaryTotalAmount").innerText = '₱' + totalAmount.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById("summaryAvgKwh").innerText = validMonths > 0 ? (totalKwh / validMonths).toFixed(2) : '0';
-    document.getElementById("summaryAvgAmount").innerText = validMonths > 0 ? '₱' + (totalAmount / validMonths).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '₱0';
+    document.getElementById("summaryTotalKwh").textContent = totalKwh.toString();
+    document.getElementById("summaryTotalAmount").textContent = '₱' + totalAmount.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 20});
+    document.getElementById("summaryAvgKwh").textContent = validMonths > 0 ? (totalKwh / validMonths).toString() : '0';
+    document.getElementById("summaryAvgAmount").textContent = validMonths > 0 ? '₱' + (totalAmount / validMonths).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 20}) : '₱0';
   };
 
   const updateChart = () => {
@@ -641,8 +681,8 @@ h1 { font-size: 2rem; }
     const amountData = [];
     
     tbody.querySelectorAll("tr").forEach(row => {
-      kwhData.push(parseFloat(row.cells[3].innerText) || 0);
-      amountData.push(parseFloat(row.cells[4].innerText) || 0);
+      kwhData.push(parseFloat(row.cells[3].textContent) || 0);
+      amountData.push(parseFloat(row.cells[4].textContent) || 0);
     });
 
     if (chart) {
@@ -746,14 +786,20 @@ h1 { font-size: 2rem; }
       
       tbody.querySelectorAll("tr").forEach((row, idx) => {
         const cells = row.children;
+        
+        // Save EXACT text values - NO conversions
+        const perKwhText = cells[2].textContent.trim();
+        const totalKwhText = cells[3].textContent.trim();
+        const amountText = cells[4].textContent.trim();
+        
         dataToSave.push({
           year: currentYear,
           month: months[idx],
           month_index: idx,
-          location: cells[1].innerText.trim(),
-          per_kwh: parseFloat(cells[2].innerText) || null,
-          total_kwh: parseFloat(cells[3].innerText) || null,
-          amount: parseFloat(cells[4].innerText) || null,
+          location: cells[1].textContent.trim(),
+          per_kwh: perKwhText === "" ? null : perKwhText,  // Save as exact string
+          total_kwh: totalKwhText === "" ? null : totalKwhText,  // Save as exact string
+          amount: amountText === "" ? null : amountText,  // Save as exact string
           updated_at: new Date().toISOString()
         });
       });
@@ -801,11 +847,12 @@ h1 { font-size: 2rem; }
         electricityData = new Array(12).fill(null);
         
         data.forEach(record => {
+          // Load values EXACTLY as stored - no conversions
           electricityData[record.month_index] = {
             location: record.location || '',
-            perKwh: record.per_kwh || '',
-            totalKwh: record.total_kwh || '',
-            amount: record.amount || ''
+            perKwh: record.per_kwh || '',  // Keep as-is
+            totalKwh: record.total_kwh || '',  // Keep as-is
+            amount: record.amount || ''  // Keep as-is
           };
         });
         
@@ -816,6 +863,19 @@ h1 { font-size: 2rem; }
     }
   }
 
+  // Check database schema on load
+  async function checkDatabaseSchema() {
+    console.log('💡 CRITICAL: Your Supabase columns MUST be TEXT type to preserve decimal precision!');
+    console.log('');
+    console.log('Run this SQL in Supabase SQL Editor:');
+    console.log('');
+    console.log('ALTER TABLE electricity_bills ALTER COLUMN per_kwh TYPE TEXT;');
+    console.log('ALTER TABLE electricity_bills ALTER COLUMN total_kwh TYPE TEXT;');
+    console.log('ALTER TABLE electricity_bills ALTER COLUMN amount TYPE TEXT;');
+    console.log('');
+    console.log('This ensures values like "12.1234567" stay EXACTLY as entered!');
+  }
+
   window.addEventListener("message", event => {
     if(event.data.year){
       currentYear = event.data.year;
@@ -823,10 +883,11 @@ h1 { font-size: 2rem; }
     }
   });
 
-  // Initialize - render table first, then try to load from Supabase
+  // Initialize
+  checkDatabaseSchema();
   renderTable();
   
-  // Try to load from Supabase (will fail gracefully if not configured)
+  // Try to load from Supabase
   if (supabase) {
     loadDataFromSupabase(currentYear).catch(err => {
       console.log('Supabase not available, using local data only');
