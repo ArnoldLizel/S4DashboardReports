@@ -6,6 +6,7 @@
     <title>HPN & HSG Communication | Admin Console</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -15,6 +16,7 @@
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --bg-gradient: linear-gradient(135deg, #5c6bc0 0%, #311b92 100%);
             --accent-green: #2ecc71;
+            --accent-orange: #e67e22;
             --text-dark: #2d3436;
             --text-muted: #636e72;
         }
@@ -23,7 +25,7 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); min-height: 100vh; color: var(--text-dark); display: flex; font-size: 16px; }
 
         /* UI COMPONENTS */
-        .sidebar { width: var(--sidebar-width); background: white; margin: 20px; border-radius: 15px; padding: 35px 25px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: sticky; top: 20px; height: calc(100vh - 40px); }
+        .sidebar { width: var(--sidebar-width); background: white; margin: 20px; border-radius: 15px; padding: 35px 25px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: sticky; top: 20px; height: calc(100vh - 40px); overflow-y: auto; }
         .brand { text-align: center; margin-bottom: 40px; }
         .brand-icon { background: #764ba2; width: 70px; height: 70px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto 15px; }
         .brand h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; }
@@ -36,8 +38,10 @@
         .btn i { font-size: 1.1rem; }
         .btn-purple { background: var(--primary-gradient); color: white; }
         .btn-green { background: var(--accent-green); color: white; }
+        .btn-orange { background: var(--accent-orange); color: white; }
         .btn-outline { background: transparent; border: 2px solid #dfe6e9; color: var(--text-muted); }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         /* MAIN CONTENT */
         .main-content { flex: 1; margin: 20px 20px 20px 0; display: flex; flex-direction: column; min-width: 0; }
@@ -69,6 +73,19 @@
         
         .signature-section { display: none; margin-top: 60px; grid-template-columns: 1fr 1fr; gap: 60px; padding: 25px; }
         .sig-box { border-top: 2px solid #000; text-align: center; padding-top: 12px; font-weight: 700; font-size: 11pt; }
+
+        /* NOTIFICATION */
+        .notification { position: fixed; top: 20px; right: 20px; padding: 20px 30px; border-radius: 10px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2000; font-weight: 600; animation: slideIn 0.3s ease; }
+        .notification.success { border-left: 5px solid #2ecc71; }
+        .notification.error { border-left: 5px solid #e74c3c; }
+        .notification.info { border-left: 5px solid #3498db; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* IMPORT PREVIEW MODAL */
+        .import-preview { max-height: 400px; overflow-y: auto; margin: 20px 0; border: 2px solid #dfe6e9; border-radius: 10px; }
+        .import-preview table { width: 100%; }
+        .import-preview th { background: #f8fafc; padding: 10px; font-size: 0.9rem; }
+        .import-preview td { padding: 8px; font-size: 0.95rem; border-bottom: 1px solid #f1f5f9; }
 
         /* PRINT ENGINE */
         @media print {
@@ -110,10 +127,24 @@
             <h1>HPN & HSG Communication</h1>
             <p>Admin Console</p>
         </div>
+        
         <div class="section-label">Select Office</div>
         <select id="officeSelect" class="office-select"><option value="">-- Choose Office --</option></select>
+        
+        <div class="section-label">Office Actions</div>
         <div class="btn-stack">
             <button class="btn btn-purple" onclick="saveOfficeData()"><i class="fas fa-save"></i> Save Current</button>
+        </div>
+
+        <div class="section-label">Data Import/Export</div>
+        <div class="btn-stack">
+            <button class="btn btn-orange" onclick="downloadTemplate()"><i class="fas fa-download"></i> Download Template</button>
+            <button class="btn btn-orange" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> Import Data</button>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileImport(event)" style="display: none;">
+        </div>
+
+        <div class="section-label">Reports</div>
+        <div class="btn-stack">
             <button class="btn btn-green" onclick="openSummary()"><i class="fas fa-file-lines"></i> Complete Summary</button>
             <button class="btn btn-outline" onclick="window.location.reload()"><i class="fas fa-rotate"></i> Refresh App</button>
         </div>
@@ -161,17 +192,37 @@
         </div>
     </div>
 
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: #764ba2; margin-bottom: 20px;">Import Data Preview</h2>
+            <div id="importPreviewArea" class="import-preview"></div>
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <button class="btn btn-green" onclick="confirmImport()" style="flex: 1;"><i class="fas fa-check"></i> Confirm Import</button>
+                <button class="btn btn-outline" onclick="closeImportModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 <script>
     const S_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
     const S_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
     const supabaseClient = window.supabase.createClient(S_URL, S_KEY);
 
-    let MASTER_ITEMS = [], ALL_DATA = [], currentOfficeId = null;
+    let MASTER_ITEMS = [], ALL_DATA = [], ALL_OFFICES = [], currentOfficeId = null, importedData = null;
+
+    function showNotification(message, type = 'success') {
+        const notif = document.createElement('div');
+        notif.className = `notification ${type}`;
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
 
     async function init() {
         const { data: items } = await supabaseClient.from("office_items").select("*").order("id");
         const { data: offices } = await supabaseClient.from("offices").select("*").order("office_name");
         MASTER_ITEMS = items || [];
+        ALL_OFFICES = offices || [];
         const select = document.getElementById("officeSelect");
         offices?.forEach(o => select.add(new Option(o.office_name, o.id)));
 
@@ -250,8 +301,222 @@
             r[field] = parseInt(i.value) || 0;
         });
         await supabaseClient.from("office_communications").upsert(rows, { onConflict: 'office_id,item_id' });
-        alert("Inventory Saved");
+        showNotification('✅ Inventory Saved Successfully', 'success');
         fetchAllData();
+    }
+
+    // ============= TEMPLATE DOWNLOAD =============
+    function downloadTemplate() {
+        const wb = XLSX.utils.book_new();
+        
+        // Create instructions sheet
+        const instructions = [
+            ['HPN & HSG COMMUNICATION - DATA IMPORT TEMPLATE'],
+            [''],
+            ['INSTRUCTIONS:'],
+            ['1. Fill in the data for each office in the corresponding sheet'],
+            ['2. Do not modify the "Item Description" column'],
+            ['3. Enter numeric values only in TE 2019, On Hand, and TE 2025 columns'],
+            ['4. Leave category header rows empty (they are for organization only)'],
+            ['5. Save the file and use "Import Data" button to upload'],
+            [''],
+            ['NOTE: Each office has its own sheet. Fill only the offices you need to update.']
+        ];
+        const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
+        XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
+
+        // Create a sheet for each office
+        ALL_OFFICES.forEach(office => {
+            const sheetData = [
+                ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
+            ];
+            
+            MASTER_ITEMS.forEach(item => {
+                if (item.colspan) {
+                    // Category header
+                    sheetData.push([item.item_name, '', '', '']);
+                } else {
+                    // Regular item
+                    sheetData.push([item.item_name, 0, 0, 0]);
+                }
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 50 },  // Item Description
+                { wch: 12 },  // TE 2019
+                { wch: 12 },  // On Hand
+                { wch: 12 }   // TE 2025
+            ];
+            
+            // Clean office name for sheet name (Excel has restrictions)
+            const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        });
+
+        // Download the file
+        XLSX.writeFile(wb, 'HPN_HSG_Communication_Template.xlsx');
+        showNotification('📥 Template downloaded successfully', 'success');
+    }
+
+    // ============= FILE IMPORT =============
+    function handleFileImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                importedData = [];
+                let totalRecords = 0;
+
+                // Process each sheet (each office)
+                workbook.SheetNames.forEach(sheetName => {
+                    if (sheetName === 'Instructions') return; // Skip instructions sheet
+                    
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    // Find matching office
+                    const office = ALL_OFFICES.find(o => 
+                        o.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '') === sheetName
+                    );
+                    
+                    if (!office) {
+                        console.warn(`Office not found for sheet: ${sheetName}`);
+                        return;
+                    }
+
+                    // Skip header row
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        const itemName = row[0];
+                        const te2019 = parseInt(row[1]) || 0;
+                        const onhand = parseInt(row[2]) || 0;
+                        const te2025 = parseInt(row[3]) || 0;
+                        
+                        // Find matching item
+                        const item = MASTER_ITEMS.find(m => m.item_name === itemName && !m.colspan);
+                        
+                        if (item) {
+                            importedData.push({
+                                office_id: office.id,
+                                office_name: office.office_name,
+                                item_id: item.id,
+                                item_name: item.item_name,
+                                te_2019: te2019,
+                                onhand: onhand,
+                                proposed_te_2025: te2025
+                            });
+                            totalRecords++;
+                        }
+                    }
+                });
+
+                if (importedData.length > 0) {
+                    showImportPreview();
+                    showNotification(`📊 ${totalRecords} records ready to import`, 'info');
+                } else {
+                    showNotification('⚠️ No valid data found in file', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error reading file:', error);
+                showNotification('❌ Error reading file. Please check format.', 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        
+        // Reset file input
+        event.target.value = '';
+    }
+
+    function showImportPreview() {
+        const groupedData = {};
+        importedData.forEach(record => {
+            if (!groupedData[record.office_name]) {
+                groupedData[record.office_name] = [];
+            }
+            groupedData[record.office_name].push(record);
+        });
+
+        let html = '<div style="padding: 20px;">';
+        html += `<p style="margin-bottom: 20px; font-weight: 600; color: #764ba2;">Preview: ${importedData.length} records from ${Object.keys(groupedData).length} offices</p>`;
+        
+        Object.keys(groupedData).forEach(officeName => {
+            html += `<h3 style="margin: 20px 0 10px; color: #667eea; font-size: 1.1rem;">${officeName}</h3>`;
+            html += `<table style="width: 100%; margin-bottom: 20px; font-size: 0.9rem;">`;
+            html += `<thead><tr style="background: #f8fafc;">
+                <th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Item</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">TE 2019</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">On Hand</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">TE 2025</th>
+            </tr></thead><tbody>`;
+            
+            groupedData[officeName].slice(0, 5).forEach(record => {
+                html += `<tr>
+                    <td style="padding: 6px; border: 1px solid #eee;">${record.item_name}</td>
+                    <td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.te_2019}</td>
+                    <td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.onhand}</td>
+                    <td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.proposed_te_2025}</td>
+                </tr>`;
+            });
+            
+            if (groupedData[officeName].length > 5) {
+                html += `<tr><td colspan="4" style="text-align: center; padding: 6px; color: #999; font-style: italic;">... and ${groupedData[officeName].length - 5} more items</td></tr>`;
+            }
+            
+            html += `</tbody></table>`;
+        });
+        
+        html += '</div>';
+        document.getElementById('importPreviewArea').innerHTML = html;
+        document.getElementById('importModal').style.display = 'block';
+    }
+
+    function closeImportModal() {
+        document.getElementById('importModal').style.display = 'none';
+        importedData = null;
+    }
+
+    async function confirmImport() {
+        if (!importedData || importedData.length === 0) return;
+
+        try {
+            // Prepare records for upsert
+            const records = importedData.map(item => ({
+                office_id: item.office_id,
+                item_id: item.item_id,
+                te_2019: item.te_2019,
+                onhand: item.onhand,
+                proposed_te_2025: item.proposed_te_2025
+            }));
+
+            // Upsert to database
+            const { error } = await supabaseClient
+                .from('office_communications')
+                .upsert(records, { onConflict: 'office_id,item_id' });
+
+            if (error) throw error;
+
+            showNotification(`✅ Successfully imported ${records.length} records`, 'success');
+            closeImportModal();
+            await fetchAllData();
+            
+            // Reload current office if one is selected
+            if (currentOfficeId) {
+                loadOffice(currentOfficeId);
+            }
+
+        } catch (error) {
+            console.error('Error importing data:', error);
+            showNotification('❌ Error importing data: ' + error.message, 'error');
+        }
     }
 
     init();
