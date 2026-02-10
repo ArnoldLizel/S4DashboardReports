@@ -65,6 +65,8 @@
         .category-row td { background: #f1f5f9 !important; color: #764ba2 !important; font-weight: 800; font-size: 1.15rem; padding: 20px 40px; text-transform: uppercase; letter-spacing: 0.5px; }
         .qty-input { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 8px; text-align: center; font-weight: 700; font-size: 1.1rem; transition: all 0.2s; }
         .qty-input:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .qty-input.zero-value { background: #95a5a6 !important; color: white !important; border-color: #7f8c8d !important; }
+        .qty-input.has-value { background: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; }
 
         /* MODAL */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; padding: 40px; }
@@ -108,11 +110,13 @@
             table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
             th { background: #eee !important; border: 1px solid #000 !important; font-size: 11pt !important; color: black !important; padding: 10px !important; }
             td { border: 1px solid #000 !important; font-size: 11pt !important; color: black !important; padding: 8px !important; }
+            td[style*="background"] { background: white !important; color: black !important; }
             td:first-child { font-size: 10pt !important; }
             .signature-section { display: grid !important; }
             
             /* Hide input boxes, show text values */
             .qty-input { display: none !important; }
+            .qty-input.zero-value, .qty-input.has-value { background: white !important; color: black !important; border-color: #000 !important; }
             .print-val { display: block !important; text-align: center; font-weight: bold; font-size: 11pt !important; }
         }
 
@@ -263,7 +267,20 @@
             if(item.colspan) html += `<tr class="category-row"><td colspan="4">${item.item_name}</td></tr>`;
             else {
                 const recs = ALL_DATA.filter(d => d.item_id === item.id);
-                html += `<tr><td>${item.item_name}</td><td style="text-align:center; font-weight:600; font-size:1.05rem;">${recs.reduce((a,b)=>a+(b.te_2019||0),0)}</td><td style="text-align:center; font-weight:700; font-size:1.05rem;">${recs.reduce((a,b)=>a+(b.onhand||0),0)}</td><td style="text-align:center; font-weight:600; font-size:1.05rem;">${recs.reduce((a,b)=>a+(b.proposed_te_2025||0),0)}</td></tr>`;
+                const te2019 = recs.reduce((a,b)=>a+(b.te_2019||0),0);
+                const onhand = recs.reduce((a,b)=>a+(b.onhand||0),0);
+                const te2025 = recs.reduce((a,b)=>a+(b.proposed_te_2025||0),0);
+                
+                const colorTE2019 = te2019 === 0 ? 'background: #95a5a6; color: white;' : 'background: #2ecc71; color: white;';
+                const colorOnhand = onhand === 0 ? 'background: #95a5a6; color: white;' : 'background: #2ecc71; color: white;';
+                const colorTE2025 = te2025 === 0 ? 'background: #95a5a6; color: white;' : 'background: #2ecc71; color: white;';
+                
+                html += `<tr>
+                    <td>${item.item_name}</td>
+                    <td style="text-align:center; font-weight:700; font-size:1.05rem; padding: 10px; border-radius: 6px; ${colorTE2019}">${te2019}</td>
+                    <td style="text-align:center; font-weight:700; font-size:1.05rem; padding: 10px; border-radius: 6px; ${colorOnhand}">${onhand}</td>
+                    <td style="text-align:center; font-weight:700; font-size:1.05rem; padding: 10px; border-radius: 6px; ${colorTE2025}">${te2025}</td>
+                </tr>`;
             }
         });
         html += `</tbody></table>`;
@@ -283,12 +300,38 @@
                 html += `<tr>
                     <td>${item.item_name}</td>
                     <td><input type="number" class="qty-input" data-id="${item.id}" data-f="te_2019" value="${v.te_2019}"><span class="print-val">${v.te_2019}</span></td>
-                    <td><input type="number" class="qty-input" data-id="${item.id}" data-f="onhand" value="${v.onhand}" style="background:#e8f4fd;"><span class="print-val">${v.onhand}</span></td>
+                    <td><input type="number" class="qty-input" data-id="${item.id}" data-f="onhand" value="${v.onhand}"><span class="print-val">${v.onhand}</span></td>
                     <td><input type="number" class="qty-input" data-id="${item.id}" data-f="proposed_te_2025" value="${v.proposed_te_2025}"><span class="print-val">${v.proposed_te_2025}</span></td>
                 </tr>`;
             }
         });
         document.getElementById("editorContent").innerHTML = html;
+        
+        // Apply color coding to all inputs
+        applyColorCoding();
+        
+        // Add event listeners for real-time color updates
+        document.querySelectorAll('.qty-input').forEach(input => {
+            input.addEventListener('input', function() {
+                updateInputColor(this);
+            });
+        });
+    }
+
+    function updateInputColor(input) {
+        const value = parseInt(input.value) || 0;
+        input.classList.remove('zero-value', 'has-value');
+        if (value === 0) {
+            input.classList.add('zero-value');
+        } else {
+            input.classList.add('has-value');
+        }
+    }
+
+    function applyColorCoding() {
+        document.querySelectorAll('.qty-input').forEach(input => {
+            updateInputColor(input);
+        });
     }
 
     async function saveOfficeData() {
@@ -510,7 +553,7 @@
             
             // Reload current office if one is selected
             if (currentOfficeId) {
-                loadOffice(currentOfficeId);
+                await loadOffice(currentOfficeId);
             }
 
         } catch (error) {
