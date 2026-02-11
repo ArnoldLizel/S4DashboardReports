@@ -63,6 +63,7 @@
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 1.05rem; }
         td:first-child { padding-left: 40px; font-weight: 600; font-size: 1.1rem; }
         .category-row td { background: #f1f5f9 !important; color: #764ba2 !important; font-weight: 800; font-size: 1.15rem; padding: 20px 40px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .total-row td { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; font-weight: 800; font-size: 1.25rem; padding: 25px 40px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 3px solid #764ba2; }
         .qty-input { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 8px; text-align: center; font-weight: 700; font-size: 1.1rem; transition: all 0.2s; }
         .qty-input:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
         .qty-input.zero-value { background: #95a5a6 !important; color: white !important; border-color: #7f8c8d !important; }
@@ -112,6 +113,7 @@
             td { border: 1px solid #000 !important; font-size: 11pt !important; color: black !important; padding: 8px !important; }
             td[style*="background"] { background: white !important; color: black !important; }
             td:first-child { font-size: 10pt !important; }
+            .total-row td { background: #ddd !important; color: black !important; font-weight: bold !important; border: 2px solid #000 !important; }
             .signature-section { display: grid !important; }
             
             /* Hide input boxes, show text values */
@@ -262,7 +264,33 @@
     }
 
     function renderGlobalReport() {
+        // Calculate grand totals first
+        let grandTotal_TE2019 = 0;
+        let grandTotal_OnHand = 0;
+        let grandTotal_TE2025 = 0;
+
+        MASTER_ITEMS.forEach(item => {
+            if (!item.colspan) {
+                const recs = ALL_DATA.filter(d => d.item_id === item.id);
+                grandTotal_TE2019 += recs.reduce((a, b) => a + (b.te_2019 || 0), 0);
+                grandTotal_OnHand += recs.reduce((a, b) => a + (b.onhand || 0), 0);
+                grandTotal_TE2025 += recs.reduce((a, b) => a + (b.proposed_te_2025 || 0), 0);
+            }
+        });
+
         let html = `<table><thead><tr><th class="col-desc">Description</th><th class="col-qty">TE 2019</th><th class="col-qty">On Hand</th><th class="col-qty">TE 2025</th></tr></thead><tbody>`;
+        
+        // Add total summary row at the top
+        html += `<tr class="total-row">
+            <td>GRAND TOTAL</td>
+            <td style="text-align:center; font-weight:800; font-size:1.3rem;">${grandTotal_TE2019}</td>
+            <td style="text-align:center; font-weight:800; font-size:1.3rem;">${grandTotal_OnHand}</td>
+            <td style="text-align:center; font-weight:800; font-size:1.3rem;">${grandTotal_TE2025}</td>
+        </tr>`;
+
+        // Add spacing row
+        html += `<tr><td colspan="4" style="height: 10px; background: transparent; border: none;"></td></tr>`;
+
         MASTER_ITEMS.forEach(item => {
             if(item.colspan) html += `<tr class="category-row"><td colspan="4">${item.item_name}</td></tr>`;
             else {
