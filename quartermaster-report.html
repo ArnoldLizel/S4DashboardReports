@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
         /* BASE STYLES */
@@ -18,16 +19,19 @@
           min-height: 100vh; padding: 1.5rem;
         }
         .app-container { max-width: 1600px; margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; }
-        .sidebar { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.15); position: sticky; top: 1.5rem; }
+        .sidebar { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.15); position: sticky; top: 1.5rem; height: fit-content; }
         .logo-section { text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #f3f4f6; padding-bottom: 1.5rem; }
         
         /* BUTTONS & FORMS */
         .btn { padding: 0.75rem 1rem; border: none; border-radius: 0.5rem; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s; width: 100%; margin-bottom: 0.75rem; }
         .btn-primary { background: #667eea; color: white; }
         .btn-success { background: #10b981; color: white; }
+        .btn-orange { background: #f59e0b; color: white; }
         .btn-manage { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .form-select { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 2px solid #e5e7eb; margin-bottom: 1.5rem; font-size: 16px; }
+        .section-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 1.25rem 0 0.75rem; }
 
         /* MAIN TABLE */
         .main-content { background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
@@ -45,6 +49,12 @@
         .modal-content { background: white; border-radius: 1rem; padding: 2rem; width: 95%; max-width: 1000px; max-height: 90vh; overflow-y: auto; }
         .modal-content h2 { font-size: 26px; }
         .modal-content h3 { font-size: 22px; }
+
+        /* IMPORT PREVIEW */
+        .import-preview-area { max-height: 400px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 0.5rem; margin: 1rem 0; }
+        .import-preview-area table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .import-preview-area th { background: #f8fafc; padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: 700; }
+        .import-preview-area td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
         
         /* DRAG & DROP STYLES */
         .sortable-item { cursor: grab; background: white; transition: background 0.2s; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; padding: 12px; font-size: 16px; }
@@ -57,7 +67,14 @@
         .summary-card div { font-size: 16px; margin-bottom: 0.5rem; color: #64748b; font-weight: 600; }
         .summary-card h3 { font-size: 36px; color: #0f172a; font-weight: 700; }
 
-        /* PRINT LOGIC - CRITICAL FIX */
+        /* NOTIFICATION */
+        .notification { position: fixed; top: 1.5rem; right: 1.5rem; padding: 1rem 1.5rem; border-radius: 0.5rem; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 99999; font-weight: 600; font-size: 15px; animation: slideIn 0.3s ease; }
+        .notification.success { border-left: 5px solid #10b981; }
+        .notification.error { border-left: 5px solid #ef4444; }
+        .notification.info { border-left: 5px solid #3b82f6; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* PRINT LOGIC */
         @media print {
             body * { visibility: hidden; background: white !important; }
             .modal.show, .modal.show * { visibility: visible; }
@@ -80,13 +97,26 @@
             <div class="logo-icon" style="font-size:2rem; color:#667eea;"><i class="fas fa-clipboard-list"></i></div>
             <h2>Quartermaster</h2>
         </div>
+
         <select id="officeSelect" class="form-select">
             <option value="">-- Choose Office --</option>
         </select>
+
+        <div class="section-label">Office Actions</div>
         <button class="btn btn-primary" id="saveBtn"><i class="fas fa-save"></i> Save Office Data</button>
         <button class="btn btn-success" id="printOfficeBtn" disabled><i class="fas fa-print"></i> Print Office Report</button>
+
+        <div class="section-label">Data Import / Export</div>
+        <button class="btn btn-orange" onclick="downloadTemplate()"><i class="fas fa-download"></i> Download Template</button>
+        <button class="btn btn-orange" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> Import Data</button>
+        <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileImport(event)" style="display:none;">
+        <button class="btn btn-success" onclick="exportAllData()"><i class="fas fa-file-excel"></i> Export All Data</button>
+
+        <div class="section-label">Reports</div>
         <button class="btn btn-success" id="totalSummaryBtn"><i class="fas fa-chart-bar"></i> Global Summary</button>
         <button class="btn btn-success" id="printGlobalBtn"><i class="fas fa-print"></i> Print Global Report</button>
+
+        <div class="section-label">Settings</div>
         <button class="btn btn-manage" id="manageItemsBtn"><i class="fas fa-sort"></i> Reorder / Add Items</button>
     </aside>
 
@@ -110,39 +140,36 @@
     </main>
 </div>
 
+<!-- MANAGE ITEMS MODAL -->
 <div class="modal" id="manageModal">
     <div class="modal-content" style="max-width: 600px;">
         <h3>Manage Master Items</h3>
         <p style="font-size: 0.9rem; color: #667; margin-bottom: 1rem;">Drag items to reorder. Changes save instantly.</p>
-        
         <div style="background: #f1f5f9; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <input type="text" id="newItemName" placeholder="Item Name" style="width:100%; padding:0.6rem; margin-bottom:0.5rem; font-size: 16px;">
-            <select id="newItemType" style="width:100%; padding:0.6rem; margin-bottom:0.5rem; font-size: 16px;">
+            <input type="text" id="newItemName" placeholder="Item Name" style="width:100%; padding:0.6rem; margin-bottom:0.5rem; font-size: 16px; border: 1px solid #ddd; border-radius: 0.375rem;">
+            <select id="newItemType" style="width:100%; padding:0.6rem; margin-bottom:0.5rem; font-size: 16px; border: 1px solid #ddd; border-radius: 0.375rem;">
                 <option value="false">Regular Item</option>
                 <option value="true">Category Header</option>
             </select>
             <button class="btn btn-primary" onclick="handleAddItem()">Add Item</button>
         </div>
-
-        <div id="dragList" style="border: 1px solid #eee; border-radius: 0.5rem; max-height: 400px; overflow-y: auto;">
-        </div>
+        <div id="dragList" style="border: 1px solid #eee; border-radius: 0.5rem; max-height: 400px; overflow-y: auto;"></div>
         <button class="btn btn-manage" style="margin-top:1rem" onclick="closeModal('manageModal')">Close</button>
     </div>
 </div>
 
+<!-- GLOBAL SUMMARY MODAL -->
 <div class="modal" id="summaryModal">
     <div class="modal-content">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h2>Global Inventory Report</h2>
             <button class="no-print" onclick="closeModal('summaryModal')" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
-
         <div class="summary-grid">
             <div class="summary-card"><div>Global TE 2019</div><h3 id="sum19">0</h3></div>
             <div class="summary-card"><div>Global On Hand</div><h3 id="sumOH">0</h3></div>
             <div class="summary-card"><div>Global TE 2025</div><h3 id="sum25">0</h3></div>
         </div>
-
         <table class="inventory-table">
             <thead>
                 <tr>
@@ -154,26 +181,24 @@
             </thead>
             <tbody id="summaryTableBody"></tbody>
         </table>
-
         <div style="margin-top: 2rem;" class="no-print">
             <button class="btn btn-primary" onclick="window.print()">Print This Report</button>
         </div>
     </div>
 </div>
 
+<!-- OFFICE REPORT MODAL -->
 <div class="modal" id="officeReportModal">
     <div class="modal-content">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h2 id="officeReportTitle">Office Inventory Report</h2>
             <button class="no-print" onclick="closeModal('officeReportModal')" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
-
         <div class="summary-grid">
             <div class="summary-card"><div>TE 2019</div><h3 id="office19">0</h3></div>
             <div class="summary-card"><div>On Hand</div><h3 id="officeOH">0</h3></div>
             <div class="summary-card"><div>TE 2025</div><h3 id="office25">0</h3></div>
         </div>
-
         <table class="inventory-table">
             <thead>
                 <tr>
@@ -185,9 +210,21 @@
             </thead>
             <tbody id="officeReportBody"></tbody>
         </table>
-
         <div style="margin-top: 2rem;" class="no-print">
             <button class="btn btn-primary" onclick="window.print()">Print This Report</button>
+        </div>
+    </div>
+</div>
+
+<!-- IMPORT PREVIEW MODAL -->
+<div class="modal" id="importModal">
+    <div class="modal-content" style="max-width: 800px;">
+        <h3 style="color: #667eea; margin-bottom: 0.5rem;">Import Data Preview</h3>
+        <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Review the data below before confirming the import.</p>
+        <div id="importPreviewArea" class="import-preview-area"></div>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+            <button class="btn btn-success" onclick="confirmImport()" style="flex:1;"><i class="fas fa-check"></i> Confirm Import</button>
+            <button class="btn btn-manage" onclick="closeImportModal()" style="flex:1;">Cancel</button>
         </div>
     </div>
 </div>
@@ -199,12 +236,27 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let masterItems = [];
 let officeMap = {};
+let allOffices = [];
+let allData = [];
 let currentOfficeId = null;
 let currentOfficeData = {};
+let importedData = null;
 
+// ─── NOTIFICATION ─────────────────────────────────────────────────────────────
+function showNotification(message, type = 'success') {
+    const notif = document.createElement('div');
+    notif.className = `notification ${type}`;
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
     await loadOffices();
     await loadMasterItems();
+    await fetchAllData();
+
     document.getElementById('officeSelect').onchange = (e) => loadOfficeInventory(e.target.value);
     document.getElementById('saveBtn').onclick = saveCurrentData;
     document.getElementById('printOfficeBtn').onclick = printOfficeReport;
@@ -212,29 +264,31 @@ async function init() {
     document.getElementById('printGlobalBtn').onclick = generateCompleteSummary;
     document.getElementById('manageItemsBtn').onclick = openManageModal;
     
-    // Initialize Drag and Drop
     const el = document.getElementById('dragList');
     Sortable.create(el, {
         animation: 150,
         ghostClass: 'sortable-ghost',
         onEnd: async () => {
-            const items = Array.from(el.children).map((child, index) => ({
-                id: child.dataset.id,
-                display_order: index + 1
-            }));
+            const items = Array.from(el.children).map((child, index) => ({ id: child.dataset.id, display_order: index + 1 }));
             for (const item of items) {
                 await supabaseClient.from('quartermaster_items').update({ display_order: item.display_order }).eq('id', item.id);
             }
             await loadMasterItems();
-            if(currentOfficeId) renderMainTable();
+            if (currentOfficeId) renderMainTable();
         }
     });
+}
+
+async function fetchAllData() {
+    const { data } = await supabaseClient.from('office_quartermaster').select("*");
+    allData = data || [];
 }
 
 async function loadOffices() {
     const { data } = await supabaseClient.from('offices').select("*").order('office_name');
     const select = document.getElementById('officeSelect');
-    if(data) data.forEach(o => { officeMap[o.id] = o.office_name; select.add(new Option(o.office_name, o.id)); });
+    allOffices = data || [];
+    if (data) data.forEach(o => { officeMap[o.id] = o.office_name; select.add(new Option(o.office_name, o.id)); });
 }
 
 async function loadMasterItems() {
@@ -243,11 +297,7 @@ async function loadMasterItems() {
 }
 
 async function loadOfficeInventory(officeId) {
-    if (!officeId) {
-        currentOfficeId = null;
-        document.getElementById('printOfficeBtn').disabled = true;
-        return;
-    }
+    if (!officeId) { currentOfficeId = null; document.getElementById('printOfficeBtn').disabled = true; return; }
     currentOfficeId = officeId;
     document.getElementById('printOfficeBtn').disabled = false;
     document.getElementById('contentTitle').textContent = officeMap[officeId];
@@ -266,7 +316,7 @@ function renderMainTable() {
             tr.className = "category-row";
             tr.innerHTML = `<td colspan="4"><i class="fas fa-folder"></i> ${item.item_name}</td>`;
         } else {
-            const v = currentOfficeData[item.id] || {t19:0, oh:0, t25:0};
+            const v = currentOfficeData[item.id] || { t19: 0, oh: 0, t25: 0 };
             tr.innerHTML = `
                 <td style="text-align: left;">${item.item_name}</td>
                 <td><input type="number" class="qty-input" value="${v.t19 || 0}" onchange="updateLocal(${item.id}, 't19', this.value)"></td>
@@ -278,12 +328,12 @@ function renderMainTable() {
 }
 
 function updateLocal(id, f, v) {
-    if(!currentOfficeData[id]) currentOfficeData[id] = {t19:0, oh:0, t25:0};
+    if (!currentOfficeData[id]) currentOfficeData[id] = { t19: 0, oh: 0, t25: 0 };
     currentOfficeData[id][f] = parseInt(v) || 0;
 }
 
 async function saveCurrentData() {
-    if(!currentOfficeId) return alert("Select office.");
+    if (!currentOfficeId) return alert("Select office.");
     const records = Object.keys(currentOfficeData).map(itemId => ({
         office_id: currentOfficeId, item_id: parseInt(itemId),
         te_2019: currentOfficeData[itemId].t19, onhand: currentOfficeData[itemId].oh,
@@ -291,7 +341,8 @@ async function saveCurrentData() {
     }));
     await supabaseClient.from('office_quartermaster').delete().eq('office_id', currentOfficeId);
     await supabaseClient.from('office_quartermaster').insert(records);
-    alert("Saved!");
+    showNotification('✅ Data saved successfully!', 'success');
+    await fetchAllData();
 }
 
 function openManageModal() {
@@ -307,20 +358,20 @@ function openManageModal() {
 async function handleAddItem() {
     const name = document.getElementById('newItemName').value;
     const isHeader = document.getElementById('newItemType').value === "true";
-    if(!name) return;
+    if (!name) return;
     await supabaseClient.from('quartermaster_items').insert([{ item_name: name, colspan: isHeader, display_order: masterItems.length + 1 }]);
     document.getElementById('newItemName').value = "";
     await loadMasterItems();
     openManageModal();
-    if(currentOfficeId) renderMainTable();
+    if (currentOfficeId) renderMainTable();
 }
 
 async function deleteMasterItem(id) {
-    if(!confirm("Delete item?")) return;
+    if (!confirm("Delete item?")) return;
     await supabaseClient.from('quartermaster_items').delete().eq('id', id);
     await loadMasterItems();
     openManageModal();
-    if(currentOfficeId) renderMainTable();
+    if (currentOfficeId) renderMainTable();
 }
 
 async function showGlobalSummary() {
@@ -328,7 +379,7 @@ async function showGlobalSummary() {
     const totals = {};
     let g19 = 0, gOH = 0, g25 = 0;
     (data || []).forEach(r => {
-        if(!totals[r.item_id]) totals[r.item_id] = { t19:0, oh:0, t25:0 };
+        if (!totals[r.item_id]) totals[r.item_id] = { t19: 0, oh: 0, t25: 0 };
         totals[r.item_id].t19 += (r.te_2019 || 0);
         totals[r.item_id].oh += (r.onhand || 0);
         totals[r.item_id].t25 += (r.proposed_te_2025 || 0);
@@ -337,7 +388,6 @@ async function showGlobalSummary() {
     document.getElementById('sum19').innerText = g19;
     document.getElementById('sumOH').innerText = gOH;
     document.getElementById('sum25').innerText = g25;
-    
     const tbody = document.getElementById('summaryTableBody');
     tbody.innerHTML = "";
     masterItems.forEach(item => {
@@ -346,7 +396,7 @@ async function showGlobalSummary() {
             tr.className = "category-row";
             tr.innerHTML = `<td colspan="4">${item.item_name}</td>`;
         } else {
-            const t = totals[item.id] || {t19:0, oh:0, t25:0};
+            const t = totals[item.id] || { t19: 0, oh: 0, t25: 0 };
             tr.innerHTML = `<td>${item.item_name}</td><td>${t.t19}</td><td>${t.oh}</td><td>${t.t25}</td>`;
         }
         tbody.appendChild(tr);
@@ -356,27 +406,17 @@ async function showGlobalSummary() {
 
 async function generateCompleteSummary() {
     await showGlobalSummary();
-    // Wait a bit for the modal to render before printing
-    setTimeout(() => {
-        window.print();
-    }, 300);
+    setTimeout(() => window.print(), 300);
 }
 
 function printOfficeReport() {
-    if(!currentOfficeId) return;
-    
+    if (!currentOfficeId) return;
     let o19 = 0, oOH = 0, o25 = 0;
-    Object.values(currentOfficeData).forEach(v => {
-        o19 += (v.t19 || 0);
-        oOH += (v.oh || 0);
-        o25 += (v.t25 || 0);
-    });
-    
+    Object.values(currentOfficeData).forEach(v => { o19 += (v.t19 || 0); oOH += (v.oh || 0); o25 += (v.t25 || 0); });
     document.getElementById('officeReportTitle').innerText = `${officeMap[currentOfficeId]} - Inventory Report`;
     document.getElementById('office19').innerText = o19;
     document.getElementById('officeOH').innerText = oOH;
     document.getElementById('office25').innerText = o25;
-    
     const tbody = document.getElementById('officeReportBody');
     tbody.innerHTML = "";
     masterItems.forEach(item => {
@@ -385,7 +425,7 @@ function printOfficeReport() {
             tr.className = "category-row";
             tr.innerHTML = `<td colspan="4">${item.item_name}</td>`;
         } else {
-            const v = currentOfficeData[item.id] || {t19:0, oh:0, t25:0};
+            const v = currentOfficeData[item.id] || { t19: 0, oh: 0, t25: 0 };
             tr.innerHTML = `<td>${item.item_name}</td><td>${v.t19}</td><td>${v.oh}</td><td>${v.t25}</td>`;
         }
         tbody.appendChild(tr);
@@ -394,6 +434,253 @@ function printOfficeReport() {
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ─── DOWNLOAD TEMPLATE ────────────────────────────────────────────────────────
+function downloadTemplate() {
+    const wb = XLSX.utils.book_new();
+
+    // Instructions sheet
+    const instructions = [
+        ['QUARTERMASTER - DATA IMPORT TEMPLATE'],
+        [''],
+        ['INSTRUCTIONS:'],
+        ['1. Fill in the data for each office in the corresponding sheet'],
+        ['2. Do not modify the "Item Description" column'],
+        ['3. Enter numeric values only in TE 2019, On Hand, and TE 2025 columns'],
+        ['4. Category header rows (📁) should be left with empty numeric columns'],
+        ['5. Save the file and use "Import Data" to upload'],
+        [''],
+        ['NOTE: Each office has its own sheet. Fill only the offices you need to update.']
+    ];
+    const wsInst = XLSX.utils.aoa_to_sheet(instructions);
+    wsInst['!cols'] = [{ wch: 60 }];
+    XLSX.utils.book_append_sheet(wb, wsInst, 'Instructions');
+
+    // One sheet per office
+    allOffices.forEach(office => {
+        const sheetData = [['Item Description', 'TE 2019', 'On Hand', 'TE 2025']];
+        masterItems.forEach(item => {
+            sheetData.push(item.colspan
+                ? [item.item_name, '', '', '']
+                : [item.item_name, 0, 0, 0]
+            );
+        });
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+        ws['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
+        const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
+    XLSX.writeFile(wb, 'Quartermaster_Template.xlsx');
+    showNotification('📥 Template downloaded!', 'success');
+}
+
+// ─── IMPORT DATA ──────────────────────────────────────────────────────────────
+function handleFileImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            importedData = [];
+            let totalRecords = 0;
+
+            workbook.SheetNames.forEach(sheetName => {
+                if (sheetName === 'Instructions') return;
+
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                const office = allOffices.find(o =>
+                    o.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '') === sheetName
+                );
+                if (!office) { console.warn(`Office not found: ${sheetName}`); return; }
+
+                for (let i = 1; i < jsonData.length; i++) {
+                    const row = jsonData[i];
+                    const itemName = row[0];
+                    const te2019 = parseInt(row[1]) || 0;
+                    const onhand = parseInt(row[2]) || 0;
+                    const te2025 = parseInt(row[3]) || 0;
+                    const item = masterItems.find(m => m.item_name === itemName && !m.colspan);
+                    if (item) {
+                        importedData.push({ office_id: office.id, office_name: office.office_name, item_id: item.id, item_name: item.item_name, te_2019: te2019, onhand: onhand, proposed_te_2025: te2025 });
+                        totalRecords++;
+                    }
+                }
+            });
+
+            if (importedData.length > 0) {
+                showImportPreview();
+                showNotification(`📊 ${totalRecords} records ready to import`, 'info');
+            } else {
+                showNotification('⚠️ No valid data found in file', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showNotification('❌ Error reading file. Check the format.', 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+}
+
+function showImportPreview() {
+    const grouped = {};
+    importedData.forEach(r => {
+        if (!grouped[r.office_name]) grouped[r.office_name] = [];
+        grouped[r.office_name].push(r);
+    });
+
+    let html = `<div style="padding:1rem;">`;
+    html += `<p style="font-weight:700; color:#667eea; margin-bottom:1rem;">${importedData.length} records across ${Object.keys(grouped).length} office(s)</p>`;
+
+    Object.keys(grouped).forEach(officeName => {
+        html += `<h4 style="margin:1rem 0 0.5rem; color:#374151;">${officeName}</h4>`;
+        html += `<table style="width:100%; font-size:0.9rem; border-collapse:collapse;">
+            <thead><tr style="background:#f9fafb;">
+                <th style="text-align:left; padding:6px 8px; border:1px solid #e5e7eb;">Item</th>
+                <th style="padding:6px 8px; border:1px solid #e5e7eb;">TE 2019</th>
+                <th style="padding:6px 8px; border:1px solid #e5e7eb;">On Hand</th>
+                <th style="padding:6px 8px; border:1px solid #e5e7eb;">TE 2025</th>
+            </tr></thead><tbody>`;
+
+        grouped[officeName].slice(0, 5).forEach(r => {
+            html += `<tr>
+                <td style="padding:5px 8px; border:1px solid #f1f5f9;">${r.item_name}</td>
+                <td style="text-align:center; padding:5px 8px; border:1px solid #f1f5f9;">${r.te_2019}</td>
+                <td style="text-align:center; padding:5px 8px; border:1px solid #f1f5f9;">${r.onhand}</td>
+                <td style="text-align:center; padding:5px 8px; border:1px solid #f1f5f9;">${r.proposed_te_2025}</td>
+            </tr>`;
+        });
+
+        if (grouped[officeName].length > 5) {
+            html += `<tr><td colspan="4" style="text-align:center; padding:5px; color:#94a3b8; font-style:italic;">...and ${grouped[officeName].length - 5} more items</td></tr>`;
+        }
+        html += `</tbody></table>`;
+    });
+
+    html += `</div>`;
+    document.getElementById('importPreviewArea').innerHTML = html;
+    document.getElementById('importModal').classList.add('show');
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').classList.remove('show');
+    importedData = null;
+}
+
+async function confirmImport() {
+    if (!importedData || importedData.length === 0) return;
+    try {
+        // Group by office and upsert
+        const groupedByOffice = {};
+        importedData.forEach(r => {
+            if (!groupedByOffice[r.office_id]) groupedByOffice[r.office_id] = [];
+            groupedByOffice[r.office_id].push({ office_id: r.office_id, item_id: r.item_id, te_2019: r.te_2019, onhand: r.onhand, proposed_te_2025: r.proposed_te_2025 });
+        });
+
+        for (const officeId of Object.keys(groupedByOffice)) {
+            await supabaseClient.from('office_quartermaster').delete().eq('office_id', officeId);
+            await supabaseClient.from('office_quartermaster').insert(groupedByOffice[officeId]);
+        }
+
+        showNotification(`✅ Imported ${importedData.length} records successfully`, 'success');
+        closeImportModal();
+        await fetchAllData();
+        if (currentOfficeId) await loadOfficeInventory(currentOfficeId);
+    } catch (err) {
+        console.error(err);
+        showNotification('❌ Import failed: ' + err.message, 'error');
+    }
+}
+
+// ─── EXPORT ALL DATA ──────────────────────────────────────────────────────────
+function exportAllData() {
+    if (allData.length === 0) {
+        showNotification('⚠️ No data to export. Try refreshing.', 'error');
+        return;
+    }
+
+    showNotification('⏳ Preparing export...', 'info');
+
+    const wb = XLSX.utils.book_new();
+
+    // ── Sheet 1: Consolidated Summary ────────────────────────────────────────
+    const summaryData = [
+        ['QUARTERMASTER - CONSOLIDATED SUMMARY'],
+        ['Exported: ' + new Date().toLocaleString()],
+        [''],
+        ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
+    ];
+
+    let grandTE2019 = 0, grandOnHand = 0, grandTE2025 = 0;
+
+    masterItems.forEach(item => {
+        if (item.colspan) {
+            summaryData.push([item.item_name, '', '', '']);
+        } else {
+            const recs = allData.filter(d => d.item_id === item.id);
+            const te2019 = recs.reduce((a, b) => a + (b.te_2019 || 0), 0);
+            const onhand = recs.reduce((a, b) => a + (b.onhand || 0), 0);
+            const te2025 = recs.reduce((a, b) => a + (b.proposed_te_2025 || 0), 0);
+            grandTE2019 += te2019; grandOnHand += onhand; grandTE2025 += te2025;
+            summaryData.push([item.item_name, te2019, onhand, te2025]);
+        }
+    });
+
+    summaryData.push(['']);
+    summaryData.push(['GRAND TOTAL', grandTE2019, grandOnHand, grandTE2025]);
+
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+    wsSummary['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Consolidated Summary');
+
+    // ── One Sheet per Office ──────────────────────────────────────────────────
+    allOffices.forEach(office => {
+        const officeRecords = allData.filter(d => d.office_id === office.id);
+        const valMap = {};
+        officeRecords.forEach(r => valMap[r.item_id] = r);
+
+        const sheetData = [
+            [office.office_name],
+            ['Generated: ' + new Date().toLocaleString()],
+            [''],
+            ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
+        ];
+
+        let totalTE2019 = 0, totalOnHand = 0, totalTE2025 = 0;
+
+        masterItems.forEach(item => {
+            if (item.colspan) {
+                sheetData.push([item.item_name, '', '', '']);
+            } else {
+                const v = valMap[item.id] || { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
+                const te2019 = v.te_2019 || 0;
+                const onhand = v.onhand || 0;
+                const te2025 = v.proposed_te_2025 || 0;
+                totalTE2019 += te2019; totalOnHand += onhand; totalTE2025 += te2025;
+                sheetData.push([item.item_name, te2019, onhand, te2025]);
+            }
+        });
+
+        sheetData.push(['']);
+        sheetData.push(['OFFICE TOTAL', totalTE2019, totalOnHand, totalTE2025]);
+
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+        ws['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
+        const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    XLSX.writeFile(wb, `Quartermaster_Export_${timestamp}.xlsx`);
+    showNotification(`✅ Exported ${allOffices.length} offices successfully`, 'success');
+}
 
 init();
 </script>
