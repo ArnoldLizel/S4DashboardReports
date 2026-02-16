@@ -147,6 +147,7 @@
             <button class="btn btn-orange" onclick="downloadTemplate()"><i class="fas fa-download"></i> Download Template</button>
             <button class="btn btn-orange" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> Import Data</button>
             <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileImport(event)" style="display: none;">
+            <button class="btn btn-green" onclick="exportAllData()"><i class="fas fa-file-excel"></i> Export All Data</button>
         </div>
 
         <div class="section-label">Reports</div>
@@ -253,7 +254,6 @@
     }
 
     function printOfficeReport() {
-        // Sync the values from inputs to the hidden print spans
         document.querySelectorAll('.qty-input').forEach(input => {
             const span = input.nextElementSibling;
             if(span) span.innerText = input.value || "0";
@@ -264,11 +264,7 @@
     }
 
     function renderGlobalReport() {
-        // Calculate grand totals first
-        let grandTotal_TE2019 = 0;
-        let grandTotal_OnHand = 0;
-        let grandTotal_TE2025 = 0;
-
+        let grandTotal_TE2019 = 0, grandTotal_OnHand = 0, grandTotal_TE2025 = 0;
         MASTER_ITEMS.forEach(item => {
             if (!item.colspan) {
                 const recs = ALL_DATA.filter(d => d.item_id === item.id);
@@ -279,16 +275,12 @@
         });
 
         let html = `<table><thead><tr><th class="col-desc">Description</th><th class="col-qty">TE 2019</th><th class="col-qty">On Hand</th><th class="col-qty">TE 2025</th></tr></thead><tbody>`;
-        
-        // Add total summary row at the top
         html += `<tr class="total-row">
             <td>GRAND TOTAL</td>
             <td style="text-align:center; font-weight:800; font-size:1.3rem;">${grandTotal_TE2019}</td>
             <td style="text-align:center; font-weight:800; font-size:1.3rem;">${grandTotal_OnHand}</td>
             <td style="text-align:center; font-weight:800; font-size:1.3rem;">${grandTotal_TE2025}</td>
         </tr>`;
-
-        // Add spacing row
         html += `<tr><td colspan="4" style="height: 10px; background: transparent; border: none;"></td></tr>`;
 
         MASTER_ITEMS.forEach(item => {
@@ -298,11 +290,9 @@
                 const te2019 = recs.reduce((a,b)=>a+(b.te_2019||0),0);
                 const onhand = recs.reduce((a,b)=>a+(b.onhand||0),0);
                 const te2025 = recs.reduce((a,b)=>a+(b.proposed_te_2025||0),0);
-                
                 const colorTE2019 = te2019 === 0 ? 'background: #95a5a6; color: white;' : 'background: #2ecc71; color: white;';
                 const colorOnhand = onhand === 0 ? 'background: #95a5a6; color: white;' : 'background: #2ecc71; color: white;';
                 const colorTE2025 = te2025 === 0 ? 'background: #95a5a6; color: white;' : 'background: #2ecc71; color: white;';
-                
                 html += `<tr>
                     <td>${item.item_name}</td>
                     <td style="text-align:center; font-weight:700; font-size:1.05rem; padding: 10px; border-radius: 6px; ${colorTE2019}">${te2019}</td>
@@ -334,32 +324,20 @@
             }
         });
         document.getElementById("editorContent").innerHTML = html;
-        
-        // Apply color coding to all inputs
         applyColorCoding();
-        
-        // Add event listeners for real-time color updates
         document.querySelectorAll('.qty-input').forEach(input => {
-            input.addEventListener('input', function() {
-                updateInputColor(this);
-            });
+            input.addEventListener('input', function() { updateInputColor(this); });
         });
     }
 
     function updateInputColor(input) {
         const value = parseInt(input.value) || 0;
         input.classList.remove('zero-value', 'has-value');
-        if (value === 0) {
-            input.classList.add('zero-value');
-        } else {
-            input.classList.add('has-value');
-        }
+        input.classList.add(value === 0 ? 'zero-value' : 'has-value');
     }
 
     function applyColorCoding() {
-        document.querySelectorAll('.qty-input').forEach(input => {
-            updateInputColor(input);
-        });
+        document.querySelectorAll('.qty-input').forEach(input => updateInputColor(input));
     }
 
     async function saveOfficeData() {
@@ -379,8 +357,6 @@
     // ============= TEMPLATE DOWNLOAD =============
     function downloadTemplate() {
         const wb = XLSX.utils.book_new();
-        
-        // Create instructions sheet
         const instructions = [
             ['HPN & HSG COMMUNICATION - DATA IMPORT TEMPLATE'],
             [''],
@@ -396,40 +372,127 @@
         const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
         XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
 
-        // Create a sheet for each office
         ALL_OFFICES.forEach(office => {
-            const sheetData = [
-                ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
-            ];
-            
+            const sheetData = [['Item Description', 'TE 2019', 'On Hand', 'TE 2025']];
             MASTER_ITEMS.forEach(item => {
-                if (item.colspan) {
-                    // Category header
-                    sheetData.push([item.item_name, '', '', '']);
-                } else {
-                    // Regular item
-                    sheetData.push([item.item_name, 0, 0, 0]);
-                }
+                sheetData.push(item.colspan ? [item.item_name, '', '', ''] : [item.item_name, 0, 0, 0]);
             });
-            
             const ws = XLSX.utils.aoa_to_sheet(sheetData);
-            
-            // Set column widths
-            ws['!cols'] = [
-                { wch: 50 },  // Item Description
-                { wch: 12 },  // TE 2019
-                { wch: 12 },  // On Hand
-                { wch: 12 }   // TE 2025
-            ];
-            
-            // Clean office name for sheet name (Excel has restrictions)
+            ws['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
             const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
         });
 
-        // Download the file
         XLSX.writeFile(wb, 'HPN_HSG_Communication_Template.xlsx');
         showNotification('📥 Template downloaded successfully', 'success');
+    }
+
+    // ============= EXPORT ALL DATA =============
+    function exportAllData() {
+        if (ALL_DATA.length === 0) {
+            showNotification('⚠️ No data found to export. Please wait for data to load.', 'error');
+            return;
+        }
+
+        showNotification('⏳ Preparing export...', 'info');
+
+        const wb = XLSX.utils.book_new();
+
+        // ── Sheet 1: Summary (all offices consolidated) ──────────────────────
+        const summaryData = [
+            ['HPN & HSG COMMUNICATION - CONSOLIDATED SUMMARY'],
+            ['Exported on: ' + new Date().toLocaleString()],
+            [''],
+            ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
+        ];
+
+        let grandTE2019 = 0, grandOnHand = 0, grandTE2025 = 0;
+
+        MASTER_ITEMS.forEach(item => {
+            if (item.colspan) {
+                summaryData.push([item.item_name, '', '', '']);
+            } else {
+                const recs = ALL_DATA.filter(d => d.item_id === item.id);
+                const te2019 = recs.reduce((a, b) => a + (b.te_2019 || 0), 0);
+                const onhand = recs.reduce((a, b) => a + (b.onhand || 0), 0);
+                const te2025 = recs.reduce((a, b) => a + (b.proposed_te_2025 || 0), 0);
+                grandTE2019 += te2019;
+                grandOnHand += onhand;
+                grandTE2025 += te2025;
+                summaryData.push([item.item_name, te2019, onhand, te2025]);
+            }
+        });
+
+        summaryData.push(['']);
+        summaryData.push(['GRAND TOTAL', grandTE2019, grandOnHand, grandTE2025]);
+
+        const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+        wsSummary['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
+
+        // Style the header row (row 4, index 3) and grand total row
+        const summaryHeaderRow = 4; // 1-indexed row where column headers are
+        const grandTotalRow = summaryData.length; // last row
+
+        // Bold + background for column header row
+        ['A4','B4','C4','D4'].forEach(cellRef => {
+            if (!wsSummary[cellRef]) wsSummary[cellRef] = { v: '', t: 's' };
+            wsSummary[cellRef].s = {
+                font: { bold: true, color: { rgb: 'FFFFFF' } },
+                fill: { fgColor: { rgb: '764BA2' } },
+                alignment: { horizontal: 'center' }
+            };
+        });
+
+        XLSX.utils.book_append_sheet(wb, wsSummary, 'Consolidated Summary');
+
+        // ── Per-Office Sheets ─────────────────────────────────────────────────
+        ALL_OFFICES.forEach(office => {
+            // Build a map of item values for this office
+            const officeRecords = ALL_DATA.filter(d => d.office_id === office.id);
+            const valMap = {};
+            officeRecords.forEach(r => valMap[r.item_id] = r);
+
+            const sheetData = [
+                [office.office_name],
+                ['Generated: ' + new Date().toLocaleString()],
+                [''],
+                ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
+            ];
+
+            let totalTE2019 = 0, totalOnHand = 0, totalTE2025 = 0;
+
+            MASTER_ITEMS.forEach(item => {
+                if (item.colspan) {
+                    // Category header row — leave numeric columns empty
+                    sheetData.push([item.item_name, '', '', '']);
+                } else {
+                    const v = valMap[item.id] || { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
+                    const te2019 = v.te_2019 || 0;
+                    const onhand = v.onhand || 0;
+                    const te2025 = v.proposed_te_2025 || 0;
+                    totalTE2019 += te2019;
+                    totalOnHand += onhand;
+                    totalTE2025 += te2025;
+                    sheetData.push([item.item_name, te2019, onhand, te2025]);
+                }
+            });
+
+            sheetData.push(['']);
+            sheetData.push(['OFFICE TOTAL', totalTE2019, totalOnHand, totalTE2025]);
+
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+            ws['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
+
+            const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        });
+
+        // Generate timestamp for filename
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+        XLSX.writeFile(wb, `HPN_HSG_Communication_Export_${timestamp}.xlsx`);
+
+        showNotification(`✅ Exported ${ALL_OFFICES.length} offices successfully`, 'success');
     }
 
     // ============= FILE IMPORT =============
@@ -446,44 +509,27 @@
                 importedData = [];
                 let totalRecords = 0;
 
-                // Process each sheet (each office)
                 workbook.SheetNames.forEach(sheetName => {
-                    if (sheetName === 'Instructions') return; // Skip instructions sheet
+                    if (sheetName === 'Instructions') return;
                     
                     const worksheet = workbook.Sheets[sheetName];
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     
-                    // Find matching office
                     const office = ALL_OFFICES.find(o => 
                         o.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '') === sheetName
                     );
                     
-                    if (!office) {
-                        console.warn(`Office not found for sheet: ${sheetName}`);
-                        return;
-                    }
+                    if (!office) { console.warn(`Office not found for sheet: ${sheetName}`); return; }
 
-                    // Skip header row
                     for (let i = 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
                         const itemName = row[0];
                         const te2019 = parseInt(row[1]) || 0;
                         const onhand = parseInt(row[2]) || 0;
                         const te2025 = parseInt(row[3]) || 0;
-                        
-                        // Find matching item
                         const item = MASTER_ITEMS.find(m => m.item_name === itemName && !m.colspan);
-                        
                         if (item) {
-                            importedData.push({
-                                office_id: office.id,
-                                office_name: office.office_name,
-                                item_id: item.id,
-                                item_name: item.item_name,
-                                te_2019: te2019,
-                                onhand: onhand,
-                                proposed_te_2025: te2025
-                            });
+                            importedData.push({ office_id: office.id, office_name: office.office_name, item_id: item.id, item_name: item.item_name, te_2019: te2019, onhand: onhand, proposed_te_2025: te2025 });
                             totalRecords++;
                         }
                     }
@@ -495,24 +541,19 @@
                 } else {
                     showNotification('⚠️ No valid data found in file', 'error');
                 }
-
             } catch (error) {
                 console.error('Error reading file:', error);
                 showNotification('❌ Error reading file. Please check format.', 'error');
             }
         };
         reader.readAsArrayBuffer(file);
-        
-        // Reset file input
         event.target.value = '';
     }
 
     function showImportPreview() {
         const groupedData = {};
         importedData.forEach(record => {
-            if (!groupedData[record.office_name]) {
-                groupedData[record.office_name] = [];
-            }
+            if (!groupedData[record.office_name]) groupedData[record.office_name] = [];
             groupedData[record.office_name].push(record);
         });
 
@@ -541,7 +582,6 @@
             if (groupedData[officeName].length > 5) {
                 html += `<tr><td colspan="4" style="text-align: center; padding: 6px; color: #999; font-style: italic;">... and ${groupedData[officeName].length - 5} more items</td></tr>`;
             }
-            
             html += `</tbody></table>`;
         });
         
@@ -557,9 +597,7 @@
 
     async function confirmImport() {
         if (!importedData || importedData.length === 0) return;
-
         try {
-            // Prepare records for upsert
             const records = importedData.map(item => ({
                 office_id: item.office_id,
                 item_id: item.item_id,
@@ -567,23 +605,12 @@
                 onhand: item.onhand,
                 proposed_te_2025: item.proposed_te_2025
             }));
-
-            // Upsert to database
-            const { error } = await supabaseClient
-                .from('office_communications')
-                .upsert(records, { onConflict: 'office_id,item_id' });
-
+            const { error } = await supabaseClient.from('office_communications').upsert(records, { onConflict: 'office_id,item_id' });
             if (error) throw error;
-
             showNotification(`✅ Successfully imported ${records.length} records`, 'success');
             closeImportModal();
             await fetchAllData();
-            
-            // Reload current office if one is selected
-            if (currentOfficeId) {
-                await loadOffice(currentOfficeId);
-            }
-
+            if (currentOfficeId) await loadOffice(currentOfficeId);
         } catch (error) {
             console.error('Error importing data:', error);
             showNotification('❌ Error importing data: ' + error.message, 'error');
