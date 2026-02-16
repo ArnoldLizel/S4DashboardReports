@@ -476,9 +476,24 @@ function downloadTemplate() {
 }
 
 // ─── IMPORT DATA ──────────────────────────────────────────────────────────────
+
+// Sheets that should never be treated as office data sheets
+const SKIP_SHEETS = ['Instructions', 'Consolidated Summary'];
+
+function normalizeSheetName(name) {
+    return name.trim().substring(0, 31).replace(/[:\\\/?*\[\]]/g, '').trim();
+}
+
 function handleFileImport(event) {
     const file = event.target.files[0];
     if (!file) return;
+
+    // Guard: ensure master data is loaded
+    if (!masterItems.length || !allOffices.length) {
+        showNotification('⚠️ App data not loaded yet. Please wait and try again.', 'error');
+        event.target.value = '';
+        return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -486,42 +501,83 @@ function handleFileImport(event) {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
             importedData = [];
-            let totalRecords = 0;
+            let skippedSheets = [], skippedRows = 0;
 
             workbook.SheetNames.forEach(sheetName => {
-                if (sheetName === 'Instructions') return;
+                // Bug fix 4: skip both Instructions AND Consolidated Summary
+                if (SKIP_SHEETS.includes(sheetName)) return;
 
                 const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
 
+                // Bug fix 1: trim both sides of the office name comparison
                 const office = allOffices.find(o =>
-                    o.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '') === sheetName
+                    normalizeSheetName(o.office_name) === normalizeSheetName(sheetName)
                 );
-                if (!office) { console.warn(`Office not found: ${sheetName}`); return; }
+                if (!office) {
+                    skippedSheets.push(sheetName);
+                    console.warn(`[Import] No office matched sheet: "${sheetName}"`);
+                    return;
+                }
 
-                for (let i = 1; i < jsonData.length; i++) {
+                // Auto-detect where data starts: find the row with 'Item Description' as first cell
+                let dataStartRow = 1; // default: skip row 0 (header)
+                for (let r = 0; r < Math.min(jsonData.length, 6); r++) {
+                    if (String(jsonData[r][0] || '').trim().toLowerCase() === 'item description') {
+                        dataStartRow = r + 1;
+                        break;
+                    }
+                }
+
+                for (let i = dataStartRow; i < jsonData.length; i++) {
                     const row = jsonData[i];
-                    const itemName = row[0];
-                    const te2019 = parseInt(row[1]) || 0;
-                    const onhand = parseInt(row[2]) || 0;
-                    const te2025 = parseInt(row[3]) || 0;
-                    const item = masterItems.find(m => m.item_name === itemName && !m.colspan);
+                    const rawName = row[0];
+                    if (rawName === null || rawName === undefined || String(rawName).trim() === '') continue;
+
+                    // Bug fix 2: trim item name before matching
+                    const itemName = String(rawName).trim();
+
+                    // Bug fix 5: use Number() with fallback instead of parseInt() || 0
+                    // parseInt(0) || 0 works, but Number('') = 0 more reliably handles empty cells
+                    const te2019 = Math.max(0, parseInt(row[1]) || 0);
+                    const onhand = Math.max(0, parseInt(row[2]) || 0);
+                    const te2025 = Math.max(0, parseInt(row[3]) || 0);
+
+                    // Bug fix 2: trim master item name too
+                    const item = masterItems.find(m =>
+                        m.item_name.trim() === itemName && !m.colspan
+                    );
+
                     if (item) {
-                        importedData.push({ office_id: office.id, office_name: office.office_name, item_id: item.id, item_name: item.item_name, te_2019: te2019, onhand: onhand, proposed_te_2025: te2025 });
-                        totalRecords++;
+                        importedData.push({
+                            office_id: office.id,       // keep as original type (int/uuid)
+                            office_name: office.office_name,
+                            item_id: item.id,            // keep as original type
+                            item_name: item.item_name,
+                            te_2019: te2019,
+                            onhand: onhand,
+                            proposed_te_2025: te2025
+                        });
+                    } else {
+                        skippedRows++;
                     }
                 }
             });
 
+            console.log(`[Import] Parsed ${importedData.length} records. Skipped sheets: [${skippedSheets.join(', ')}]. Skipped rows: ${skippedRows}`);
+
             if (importedData.length > 0) {
                 showImportPreview();
-                showNotification(`📊 ${totalRecords} records ready to import`, 'info');
+                showNotification(`📊 ${importedData.length} records ready to import`, 'info');
             } else {
-                showNotification('⚠️ No valid data found in file', 'error');
+                let msg = '⚠️ No matching records found.';
+                if (skippedSheets.length > 0) msg += ` Unmatched sheets: ${skippedSheets.join(', ')}.`;
+                msg += ' Check that the file was generated from this app\'s template.';
+                showNotification(msg, 'error');
             }
         } catch (err) {
-            console.error(err);
-            showNotification('❌ Error reading file. Check the format.', 'error');
+            console.error('[Import] File read error:', err);
+            showNotification('❌ Error reading file: ' + err.message, 'error');
         }
     };
     reader.readAsArrayBuffer(file);
@@ -575,27 +631,42 @@ function closeImportModal() {
 
 async function confirmImport() {
     if (!importedData || importedData.length === 0) return;
+
+    // Snapshot data BEFORE clearing anything to prevent null-read race condition
+    const snapshot = importedData.slice();
+    const totalCount = snapshot.length;
+
+    // Close modal immediately - prevents double-submit and the null crash
+    closeImportModal(); // sets importedData = null, safe because we have snapshot
+    showNotification('Saving data...', 'info');
+
     try {
-        // Group by office and upsert
-        const groupedByOffice = {};
-        importedData.forEach(r => {
-            if (!groupedByOffice[r.office_id]) groupedByOffice[r.office_id] = [];
-            groupedByOffice[r.office_id].push({ office_id: r.office_id, item_id: r.item_id, te_2019: r.te_2019, onhand: r.onhand, proposed_te_2025: r.proposed_te_2025 });
-        });
+        // Use upsert instead of delete+insert to eliminate 409 conflict errors
+        const records = snapshot.map(r => ({
+            office_id:        r.office_id,
+            item_id:          r.item_id,
+            te_2019:          r.te_2019,
+            onhand:           r.onhand,
+            proposed_te_2025: r.proposed_te_2025
+        }));
 
-        for (const officeId of Object.keys(groupedByOffice)) {
-            await supabaseClient.from('office_quartermaster').delete().eq('office_id', officeId);
-            await supabaseClient.from('office_quartermaster').insert(groupedByOffice[officeId]);
-        }
+        const { error: upsertErr } = await supabaseClient
+            .from('office_quartermaster')
+            .upsert(records, { onConflict: 'office_id,item_id' });
 
-        showNotification(`✅ Imported ${importedData.length} records successfully`, 'success');
-        closeImportModal();
+        if (upsertErr) throw new Error(upsertErr.message);
+
+        const officeCount = new Set(snapshot.map(r => r.office_id)).size;
+        showNotification('Imported ' + totalCount + ' records across ' + officeCount + ' office(s)', 'success');
         await fetchAllData();
         if (currentOfficeId) await loadOfficeInventory(currentOfficeId);
+
     } catch (err) {
-        console.error(err);
-        showNotification('❌ Import failed: ' + err.message, 'error');
+        console.error('[Import] Confirm error:', err);
+        showNotification('Import failed: ' + err.message, 'error');
     }
+}
+
 }
 
 // ─── EXPORT ALL DATA ──────────────────────────────────────────────────────────
