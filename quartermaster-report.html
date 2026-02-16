@@ -375,19 +375,25 @@ async function deleteMasterItem(id) {
 }
 
 async function showGlobalSummary() {
-    const { data } = await supabaseClient.from('office_quartermaster').select("*");
+    const { data, error } = await supabaseClient.from('office_quartermaster').select("*");
+    if (error) { showNotification('Failed to load data: ' + error.message, 'error'); return; }
+
+    // Normalise all IDs to strings so the key lookup always matches
+    // regardless of whether Supabase returns them as int or string
     const totals = {};
     let g19 = 0, gOH = 0, g25 = 0;
     (data || []).forEach(r => {
-        if (!totals[r.item_id]) totals[r.item_id] = { t19: 0, oh: 0, t25: 0 };
-        totals[r.item_id].t19 += (r.te_2019 || 0);
-        totals[r.item_id].oh += (r.onhand || 0);
-        totals[r.item_id].t25 += (r.proposed_te_2025 || 0);
+        const key = String(r.item_id);
+        if (!totals[key]) totals[key] = { t19: 0, oh: 0, t25: 0 };
+        totals[key].t19 += (r.te_2019 || 0);
+        totals[key].oh  += (r.onhand  || 0);
+        totals[key].t25 += (r.proposed_te_2025 || 0);
         g19 += (r.te_2019 || 0); gOH += (r.onhand || 0); g25 += (r.proposed_te_2025 || 0);
     });
     document.getElementById('sum19').innerText = g19;
     document.getElementById('sumOH').innerText = gOH;
     document.getElementById('sum25').innerText = g25;
+
     const tbody = document.getElementById('summaryTableBody');
     tbody.innerHTML = "";
     masterItems.forEach(item => {
@@ -396,7 +402,7 @@ async function showGlobalSummary() {
             tr.className = "category-row";
             tr.innerHTML = `<td colspan="4">${item.item_name}</td>`;
         } else {
-            const t = totals[item.id] || { t19: 0, oh: 0, t25: 0 };
+            const t = totals[String(item.id)] || { t19: 0, oh: 0, t25: 0 };
             tr.innerHTML = `<td>${item.item_name}</td><td>${t.t19}</td><td>${t.oh}</td><td>${t.t25}</td>`;
         }
         tbody.appendChild(tr);
@@ -406,7 +412,13 @@ async function showGlobalSummary() {
 
 async function generateCompleteSummary() {
     await showGlobalSummary();
-    setTimeout(() => window.print(), 300);
+    // Use requestAnimationFrame to wait for the modal to fully paint before printing
+    // This replaces the fragile 300ms setTimeout
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.print();
+        });
+    });
 }
 
 function printOfficeReport() {
@@ -670,15 +682,29 @@ async function confirmImport() {
 }
 
 // ─── EXPORT ALL DATA ──────────────────────────────────────────────────────────
-function exportAllData() {
-    if (allData.length === 0) {
-        showNotification('⚠️ No data to export. Try refreshing.', 'error');
-        return;
-    }
+async function exportAllData() {
+    showNotification('Preparing export...', 'info');
 
-    showNotification('⏳ Preparing export...', 'info');
+    // Always fetch fresh data so the export is never stale
+    const { data: freshData, error } = await supabaseClient.from('office_quartermaster').select("*");
+    if (error) { showNotification('Failed to load data: ' + error.message, 'error'); return; }
+    if (!freshData || freshData.length === 0) { showNotification('No data found to export.', 'error'); return; }
 
     const wb = XLSX.utils.book_new();
+
+    // Normalise IDs to strings for reliable comparison
+    const dataById = {};
+    freshData.forEach(r => {
+        const key = String(r.item_id) + '_' + String(r.office_id);
+        dataById[key] = r;
+    });
+
+    // Helper: sum a field across all records for a given item_id
+    function sumField(itemId, field) {
+        return freshData
+            .filter(r => String(r.item_id) === String(itemId))
+            .reduce((a, r) => a + (r[field] || 0), 0);
+    }
 
     // ── Sheet 1: Consolidated Summary ────────────────────────────────────────
     const summaryData = [
@@ -687,70 +713,61 @@ function exportAllData() {
         [''],
         ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
     ];
-
     let grandTE2019 = 0, grandOnHand = 0, grandTE2025 = 0;
-
     masterItems.forEach(item => {
         if (item.colspan) {
             summaryData.push([item.item_name, '', '', '']);
         } else {
-            const recs = allData.filter(d => d.item_id === item.id);
-            const te2019 = recs.reduce((a, b) => a + (b.te_2019 || 0), 0);
-            const onhand = recs.reduce((a, b) => a + (b.onhand || 0), 0);
-            const te2025 = recs.reduce((a, b) => a + (b.proposed_te_2025 || 0), 0);
+            const te2019 = sumField(item.id, 'te_2019');
+            const onhand = sumField(item.id, 'onhand');
+            const te2025 = sumField(item.id, 'proposed_te_2025');
             grandTE2019 += te2019; grandOnHand += onhand; grandTE2025 += te2025;
             summaryData.push([item.item_name, te2019, onhand, te2025]);
         }
     });
-
     summaryData.push(['']);
     summaryData.push(['GRAND TOTAL', grandTE2019, grandOnHand, grandTE2025]);
-
     const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
     wsSummary['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, wsSummary, 'Consolidated Summary');
 
     // ── One Sheet per Office ──────────────────────────────────────────────────
     allOffices.forEach(office => {
-        const officeRecords = allData.filter(d => d.office_id === office.id);
-        const valMap = {};
-        officeRecords.forEach(r => valMap[r.item_id] = r);
-
         const sheetData = [
             [office.office_name],
             ['Generated: ' + new Date().toLocaleString()],
             [''],
             ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
         ];
-
         let totalTE2019 = 0, totalOnHand = 0, totalTE2025 = 0;
-
         masterItems.forEach(item => {
             if (item.colspan) {
                 sheetData.push([item.item_name, '', '', '']);
             } else {
-                const v = valMap[item.id] || { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
-                const te2019 = v.te_2019 || 0;
-                const onhand = v.onhand || 0;
-                const te2025 = v.proposed_te_2025 || 0;
+                // Use string comparison to avoid int/string mismatch
+                const rec = freshData.find(r =>
+                    String(r.item_id) === String(item.id) &&
+                    String(r.office_id) === String(office.id)
+                ) || { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
+                const te2019 = rec.te_2019 || 0;
+                const onhand = rec.onhand || 0;
+                const te2025 = rec.proposed_te_2025 || 0;
                 totalTE2019 += te2019; totalOnHand += onhand; totalTE2025 += te2025;
                 sheetData.push([item.item_name, te2019, onhand, te2025]);
             }
         });
-
         sheetData.push(['']);
         sheetData.push(['OFFICE TOTAL', totalTE2019, totalOnHand, totalTE2025]);
-
         const ws = XLSX.utils.aoa_to_sheet(sheetData);
         ws['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-        const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
+        const sheetName = office.office_name.substring(0, 31).replace(/[:\\/?*\[\]]/g, '');
         XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
 
     const now = new Date();
-    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-    XLSX.writeFile(wb, `Quartermaster_Export_${timestamp}.xlsx`);
-    showNotification(`✅ Exported ${allOffices.length} offices successfully`, 'success');
+    const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+    XLSX.writeFile(wb, `Quartermaster_Export_${ts}.xlsx`);
+    showNotification('Exported ' + allOffices.length + ' offices successfully', 'success');
 }
 
 init();
