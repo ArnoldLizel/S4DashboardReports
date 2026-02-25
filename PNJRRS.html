@@ -3,479 +3,1093 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Office Performance Rating - PN</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>PN Readiness Assessment Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
     <style>
-    body {
-        background-image: url('image/bg2.jpg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        min-height: 100vh;
-    }
+        :root {
+            --navy-darkest: #060e1e;
+            --navy-dark: #0b1529;
+            --navy-mid: #112040;
+            --navy-light: #1a2f5a;
+            --navy-accent: #1e3a8a;
+            --gold: #f1c232;
+            --gold-light: #f9d75c;
+            --gold-dark: #c9a11a;
+            --green: #22c55e;
+            --green-dark: #16a34a;
+            --red: #ef4444;
+            --orange: #f97316;
+            --cyan: #06b6d4;
+            --white: #ffffff;
+            --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.08);
+            --row-hover: rgba(255,255,255,0.04);
+        }
 
-    .container {
-        background-color: rgba(255, 255, 255, 0.9); 
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; padding: 1.5rem; }
-    .container { max-width: 1400px; margin: 0 auto; padding: 0; }
-    h1, h2, h3, h4, h5, h6 { color: #0b1a3a; font-weight: 600; margin-bottom: 1rem; }
-    h1 { font-size: 2rem; }
-    p { margin-bottom: 1rem; color: #4b5563; }
-    .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; transition: box-shadow 0.3s ease; }
-    .card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    .card-header { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem 0.5rem 0 0; margin: -1.5rem -1.5rem 1.5rem -1.5rem; font-weight: 600; font-size: 1.125rem; border-left: 4px solid #f1c232; }
-    .card-body { padding: 0; }
-    .card-body-form { padding: 1.5rem; }
-    .card-footer { border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem; color: #6b7280; font-size: 0.875rem; }
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; padding: 1.5rem; }
-    .summary-box { background: linear-gradient(145deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; transition: transform 0.2s; }
-    .summary-box:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); }
-    .summary-box.clickable { cursor: pointer; }
-    .summary-box.clickable:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 8px 14px rgba(0, 0, 0, 0.4); }
-    .summary-category-section { grid-column: 1 / -1; margin-top: 1rem; padding-top: 0.75rem; border-top: 2px dashed #e5e7eb; }
-    .summary-category-title { grid-column: 1 / -1; font-size: 1.125rem; font-weight: 600; color: #1e3a8a; margin-bottom: 0.75rem; }
-    .summary-box.inventory-box { background: linear-gradient(145deg, #0891b2 0%, #06b6d4 100%); }
-    .summary-icon { font-size: 1.25rem; margin-right: 0.5rem; color: #f1c232; }
-    .inventory-box .summary-icon { color: white; }
-    .summary-label { font-size: 0.875rem; font-weight: 500; opacity: 0.8; display: flex; align-items: center; }
-    .summary-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-top: 0.5rem; }
-    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; font-size: 0.875rem; font-weight: 500; border-radius: 0.375rem; border: none; cursor: pointer; transition: all 0.2s ease; text-decoration: none; text-align: center; white-space: nowrap; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-primary { background-color: #0b1a3a; color: white; }
-    .btn-primary:hover:not(:disabled) { background-color: #1e3a8a; box-shadow: 0 4px 6px -1px rgba(11, 26, 58, 0.3); }
-    .btn-neutral { background-color: #06b6d4; color: white; }
-    .btn-neutral:hover:not(:disabled) { background-color: #0891b2; }
-    .btn-success { background-color: #10b981; color: white; }
-    .btn-warning { background-color: #f59e0b; color: white; }
-    .btn-warning:hover:not(:disabled) { background-color: #d97706; }
-    .btn-print { background-color: #8b5cf6; color: white; }
-    .btn-print:hover:not(:disabled) { background-color: #7c3aed; }
-    .btn-summary { background-color: #f1c232; color: #0b1a3a; }
-    .btn-summary:hover:not(:disabled) { background-color: #d9a825; }
-    .btn-group { display: inline-flex; gap: 0.5rem; flex-wrap: wrap; }
-    .form-group { margin-bottom: 1.25rem; }
-    .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem; font-size: 0.875rem; }
-    .form-select { display: block; width: 100%; padding: 0.625rem 2.5rem 0.625rem 0.875rem; font-size: 0.875rem; font-weight: 400; line-height: 1.5; color: #1f2937; background-color: white; border: 1px solid #d1d5db; border-radius: 0.375rem; appearance: none; }
-    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1.5rem; padding: 1.5rem 0; }
-    .table { width: 100%; border-collapse: collapse; background-color: white; font-size: 0.875rem; }
-    .table thead { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; }
-    .table thead th { padding: 0.875rem 1rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f1c232; }
-    .table tbody tr { border-bottom: 1px solid #e5e7eb; transition: background-color 0.15s ease; }
-    .table tbody tr:hover { background-color: #f9fafb; }
-    .table tbody td { padding: 0.875rem 1rem; color: #4b5563; vertical-align: middle; }
-    .table-striped tbody tr:nth-child(odd) { background-color: #f9fafb; }
-    .highlight-row td { background-color: #eef2ff !important; color: #1e3a8a; font-weight: 600; padding: 0.875rem 1rem; text-align: left; border-top: 2px solid #c7d2fe; }
-    #toe-body input, #mrr-body input { width: 60px; padding: 0.4rem 0.2rem; text-align: center; font-size: 0.875rem; border-radius: 0.25rem; height: 32px; border: 1px solid #d1d5db; }
-    .status-badge { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 700; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.025em; white-space: nowrap; }
-    .status-badge.status-active, .status-badge.status-approved { background-color: #d1fae5; color: #065f46; }
-    .status-badge.status-pending { background-color: #fef3c7; color: #92400e; }
-    .status-badge.status-rejected, .status-badge.status-inactive { background-color: #fee2e2; color: #991b1b; }
-    .text-center { text-align: center; }
-    .text-muted { color: #6b7280; }
-    .mt-3 { margin-top: 1rem; }
-    .mb-4 { margin-bottom: 2rem; }
-    .d-flex { display: flex; }
-    .align-items-center { align-items: center; }
-    .justify-content-between { justify-content: space-between; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--navy-darkest);
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(30,58,138,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 10%, rgba(17,32,64,0.3) 0%, transparent 50%);
+            color: var(--white);
+            min-height: 100vh;
+            padding: 0;
+        }
 
-    /* Modal Styles */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 1000; backdrop-filter: blur(4px); }
-    .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 0.75rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); max-width: 900px; width: 90%; max-height: 85vh; overflow: hidden; z-index: 1001; }
-    .modal-header { background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%); color: white; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { font-size: 1.25rem; margin: 0; }
-    .modal-close { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background 0.2s; }
-    .modal-close:hover { background: rgba(255, 255, 255, 0.1); }
-    .modal-body { padding: 1.5rem; max-height: 65vh; overflow-y: auto; }
-    .office-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; }
-    .office-item { padding: 0.75rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 0.5rem; text-align: center; font-weight: 600; transition: all 0.2s; cursor: pointer; }
-    .office-item:hover { background: #eef2ff; border-color: #1e3a8a; transform: translateY(-2px); }
-    .office-item.missing { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
-    .office-item.complete { background: #d1fae5; border-color: #10b981; color: #065f46; }
-    .modal-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-box { padding: 1rem; background: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb; }
-    .stat-label { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
-    .stat-value { font-size: 1.75rem; font-weight: 700; color: #0b1a3a; }
+        /* ===== HEADER ===== */
+        .pn-header {
+            background: linear-gradient(180deg, #080f20 0%, var(--navy-dark) 100%);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            padding: 1.5rem 2rem 1.25rem;
+            position: relative;
+        }
 
-    /* Summary Report Modal Styles */
-    .summary-report-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .summary-report-stat { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 1.25rem; border-radius: 0.75rem; border: 2px solid #e2e8f0; text-align: center; }
-    .summary-report-stat-label { color: #64748b; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
-    .summary-report-stat-value { color: #0b1a3a; font-size: 1.75rem; font-weight: 700; }
-    .summary-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.875rem; }
-    .summary-table th { background: #f8fafc; padding: 0.75rem; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
-    .summary-table td { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
-    .summary-table tr:hover { background: #f8fafc; }
-    .summary-section-title { font-size: 1.125rem; font-weight: 600; color: #0b1a3a; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; }
+        .pn-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 200px; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
 
-    /* Category Detail Modal Styles */
-    .category-icon-large { font-size: 2.5rem; margin-bottom: 1rem; }
-    .category-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .category-stat-box { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 1rem; border-radius: 0.5rem; text-align: center; border: 2px solid #e2e8f0; }
-    .category-stat-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-    .category-stat-value { font-size: 1.5rem; font-weight: 700; color: #0b1a3a; }
+        .pn-anchor {
+            font-size: 2rem;
+            color: var(--gold);
+            display: block;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 0 8px rgba(241,194,50,0.4));
+        }
 
-    /* Compact Print Styles */
-    @media print {
-        @page { size: A4; margin: 0.5cm; }
-        
-        body { background: white !important; padding: 0; }
-        .container { background-color: white !important; box-shadow: none; padding: 0.5cm; }
-        
-        /* Hide elements */
-        .no-print, .btn, .btn-group, .form-group, .form-select, .modal-overlay, #statusMsg { display: none !important; }
-        .card-body-form { display: none !important; }
-        
-        /* Show only cards and tables */
-        h1 { font-size: 1.25rem; margin-bottom: 0.5rem; page-break-after: avoid; }
-        
-        .card { page-break-inside: avoid; box-shadow: none; border: 1px solid #ddd; margin-bottom: 1rem; padding: 0.75rem; }
-        .card-header { font-size: 0.875rem; padding: 0.5rem 0.75rem; margin: -0.75rem -0.75rem 0.5rem -0.75rem; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-        
-        /* Compact summary boxes */
-        .summary-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; padding: 0.75rem; }
-        .summary-box { min-height: 60px; padding: 0.5rem; font-size: 0.75rem; }
-        .summary-label { font-size: 0.65rem; }
-        .summary-value { font-size: 1.25rem; margin-top: 0.25rem; }
-        .summary-icon { font-size: 0.875rem; margin-right: 0.25rem; }
-        .summary-category-title { font-size: 0.875rem; margin-bottom: 0.5rem; }
-        
-        /* Compact tables */
-        .table-responsive { padding: 0; overflow: visible !important; }
-        .table { font-size: 0.7rem; }
-        .table thead th { padding: 0.4rem 0.5rem; font-size: 0.65rem; }
-        .table tbody td { padding: 0.4rem 0.5rem; }
-        .highlight-row td { padding: 0.4rem 0.5rem; font-size: 0.7rem; }
-        
-        /* Input fields in print */
-        input { 
-            border: none !important; 
-            background: transparent !important; 
-            text-align: center; 
+        .pn-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--white);
+        }
+
+        .pn-subtitle {
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-top: 0.35rem;
+            font-weight: 500;
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 1.25rem 1.5rem 2rem;
+        }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar {
+            background: var(--navy-mid);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.875rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-field {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toolbar-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .toolbar-input, .toolbar-select {
+            background: var(--navy-dark);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 0.3rem;
+            color: var(--white);
+            padding: 0.45rem 0.75rem;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            min-width: 160px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .toolbar-input:focus, .toolbar-select:focus {
+            border-color: var(--gold);
+        }
+
+        .toolbar-select option {
+            background: var(--navy-dark);
+            color: var(--white);
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-right {
+            margin-left: auto;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .status-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 0 0.75rem;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 1rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            width: auto !important;
-            padding: 0 !important;
+            letter-spacing: 0.04em;
+            border-radius: 0.3rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
         }
-        
-        /* Status badges */
-        .status-badge { 
-            print-color-adjust: exact; 
-            -webkit-print-color-adjust: exact;
-            padding: 0.15rem 0.5rem;
-            font-size: 0.65rem;
-        }
-        
-        /* Ensure colors print */
-        * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    }
 
-    /* Print styles specifically for Summary Report Modal */
-    @media print {
-        /* Hide everything first */
-        body.printing-summary * { 
-            visibility: hidden !important; 
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-compute {
+            background: var(--green-dark);
+            color: white;
+            border: 1px solid var(--green);
         }
+        .btn-compute:hover:not(:disabled) { background: var(--green); }
+
+        .btn-reset {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .btn-reset:hover:not(:disabled) { border-color: white; color: white; }
+
+        .btn-save {
+            background: var(--cyan);
+            color: white;
+        }
+        .btn-save:hover:not(:disabled) { background: #0891b2; }
+
+        .btn-summary {
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold-dark);
+        }
+        .btn-summary:hover:not(:disabled) { background: rgba(241,194,50,0.1); }
+
+        .btn-status {
+            background: transparent;
+            color: #a78bfa;
+            border: 1px solid rgba(167,139,250,0.4);
+        }
+        .btn-status:hover:not(:disabled) { background: rgba(167,139,250,0.1); }
+
+        .btn-print {
+            background: var(--gold);
+            color: var(--navy-darkest);
+        }
+        .btn-print:hover:not(:disabled) { background: var(--gold-light); }
+
+        /* ===== RATING BANNER ===== */
+        .rating-banners {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .rating-banner {
+            background: var(--navy-mid);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.875rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rating-banner-left .label {
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .rating-banner-left .sub {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-top: 0.2rem;
+        }
+
+        .rating-badge {
+            background: var(--navy-accent);
+            border: 1px solid rgba(241,194,50,0.3);
+            border-radius: 0.4rem;
+            padding: 0.5rem 1.25rem;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .rating-badge .r-code {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--gold);
+            line-height: 1;
+        }
+
+        .rating-badge .r-pct {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        /* ===== DASHBOARD ===== */
+        .dashboard-card {
+            background: var(--navy-mid);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+        }
+
+        .dashboard-card-header {
+            background: linear-gradient(90deg, var(--navy-dark) 0%, var(--navy-light) 100%);
+            padding: 0.75rem 1.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--gold);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1px;
+            padding: 1px;
+            background: var(--border);
+        }
+
+        .summary-box {
+            background: var(--navy-dark);
+            padding: 1rem 1.25rem;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: background 0.2s;
+        }
+
+        .summary-box:hover { background: var(--navy-mid); }
+
+        .summary-box.clickable { cursor: pointer; }
+        .summary-box.clickable:hover { background: var(--navy-light); }
+
+        .summary-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .summary-icon { color: var(--gold); }
         
-        body.printing-summary { 
-            background: white !important;
-            padding: 0 !important;
-            margin: 0 !important;
+        .summary-box.inventory-box .summary-icon { color: var(--cyan); }
+
+        .summary-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--white);
+            margin-top: 0.5rem;
+            line-height: 1;
         }
-        
-        /* Show only the summary modal content */
-        body.printing-summary #summaryReportModal,
-        body.printing-summary #summaryReportModal * { 
-            visibility: visible !important; 
+
+        .summary-category-title {
+            grid-column: 1 / -1;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 0.75rem 1.25rem 0.25rem;
+            background: var(--navy-dark);
+            border-bottom: 1px solid var(--border);
         }
-        
-        body.printing-summary #summaryReportModal { 
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            height: auto !important;
-            overflow: visible !important;
-            display: block !important;
+
+        .summary-category-section {
+            grid-column: 1 / -1;
+            height: 1px;
+            background: var(--border);
         }
-        
-        body.printing-summary #summaryReportModal .modal-overlay { 
-            display: none !important; 
-            visibility: hidden !important;
+
+        .summary-box.readiness-box {
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-light) 100%);
         }
-        
-        body.printing-summary #summaryReportModal .modal-container { 
-            position: static !important; 
-            transform: none !important; 
-            max-width: 100% !important; 
-            width: 100% !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            max-height: none !important;
-            overflow: visible !important;
-            margin: 0 !important;
-            padding: 0 !important;
+
+        .summary-box.readiness-box .summary-value { color: var(--gold); }
+
+        /* ===== DUAL TABLE LAYOUT ===== */
+        .dual-tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
         }
-        
-        body.printing-summary #summaryReportModal .modal-header {
-            background: white !important;
-            color: #0b1a3a !important;
-            border-bottom: 3px solid #0b1a3a !important;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-            padding: 1rem !important;
-            page-break-after: avoid;
+
+        /* ===== TABLE CARDS ===== */
+        .table-card {
+            background: var(--navy-mid);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            overflow: hidden;
         }
-        
-        body.printing-summary #summaryReportModal .modal-header h3 {
-            font-size: 1.25rem !important;
-            margin: 0 !important;
+
+        .table-card-header {
+            background: linear-gradient(90deg, var(--navy-dark) 0%, #0d1e40 100%);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--gold-dark);
         }
-        
-        body.printing-summary #summaryReportModal .modal-close { 
-            display: none !important; 
-            visibility: hidden !important;
+
+        .table-card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        
-        body.printing-summary #summaryReportModal .modal-body { 
-            padding: 1rem !important; 
-            max-height: none !important; 
-            overflow: visible !important;
+
+        .table-card-icon {
+            font-size: 0.9rem;
         }
-        
-        body.printing-summary #summaryReportModal .btn,
-        body.printing-summary button { 
-            display: none !important; 
-            visibility: hidden !important;
+
+        .table-card-title {
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white);
         }
-        
-        /* Summary report specific print styles */
-        body.printing-summary .summary-report-stats { 
-            display: grid !important;
-            grid-template-columns: repeat(3, 1fr) !important; 
-            gap: 0.75rem !important; 
-            page-break-inside: avoid !important;
-            margin-bottom: 1.5rem !important;
+
+        .table-card-unit {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            background: var(--navy-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            padding: 0.2rem 0.6rem;
+            font-weight: 600;
         }
-        
-        body.printing-summary .summary-report-stat { 
-            padding: 0.75rem !important; 
-            border: 1px solid #ddd !important;
-            background: #f9f9f9 !important;
-            border-radius: 0.5rem !important;
+
+        /* ===== DATA TABLE ===== */
+        .table-responsive { overflow-x: auto; }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.775rem;
         }
-        
-        body.printing-summary .summary-report-stat-label { 
-            font-size: 0.75rem !important; 
-            display: block !important;
+
+        .table thead tr {
+            background: var(--navy-dark);
         }
-        
-        body.printing-summary .summary-report-stat-value { 
-            font-size: 1.5rem !important; 
-            display: block !important;
+
+        .table thead th {
+            padding: 0.6rem 0.875rem;
+            text-align: left;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
         }
-        
-        body.printing-summary .summary-section-title { 
-            font-size: 1rem !important; 
-            margin-top: 1.5rem !important; 
-            margin-bottom: 0.75rem !important;
-            page-break-after: avoid !important;
-            font-weight: 600 !important;
-            color: #0b1a3a !important;
-            border-bottom: 2px solid #e2e8f0 !important;
-            padding-bottom: 0.5rem !important;
+
+        .table thead th.text-center { text-align: center; }
+
+        .table tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.15s;
         }
-        
-        body.printing-summary .summary-table { 
-            width: 100% !important;
-            border-collapse: collapse !important;
-            font-size: 0.7rem !important; 
-            margin-bottom: 1.5rem !important;
+
+        .table tbody tr:hover { background: var(--row-hover); }
+
+        .table tbody td {
+            padding: 0.6rem 0.875rem;
+            color: rgba(255,255,255,0.85);
+            vertical-align: middle;
         }
-        
-        body.printing-summary .summary-table thead {
-            display: table-header-group !important;
+
+        /* Category separator rows */
+        .category-sep td {
+            background: linear-gradient(90deg, rgba(17,32,64,0.8) 0%, rgba(11,21,41,0.5) 100%);
+            padding: 0.4rem 0.875rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gold);
+            border-top: 1px solid rgba(241,194,50,0.15);
         }
-        
-        body.printing-summary .summary-table tbody {
-            display: table-row-group !important;
+
+        /* Highlight rows (totals) */
+        .highlight-row td {
+            background: rgba(241,194,50,0.08) !important;
+            color: var(--gold) !important;
+            font-weight: 700;
+            padding: 0.6rem 0.875rem;
+            border-top: 1px solid rgba(241,194,50,0.2);
+            font-size: 0.75rem;
         }
-        
-        body.printing-summary .summary-table tr {
-            display: table-row !important;
-            page-break-inside: avoid !important;
+
+        /* Grand total row */
+        .grand-total-row td {
+            background: linear-gradient(90deg, rgba(241,194,50,0.15) 0%, rgba(241,194,50,0.08) 100%) !important;
+            color: var(--gold) !important;
+            font-weight: 800;
+            padding: 0.75rem 0.875rem;
+            border-top: 2px solid var(--gold-dark);
+            font-size: 0.8rem;
         }
-        
-        body.printing-summary .summary-table th { 
-            padding: 0.5rem 0.4rem !important; 
-            font-size: 0.65rem !important;
-            background: #f0f0f0 !important;
-            print-color-adjust: exact !important;
-            -webkit-print-color-adjust: exact !important;
-            border: 1px solid #ddd !important;
-            text-align: left !important;
-            font-weight: 600 !important;
+
+        /* ===== INPUTS IN TABLES ===== */
+        #toe-body input, #mrr-body input {
+            width: 65px;
+            padding: 0.35rem 0.4rem;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 0.25rem;
+            height: 30px;
+            background: var(--navy-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
         }
-        
-        body.printing-summary .summary-table td { 
-            padding: 0.4rem !important; 
-            font-size: 0.7rem !important;
-            border: 1px solid #ddd !important;
+
+        #toe-body input:focus, #mrr-body input:focus {
+            border-color: var(--gold);
+            background: var(--navy-mid);
         }
-        
-        body.printing-summary .summary-table .status-badge {
-            print-color-adjust: exact !important;
-            -webkit-print-color-adjust: exact !important;
-            padding: 0.15rem 0.5rem !important;
-            font-size: 0.65rem !important;
+
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-muted); font-size: 0.7rem; }
+
+        /* ===== RATING CELL ===== */
+        .rating {
+            color: rgba(255,255,255,0.9);
+            font-weight: 600;
         }
-        
-        /* Ensure table containers are visible */
-        body.printing-summary div[style*="overflow"] {
-            overflow: visible !important;
+
+        /* ===== STATUS BADGE ===== */
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            white-space: nowrap;
         }
-    }
+
+        .status-badge.status-active, .status-badge.status-approved {
+            background: rgba(34,197,94,0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34,197,94,0.3);
+        }
+
+        .status-badge.status-pending {
+            background: rgba(241,194,50,0.15);
+            color: var(--gold);
+            border: 1px solid rgba(241,194,50,0.3);
+        }
+
+        .status-badge.status-rejected, .status-badge.status-inactive {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+
+        /* ===== REDCON STATUS ===== */
+        .redcon-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .redcon-card {
+            background: var(--navy-mid);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .redcon-header {
+            background: var(--navy-dark);
+            padding: 0.6rem 1rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .redcon-body {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .redcon-scale {
+            display: flex;
+            gap: 0.35rem;
+        }
+
+        .redcon-step {
+            width: 36px;
+            height: 28px;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 800;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+
+        .redcon-step.r1 { background: #16a34a; }
+        .redcon-step.r2 { background: #0891b2; }
+        .redcon-step.r3 { background: #d97706; }
+        .redcon-step.r4 { background: #dc2626; }
+        .redcon-step.r5 { background: #7f1d1d; }
+        .redcon-step.active { opacity: 1; box-shadow: 0 0 8px rgba(255,255,255,0.2); }
+
+        .redcon-legend {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-align: right;
+            line-height: 1.6;
+        }
+
+        /* ===== MODAL STYLES ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-container {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--navy-mid);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.75rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            max-width: 900px;
+            width: 90%;
+            max-height: 85vh;
+            overflow: hidden;
+            z-index: 1001;
+        }
+
+        .modal-header {
+            background: linear-gradient(90deg, var(--navy-dark) 0%, var(--navy-light) 100%);
+            color: white;
+            padding: 1.1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--gold-dark);
+        }
+
+        .modal-header h3 {
+            font-size: 1rem;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--white);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 28px; height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover { background: rgba(255,255,255,0.1); }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 65vh;
+            overflow-y: auto;
+            background: var(--navy-mid);
+        }
+
+        .modal-body::-webkit-scrollbar { width: 6px; }
+        .modal-body::-webkit-scrollbar-track { background: var(--navy-dark); }
+        .modal-body::-webkit-scrollbar-thumb { background: var(--navy-light); border-radius: 3px; }
+
+        /* Office Status Modal */
+        .office-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.6rem;
+        }
+
+        .office-item {
+            padding: 0.6rem;
+            background: var(--navy-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            color: var(--white);
+        }
+
+        .office-item:hover { border-color: var(--gold); background: var(--navy-light); }
+        .office-item.missing { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #f87171; }
+        .office-item.complete { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: #4ade80; }
+
+        .modal-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            padding: 1rem;
+            background: var(--navy-dark);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--white); }
+
+        /* Summary Report Modal */
+        .summary-report-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .summary-report-stat {
+            background: var(--navy-dark);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .summary-report-stat-label {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-report-stat-value {
+            color: var(--gold);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .summary-table th {
+            background: var(--navy-dark);
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-table td {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.85);
+        }
+
+        .summary-table tr:hover td { background: var(--row-hover); }
+
+        .summary-section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(241,194,50,0.2);
+        }
+
+        /* Category Detail Modal */
+        .category-icon-large { font-size: 2.5rem; margin-bottom: 1rem; text-align: center; }
+
+        .category-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-stat-box {
+            background: var(--navy-dark);
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .category-stat-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+
+        .category-stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        /* Utility */
+        .d-flex { display: flex; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+        .mt-3 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 2rem; }
+
+        /* ===== PRINT ===== */
+        @media print {
+            @page { size: A4; margin: 0.5cm; }
+            body {
+                background: white !important;
+                color: #1f2937 !important;
+                padding: 0;
+            }
+            .pn-header {
+                background: white !important;
+                color: #0b1a3a !important;
+                border-bottom: 3px solid #0b1a3a !important;
+            }
+            .pn-anchor, .pn-title { color: #0b1a3a !important; }
+            .pn-subtitle { color: #1e3a8a !important; }
+            .no-print, .toolbar, .btn, .btn-group, .modal-overlay { display: none !important; }
+            .container { background: white !important; padding: 0.5cm; }
+            .dashboard-card, .table-card, .redcon-card {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                color: #1f2937 !important;
+            }
+            .dashboard-card-header, .table-card-header, .redcon-header {
+                background: #0b1a3a !important;
+                color: white !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            .summary-box, .table thead tr { background: #f9fafb !important; }
+            .summary-value, .category-stat-value { color: #0b1a3a !important; }
+            .highlight-row td { background: #eef2ff !important; color: #1e3a8a !important; }
+            .grand-total-row td { background: #fef9c3 !important; color: #92400e !important; }
+            .table tbody td, .summary-label, .summary-category-title { color: #374151 !important; }
+            .table thead th { color: white !important; }
+            .dual-tables { grid-template-columns: 1fr 1fr; }
+            .rating-banners { grid-template-columns: 1fr 1fr; }
+            .rating-banner { background: white !important; border: 1px solid #ddd !important; }
+            .rating-badge { background: #1e3a8a !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            .r-code { color: #f1c232 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            #toe-body input, #mrr-body input {
+                background: transparent !important;
+                border: none !important;
+                color: #1f2937 !important;
+                font-weight: 700;
+            }
+            .status-badge { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+
+        /* Print Summary Modal */
+        @media print {
+            body.printing-summary * { visibility: hidden !important; }
+            body.printing-summary { background: white !important; padding: 0 !important; }
+            body.printing-summary #summaryReportModal,
+            body.printing-summary #summaryReportModal * { visibility: visible !important; }
+            body.printing-summary #summaryReportModal {
+                position: absolute !important;
+                left: 0 !important; top: 0 !important;
+                width: 100% !important; height: auto !important;
+                overflow: visible !important;
+                display: block !important;
+                background: white !important;
+            }
+            body.printing-summary #summaryReportModal .modal-container {
+                position: static !important;
+                transform: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                background: white !important;
+                color: #1f2937 !important;
+            }
+            body.printing-summary #summaryReportModal .modal-header {
+                background: #0b1a3a !important;
+                border-bottom: 3px solid #f1c232 !important;
+                print-color-adjust: exact;
+            }
+            body.printing-summary #summaryReportModal .modal-close,
+            body.printing-summary button { display: none !important; }
+            body.printing-summary #summaryReportModal .modal-body {
+                max-height: none !important;
+                overflow: visible !important;
+                background: white !important;
+                color: #1f2937 !important;
+            }
+            body.printing-summary .summary-report-stat { background: #f9fafb !important; border: 1px solid #ddd !important; }
+            body.printing-summary .summary-report-stat-label { color: #6b7280 !important; }
+            body.printing-summary .summary-report-stat-value { color: #0b1a3a !important; font-size: 1.5rem !important; }
+            body.printing-summary .summary-section-title { color: #0b1a3a !important; border-bottom: 2px solid #e2e8f0 !important; }
+            body.printing-summary .summary-table th { background: #f0f0f0 !important; color: #374151 !important; }
+            body.printing-summary .summary-table td { color: #1f2937 !important; }
+        }
     </style>
 </head>
 <body>
 
+<!-- HEADER -->
+<div class="pn-header no-print">
+    <span class="pn-anchor">⚓</span>
+    <div class="pn-title">Philippine Navy – Readiness Assessment Report</div>
+    <div class="pn-subtitle">Equipment Readiness (TOE) &nbsp;|&nbsp; Maintenance Readiness (MRR)</div>
+</div>
+
+<!-- Print-only header -->
+<div style="display:none;" class="print-header">
+    <h1 style="text-align:center; font-size:1.5rem; color:#0b1a3a;">PHILIPPINE NAVY READINESS ASSESSMENT REPORT</h1>
+</div>
+
 <div class="container">
-    <h1 class="mb-4">Philippine Navy Office Performance Rating System</h1>
 
-    <div class="card no-print">
-        <div class="card-header">Select Office and Action Center</div>
-        <div class="card-body card-body-form">
-            <div class="form-group">
-                <label for="office-select" class="form-label">Select Office:</label>
-                <select id="office-select" class="form-select" onchange="loadOfficeData()">
-                    <option value="">-- Select Office --</option>
-                    <option value="FOIC">FOIC</option>
-                    <option value="VCOM">VCOM</option>
-                    <option value="CNS">CNS</option>
-                    <option value="N1">N1</option>
-                    <option value="N2">N2</option>
-                    <option value="N3">N3</option>
-                    <option value="N4">N4</option>
-                    <option value="N5">N5</option>
-                    <option value="N6">N6</option>
-                    <option value="N7">N7</option>
-                    <option value="N8">N8</option>
-                    <option value="N9">N9</option>
-                    <option value="N10">N10</option>
-                    <option value="N11">N11</option>
-                    <option value="HSG">HSG</option>
-                    <option value="NIOFC">NIOFC</option>
-                    <option value="CMCPO">CMCPO</option>
-                    <option value="CRDO">CRDO</option>
-                    <option value="CNLE">CNLE</option>
-                    <option value="NSPAO">NSPAO</option>
-                    <option value="NPAO">NPAO</option>
-                    <option value="ONSSSM">ONSSSM</option>
-                    <option value="TNJA">TNJA</option>
-                    <option value="TNCH">TNCH</option>
-                    <option value="TCSN">TCSN</option>
-                    <option value="TCNN">TCNN</option>
-                    <option value="TCDSN">TCDSN</option>
-                    <option value="TNCE">TNCE</option>
-                    <option value="PNOLOAC">PNOLOAC</option>
-                    <option value="TNIA">TNIA</option>
-                    <option value="NSO">NSO</option>
-                    <option value="NASO">NASO</option>
-                    <option value="TNIG">TNIG</option>
-                    <option value="OESPA">OESPA</option>
-                    <option value="TNPM">TNPM</option>
-                    <option value="OTNA">OTNA</option>
-                    <option value="PNGADC">PNGADC</option>
-                    <option value="PNREO">PNREO</option>
-                    <option value="PNMO">PNMO</option>
-                    <option value="ONIA">ONIA</option>
-                    <option value="FMWC">FMWC</option>
-                    <option value="PNMCMC">PNMCMC</option>
-                </select>
+    <!-- ===== TOOLBAR ===== -->
+    <div class="toolbar no-print">
+        <div class="toolbar-field">
+            <span class="toolbar-label">Unit / Office:</span>
+            <select id="office-select" class="toolbar-select" onchange="loadOfficeData()">
+                <option value="">-- Select Office --</option>
+                <option value="FOIC">FOIC</option><option value="VCOM">VCOM</option><option value="CNS">CNS</option>
+                <option value="N1">N1</option><option value="N2">N2</option><option value="N3">N3</option>
+                <option value="N4">N4</option><option value="N5">N5</option><option value="N6">N6</option>
+                <option value="N7">N7</option><option value="N8">N8</option><option value="N9">N9</option>
+                <option value="N10">N10</option><option value="N11">N11</option><option value="HSG">HSG</option>
+                <option value="NIOFC">NIOFC</option><option value="CMCPO">CMCPO</option><option value="CRDO">CRDO</option>
+                <option value="CNLE">CNLE</option><option value="NSPAO">NSPAO</option><option value="NPAO">NPAO</option>
+                <option value="ONSSSM">ONSSSM</option><option value="TNJA">TNJA</option><option value="TNCH">TNCH</option>
+                <option value="TCSN">TCSN</option><option value="TCNN">TCNN</option><option value="TCDSN">TCDSN</option>
+                <option value="TNCE">TNCE</option><option value="PNOLOAC">PNOLOAC</option><option value="TNIA">TNIA</option>
+                <option value="NSO">NSO</option><option value="NASO">NASO</option><option value="TNIG">TNIG</option>
+                <option value="OESPA">OESPA</option><option value="TNPM">TNPM</option><option value="OTNA">OTNA</option>
+                <option value="PNGADC">PNGADC</option><option value="PNREO">PNREO</option><option value="PNMO">PNMO</option>
+                <option value="ONIA">ONIA</option><option value="FMWC">FMWC</option><option value="PNMCMC">PNMCMC</option>
+            </select>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-actions">
+            <button class="btn btn-compute" onclick="computeAllRatings()">● Compute</button>
+            <button class="btn btn-save" onclick="updateOfficeData()">💾 Update (Save)</button>
+            <button class="btn btn-summary" onclick="showSummaryReport()">📊 Summary Report</button>
+            <button class="btn btn-status" onclick="showOfficeStatusModal()">📋 Office Status</button>
+        </div>
+
+        <div class="toolbar-right">
+            <span class="status-text" id="statusMsg">Ready. Select an Office to load or start a new rating.</span>
+            <button class="btn btn-print" onclick="window.print()">🖨️ Print</button>
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="dashboard-card">
+        <div class="dashboard-card-header">⚓ Overall Asset Summary Dashboard — PN Fleet Totals</div>
+        <div class="summary-grid">
+            <div class="summary-category-title" style="background:transparent;">Grand Totals Across All Offices (Aggregated TOE/MRR)</div>
+            <div class="summary-box">
+                <div class="summary-label"><span class="summary-icon">🎯</span> Total Required (TOE A)</div>
+                <div class="summary-value" id="grand-total-required">0</div>
             </div>
-            <div class="d-flex align-items-center justify-content-between mt-3">
-                <div class="btn-group">
-                    <button class="btn btn-success" onclick="computeAllRatings()">Compute Ratings</button>
-                    <button class="btn btn-neutral" onclick="updateOfficeData()">Update (Save)</button>
-                    <button class="btn btn-summary" onclick="showSummaryReport()">📊 Summary Report</button>
-                    <button class="btn btn-warning" onclick="showOfficeStatusModal()">📋 Office Status</button>
-                    <button class="btn btn-print" onclick="window.print()">🖨️ Print Report</button>
-                </div>
-                <div class="text-muted" id="statusMsg" style="font-weight: 500;">Ready. Select an Office to load or start a new rating.</div>
+            <div class="summary-box">
+                <div class="summary-label"><span class="summary-icon">📦</span> Total Actual (MRR A)</div>
+                <div class="summary-value" id="grand-total-actual">0</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label"><span class="summary-icon">✅</span> Total Serviceable (MRR B)</div>
+                <div class="summary-value" id="grand-total-serviceable">0</div>
+            </div>
+            <div class="summary-box readiness-box" id="overall-readiness-box">
+                <div class="summary-label"><span class="summary-icon">📊</span> Overall Readiness</div>
+                <div class="summary-value" id="overall-readiness-percent">0.00%</div>
+            </div>
+
+            <div class="summary-category-section"></div>
+            <div class="summary-category-title" style="background:transparent;">Total Actual Inventory (On Hand Count) by Category — Click to View Details</div>
+
+            <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('MOBILITY', 0)" title="Click to view office-by-office breakdown">
+                <div class="summary-label"><span class="summary-icon">🚗</span> Mobility Inventory</div>
+                <div class="summary-value" id="inventory-mobility">0</div>
+            </div>
+            <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('FIREPOWER', 1)" title="Click to view office-by-office breakdown">
+                <div class="summary-label"><span class="summary-icon">🔫</span> Firepower Inventory</div>
+                <div class="summary-value" id="inventory-firepower">0</div>
+            </div>
+            <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('COMMUNICATION', 2)" title="Click to view office-by-office breakdown">
+                <div class="summary-label"><span class="summary-icon">📡</span> Communication Inventory</div>
+                <div class="summary-value" id="inventory-communication">0</div>
+            </div>
+            <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('MEDICAL', 3)" title="Click to view office-by-office breakdown">
+                <div class="summary-label"><span class="summary-icon">⚕️</span> Medical Inventory</div>
+                <div class="summary-value" id="inventory-medical">0</div>
+            </div>
+            <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('DENTAL', 4)" title="Click to view office-by-office breakdown">
+                <div class="summary-label"><span class="summary-icon">🦷</span> Dental Inventory</div>
+                <div class="summary-value" id="inventory-dental">0</div>
+            </div>
+            <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('QUARTERMASTER', 5)" title="Click to view office-by-office breakdown">
+                <div class="summary-label"><span class="summary-icon">🪖</span> Quartermaster Inventory</div>
+                <div class="summary-value" id="inventory-quartermaster">0</div>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">Overall Asset Summary Dashboard (PN Fleet Totals)</div>
-        <div class="card-body">
-            <div class="summary-grid">
-                <div class="summary-category-title">Grand Totals Across All Offices (Aggregated TOE/MRR)</div>
-                <div class="summary-box">
-                    <div class="summary-label"><span class="summary-icon">🎯</span> TOTAL REQUIRED (TOE A)</div>
-                    <div class="summary-value" id="grand-total-required">0</div>
-                </div>
-                <div class="summary-box">
-                    <div class="summary-label"><span class="summary-icon">📦</span> TOTAL ACTUAL (MRR A)</div>
-                    <div class="summary-value" id="grand-total-actual">0</div>
-                </div>
-                <div class="summary-box">
-                    <div class="summary-label"><span class="summary-icon">✅</span> TOTAL SERVICEABLE (MRR B)</div>
-                    <div class="summary-value" id="grand-total-serviceable">0</div>
-                </div>
-                <div class="summary-box" id="overall-readiness-box" style="background: linear-gradient(145deg, #f1c232 0%, #f9d75c 100%); color: #0b1a3a;">
-                    <div class="summary-label"><span class="summary-icon">📊</span> OVERALL READINESS</div>
-                    <div class="summary-value" id="overall-readiness-percent">0.00%</div>
-                </div>
-                <div class="summary-category-section"></div>
-                <div class="summary-category-title">Total Actual Inventory (On Hand Count) by Category - Click to View Details</div>
-                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('MOBILITY', 0)" title="Click to view office-by-office breakdown">
-                    <div class="summary-label"><span class="summary-icon">🚗</span> MOBILITY INVENTORY</div>
-                    <div class="summary-value" id="inventory-mobility">0</div>
-                </div>
-                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('FIREPOWER', 1)" title="Click to view office-by-office breakdown">
-                    <div class="summary-label"><span class="summary-icon">🔫</span> FIREPOWER INVENTORY</div>
-                    <div class="summary-value" id="inventory-firepower">0</div>
-                </div>
-                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('COMMUNICATION', 2)" title="Click to view office-by-office breakdown">
-                    <div class="summary-label"><span class="summary-icon">📡</span> COMMUNICATION INVENTORY</div>
-                    <div class="summary-value" id="inventory-communication">0</div>
-                </div>
-                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('MEDICAL', 3)" title="Click to view office-by-office breakdown">
-                    <div class="summary-label"><span class="summary-icon">⚕️</span> MEDICAL INVENTORY</div>
-                    <div class="summary-value" id="inventory-medical">0</div>
-                </div>
-                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('DENTAL', 4)" title="Click to view office-by-office breakdown">
-                    <div class="summary-label"><span class="summary-icon">🦷</span> DENTAL INVENTORY</div>
-                    <div class="summary-value" id="inventory-dental">0</div>
-                </div>
-                <div class="summary-box inventory-box clickable" onclick="showCategoryDetail('QUARTERMASTER', 5)" title="Click to view office-by-office breakdown">
-                    <div class="summary-label"><span class="summary-icon">🪖</span> QUARTERMASTER INVENTORY</div>
-                    <div class="summary-value" id="inventory-quartermaster">0</div>
-                </div>
+    <!-- ===== RATING BANNERS ===== -->
+    <div class="rating-banners">
+        <div class="rating-banner" id="toe-card">
+            <div class="rating-banner-left">
+                <div class="label">Equipment Readiness (TOE)</div>
+                <div class="sub">MEE + SE Rating &nbsp;|&nbsp; Office: <span id="current-office-name">N/A</span></div>
+            </div>
+            <div class="rating-badge" id="toe-banner-badge">
+                <div class="r-code" id="toe-redcon-code">—</div>
+                <div class="r-pct" id="toe-banner-pct">—</div>
+            </div>
+        </div>
+        <div class="rating-banner" id="mrr-card">
+            <div class="rating-banner-left">
+                <div class="label">Maintenance Readiness (MRR)</div>
+                <div class="sub">MEE + SE Rating &nbsp;|&nbsp; Office: <span id="current-office-name-mrr">N/A</span></div>
+            </div>
+            <div class="rating-badge" id="mrr-banner-badge">
+                <div class="r-code" id="mrr-redcon-code">—</div>
+                <div class="r-pct" id="mrr-banner-pct">—</div>
             </div>
         </div>
     </div>
 
-    <p style="margin-top: 1rem;">The final Office Performance Rating is a composite of the Equipment Readiness (TOE) and Maintenance Readiness (MRR) reports below.</p>
+    <!-- ===== DUAL TABLES ===== -->
+    <div class="dual-tables">
 
-    <div class="card" id="toe-card">
-        <div class="card-header">1. Equipment Readiness Report (TOE) - Current Office: <span id="current-office-name">N/A</span></div>
-        <div class="card-body">
+        <!-- TOE TABLE -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <div class="table-card-header-left">
+                    <span class="table-card-icon">📋</span>
+                    <span class="table-card-title">Equipment Readiness Report (TOE)</span>
+                </div>
+                <span class="table-card-unit">UNIT: —</span>
+            </div>
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th style="width: 45%;">EQUIPMENT CATEGORY</th>
-                            <th class="text-center" style="width: 15%;">TABLE OF EQ (A)</th>
-                            <th class="text-center" style="width: 15%;">ACTUAL (B)</th>
-                            <th class="text-center" style="width: 25%;">READINESS RATING (B/A × 100%)</th>
+                            <th style="width:42%;">Equipment Category</th>
+                            <th class="text-center" style="width:18%;">Table of Eq (A)</th>
+                            <th class="text-center" style="width:16%;">Actual (B)</th>
+                            <th class="text-center" style="width:24%;">Rating (B/A × 100%)</th>
                         </tr>
                     </thead>
                     <tbody id="toe-body">
@@ -483,7 +1097,7 @@
                         <tr><td>FIREPOWER</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
                         <tr><td>COMMUNICATION</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
                         <tr class="highlight-row">
-                            <td>MISSION ESSENTIAL EQUIPMENT (Average × 80%)</td>
+                            <td>Mission Essential Equipment (Average × 80%)</td>
                             <td colspan="2" class="text-muted text-center">Auto-computed</td>
                             <td id="toe-mission-essential" class="text-center"></td>
                         </tr>
@@ -491,32 +1105,37 @@
                         <tr><td>DENTAL</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
                         <tr><td>QUARTERMASTER</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
                         <tr class="highlight-row">
-                            <td>SECONDARY ESSENTIAL EQUIPMENT (Average × 20%)</td>
+                            <td>Secondary Essential Equipment (Average × 20%)</td>
                             <td colspan="2" class="text-muted text-center">Auto-computed</td>
                             <td id="toe-secondary-essential" class="text-center"></td>
                         </tr>
-                        <tr class="highlight-row" style="background-color: #dbeafe !important;">
-                            <td style="font-weight: 700; color: #0b1a3a;">TOTAL TOE READINESS RATING (80% + 20%)</td>
-                            <td colspan="2" class="text-muted text-center">Auto-computed</td>
+                        <tr class="grand-total-row">
+                            <td style="font-weight:800;">TOTAL TOE READINESS RATING (80% + 20%)</td>
+                            <td colspan="2" class="text-center" style="color:var(--text-muted); font-size:0.7rem;">Auto-computed</td>
                             <td id="toe-total-essential" class="text-center"><span class="status-badge status-pending">N/A</span></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
 
-    <div class="card" id="mrr-card">
-        <div class="card-header">2. Maintenance Readiness Report (MRR) - Current Office: <span id="current-office-name-mrr">N/A</span></div>
-        <div class="card-body">
+        <!-- MRR TABLE -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <div class="table-card-header-left">
+                    <span class="table-card-icon">🔧</span>
+                    <span class="table-card-title">Maintenance Readiness Report (MRR)</span>
+                </div>
+                <span class="table-card-unit">UNIT: —</span>
+            </div>
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th style="width: 45%;">EQUIPMENT CATEGORY</th>
-                            <th class="text-center" style="width: 15%;">ON HAND EQ (A)</th>
-                            <th class="text-center" style="width: 15%;">SERVICEABLE (B)</th>
-                            <th class="text-center" style="width: 25%;">READINESS RATING (B/A × 100%)</th>
+                            <th style="width:42%;">Equipment Category</th>
+                            <th class="text-center" style="width:18%;">On Hand Eq (A)</th>
+                            <th class="text-center" style="width:16%;">Serviceable (B)</th>
+                            <th class="text-center" style="width:24%;">Rating (B/A × 100%)</th>
                         </tr>
                     </thead>
                     <tbody id="mrr-body">
@@ -524,7 +1143,7 @@
                         <tr><td>FIREPOWER</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
                         <tr><td>COMMUNICATION</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
                         <tr class="highlight-row">
-                            <td>MISSION ESSENTIAL EQUIPMENT (Average × 80%)</td>
+                            <td>Mission Essential Equipment (Average × 80%)</td>
                             <td colspan="2" class="text-muted text-center">Auto-computed</td>
                             <td id="mrr-mission-essential" class="text-center"></td>
                         </tr>
@@ -532,23 +1151,62 @@
                         <tr><td>DENTAL</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
                         <tr><td>QUARTERMASTER</td><td><input type="number" oninput="computeAllRatings()"></td><td><input type="number" oninput="computeAllRatings()"></td><td class="rating text-center"></td></tr>
                         <tr class="highlight-row">
-                            <td>SECONDARY ESSENTIAL EQUIPMENT (Average × 20%)</td>
+                            <td>Secondary Essential Equipment (Average × 20%)</td>
                             <td colspan="2" class="text-muted text-center">Auto-computed</td>
                             <td id="mrr-secondary-essential" class="text-center"></td>
                         </tr>
-                        <tr class="highlight-row" style="background-color: #dbeafe !important;">
-                            <td style="font-weight: 700; color: #0b1a3a;">TOTAL MRR READINESS RATING (80% + 20%)</td>
-                            <td colspan="2" class="text-muted text-center">Auto-computed</td>
+                        <tr class="grand-total-row">
+                            <td style="font-weight:800;">TOTAL MRR READINESS RATING (80% + 20%)</td>
+                            <td colspan="2" class="text-center" style="color:var(--text-muted); font-size:0.7rem;">Auto-computed</td>
                             <td id="mrr-total-essential" class="text-center"><span class="status-badge status-pending">N/A</span></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Office Status Modal -->
+    </div>
+
+    <!-- ===== REDCON STATUS ===== -->
+    <div class="redcon-row">
+        <div class="redcon-card">
+            <div class="redcon-header">Equipment REDCON Status</div>
+            <div class="redcon-body">
+                <div class="redcon-scale" id="toe-redcon-scale">
+                    <div class="redcon-step r1" data-r="1">R1</div>
+                    <div class="redcon-step r2" data-r="2">R2</div>
+                    <div class="redcon-step r3" data-r="3">R3</div>
+                    <div class="redcon-step r4" data-r="4">R4</div>
+                    <div class="redcon-step r5" data-r="5">R5</div>
+                </div>
+                <div class="redcon-legend">
+                    R1 ≥ 90% &nbsp;·&nbsp; R2 ≥ 70% &nbsp;·&nbsp; R3 ≥ 50%<br>
+                    R4 ≥ 30% &nbsp;·&nbsp; R5 &lt; 30%
+                </div>
+            </div>
+        </div>
+        <div class="redcon-card">
+            <div class="redcon-header">Maintenance REDCON Status</div>
+            <div class="redcon-body">
+                <div class="redcon-scale" id="mrr-redcon-scale">
+                    <div class="redcon-step r1" data-r="1">R1</div>
+                    <div class="redcon-step r2" data-r="2">R2</div>
+                    <div class="redcon-step r3" data-r="3">R3</div>
+                    <div class="redcon-step r4" data-r="4">R4</div>
+                    <div class="redcon-step r5" data-r="5">R5</div>
+                </div>
+                <div class="redcon-legend">
+                    R1 ≥ 90% &nbsp;·&nbsp; R2 ≥ 70% &nbsp;·&nbsp; R3 ≥ 50%<br>
+                    R4 ≥ 30% &nbsp;·&nbsp; R5 &lt; 30%
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+
+<!-- ===== OFFICE STATUS MODAL ===== -->
 <div id="officeStatusModal" class="modal-overlay no-print" onclick="closeOfficeStatusModal(event)">
     <div class="modal-container" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -563,20 +1221,20 @@
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Offices Missing Data</div>
-                    <div class="stat-value" id="offices-missing-data" style="color: #ef4444;">0</div>
+                    <div class="stat-value" id="offices-missing-data" style="color:#f87171;">0</div>
                 </div>
             </div>
-            <h4 style="margin-bottom: 1rem; color: #0b1a3a;">All Offices</h4>
+            <h4 style="margin-bottom:1rem; color:var(--gold); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.08em;">All Offices</h4>
             <div class="office-list" id="officeStatusList"></div>
         </div>
     </div>
 </div>
 
-<!-- Summary Report Modal -->
+<!-- ===== SUMMARY REPORT MODAL ===== -->
 <div id="summaryReportModal" class="modal-overlay no-print" onclick="closeSummaryReport(event)">
     <div class="modal-container" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h3>📊 Comprehensive Summary Report - All Offices</h3>
+            <h3>📊 Comprehensive Summary Report — All Offices</h3>
             <button class="modal-close" onclick="closeSummaryReport()">&times;</button>
         </div>
         <div class="modal-body">
@@ -608,18 +1266,12 @@
             </div>
 
             <div class="summary-section-title">Office-by-Office Performance Breakdown</div>
-            <div style="overflow-x: auto;">
+            <div style="overflow-x:auto;">
                 <table class="summary-table">
                     <thead>
                         <tr>
-                            <th>Office</th>
-                            <th>TOE Rating</th>
-                            <th>MRR Rating</th>
-                            <th>Avg Rating</th>
-                            <th>Required</th>
-                            <th>Actual</th>
-                            <th>Serviceable</th>
-                            <th>Status</th>
+                            <th>Office</th><th>TOE Rating</th><th>MRR Rating</th><th>Avg Rating</th>
+                            <th>Required</th><th>Actual</th><th>Serviceable</th><th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="summaryTableBody"></tbody>
@@ -627,31 +1279,28 @@
             </div>
 
             <div class="summary-section-title">Performance by Category</div>
-            <div style="overflow-x: auto;">
+            <div style="overflow-x:auto;">
                 <table class="summary-table">
                     <thead>
                         <tr>
-                            <th>Category</th>
-                            <th>Total Required</th>
-                            <th>Total Actual</th>
-                            <th>Total Serviceable</th>
-                            <th>Readiness %</th>
+                            <th>Category</th><th>Total Required</th><th>Total Actual</th>
+                            <th>Total Serviceable</th><th>Readiness %</th>
                         </tr>
                     </thead>
                     <tbody id="categoryTableBody"></tbody>
                 </table>
             </div>
 
-            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+            <div style="margin-top:2rem; display:flex; gap:0.75rem; justify-content:flex-end;">
                 <button class="btn btn-print" onclick="printSummaryReport()">🖨️ Print Summary</button>
-                <button class="btn btn-print" onclick="exportSummaryCSV()">📥 Export CSV</button>
-                <button class="btn btn-primary" onclick="closeSummaryReport()">Close</button>
+                <button class="btn btn-save" onclick="exportSummaryCSV()">📥 Export CSV</button>
+                <button class="btn btn-reset" onclick="closeSummaryReport()">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Category Detail Modal -->
+<!-- ===== CATEGORY DETAIL MODAL ===== -->
 <div id="categoryDetailModal" class="modal-overlay no-print" onclick="closeCategoryDetail(event)">
     <div class="modal-container" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -659,10 +1308,7 @@
             <button class="modal-close" onclick="closeCategoryDetail()">&times;</button>
         </div>
         <div class="modal-body">
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-                <div class="category-icon-large" id="categoryDetailIcon">🚗</div>
-            </div>
-            
+            <div class="category-icon-large" id="categoryDetailIcon">🚗</div>
             <div class="category-stats-grid">
                 <div class="category-stat-box">
                     <div class="category-stat-label">Total Required (TOE)</div>
@@ -681,30 +1327,26 @@
                     <div class="category-stat-value" id="category-readiness-rate">0%</div>
                 </div>
             </div>
-
             <div class="summary-section-title">Office-by-Office Breakdown</div>
-            <div style="overflow-x: auto;">
+            <div style="overflow-x:auto;">
                 <table class="summary-table">
                     <thead>
                         <tr>
-                            <th>Office</th>
-                            <th>Required (TOE A)</th>
-                            <th>Actual (MRR A)</th>
-                            <th>Serviceable (MRR B)</th>
-                            <th>Readiness %</th>
+                            <th>Office</th><th>Required (TOE A)</th><th>Actual (MRR A)</th>
+                            <th>Serviceable (MRR B)</th><th>Readiness %</th>
                         </tr>
                     </thead>
                     <tbody id="categoryDetailTableBody"></tbody>
                 </table>
             </div>
-
-            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
-                <button class="btn btn-print" onclick="exportCategoryCSV()">📥 Export CSV</button>
-                <button class="btn btn-primary" onclick="closeCategoryDetail()">Close</button>
+            <div style="margin-top:2rem; display:flex; gap:0.75rem; justify-content:flex-end;">
+                <button class="btn btn-save" onclick="exportCategoryCSV()">📥 Export CSV</button>
+                <button class="btn btn-reset" onclick="closeCategoryDetail()">Close</button>
             </div>
         </div>
     </div>
 </div>
+
 
 <script>
 const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
@@ -713,34 +1355,50 @@ const TABLE = "office_performance";
 
 const supabasePNJRRS = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const ALL_OFFICES = ['FOIC', 'VCOM', 'CNS', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10', 'N11', 'HSG', 'NIOFC', 'CMCPO', 'CRDO', 'CNLE', 'NSPAO', 'NPAO', 'ONSSSM', 'TNJA', 'TNCH', 'TCSN', 'TCNN', 'TCDSN', 'TNCE', 'PNOLOAC', 'TNIA', 'NSO', 'NASO', 'TNIG', 'OESPA', 'TNPM', 'OTNA', 'PNGADC', 'PNREO', 'PNMO', 'ONIA', 'FMWC', 'PNMCMC'];
-const CATEGORIES = ['MOBILITY', 'FIREPOWER', 'COMMUNICATION', 'MEDICAL', 'DENTAL', 'QUARTERMASTER'];
-const CATEGORY_ICONS = ['🚗', '🔫', '📡', '⚕️', '🦷', '🪖'];
+const ALL_OFFICES = ['FOIC','VCOM','CNS','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','N11','HSG','NIOFC','CMCPO','CRDO','CNLE','NSPAO','NPAO','ONSSSM','NJAG','TNCH','TCSN','TCNN','TCDSN','TNCE','PNOLOAC','TNIA','NSO','NASO','TNIG','OESPA','TNPM','OTNA','PNGADC','PNREO','PNMO','ONIA','FMWC','PNMCMC'];
+const CATEGORIES = ['MOBILITY','FIREPOWER','COMMUNICATION','MEDICAL','DENTAL','QUARTERMASTER'];
+const CATEGORY_ICONS = ['🚗','🔫','📡','⚕️','🦷','🪖'];
+const INVENTORY_IDS = ['inventory-mobility','inventory-firepower','inventory-communication','inventory-medical','inventory-dental','inventory-quartermaster'];
 
 const limitTo100 = v => Math.min(v, 100);
 const parseNumber = (value) => parseFloat(value) || 0;
-const INVENTORY_IDS = ['inventory-mobility','inventory-firepower','inventory-communication','inventory-medical','inventory-dental','inventory-quartermaster'];
 
-// Store all office data for summary
 let allOfficeData = [];
 let currentCategoryData = { name: '', index: 0, data: [] };
 
-// Show category detail modal
+// ---- REDCON helpers ----
+function getRedconLevel(pct) {
+    if (pct >= 90) return 1;
+    if (pct >= 70) return 2;
+    if (pct >= 50) return 3;
+    if (pct >= 30) return 4;
+    return 5;
+}
+
+function updateRedconScale(scaleId, codeId, pctId, total) {
+    const level = total > 0 ? getRedconLevel(total) : null;
+    const steps = document.querySelectorAll(`#${scaleId} .redcon-step`);
+    steps.forEach(s => {
+        const r = parseInt(s.dataset.r);
+        s.classList.toggle('active', level !== null && r === level);
+    });
+    if (codeId) {
+        document.getElementById(codeId).textContent = level ? `R${level}` : '—';
+    }
+    if (pctId) {
+        document.getElementById(pctId).textContent = total > 0 ? total.toFixed(2) + '%' : '—';
+    }
+}
+
+// ---- Modal helpers ----
 async function showCategoryDetail(categoryName, categoryIndex) {
     try {
         const { data: allRecords, error } = await supabasePNJRRS.from(TABLE).select("*");
         if (error) throw error;
-
         currentCategoryData = { name: categoryName, index: categoryIndex, data: [] };
-
-        let totalRequired = 0;
-        let totalActual = 0;
-        let totalServiceable = 0;
-
-        // Build office breakdown
+        let totalRequired = 0, totalActual = 0, totalServiceable = 0;
         const tableBody = document.getElementById('categoryDetailTableBody');
         tableBody.innerHTML = '';
-
         if (allRecords && allRecords.length > 0) {
             allRecords.forEach(record => {
                 const payload = record.payload;
@@ -748,48 +1406,21 @@ async function showCategoryDetail(categoryName, categoryIndex) {
                     const toeA = parseNumber(payload.toe[categoryIndex]?.[0]);
                     const mrrA = parseNumber(payload.mrr[categoryIndex]?.[0]);
                     const mrrB = parseNumber(payload.mrr[categoryIndex]?.[1]);
-
-                    totalRequired += toeA;
-                    totalActual += mrrA;
-                    totalServiceable += mrrB;
-
+                    totalRequired += toeA; totalActual += mrrA; totalServiceable += mrrB;
                     const readiness = mrrA > 0 ? (mrrB / mrrA) * 100 : 0;
-                    
-                    currentCategoryData.data.push({
-                        office: record.office,
-                        required: toeA,
-                        actual: mrrA,
-                        serviceable: mrrB,
-                        readiness: readiness
-                    });
-
-                    const row = `
-                        <tr>
-                            <td><strong>${record.office}</strong></td>
-                            <td>${toeA.toLocaleString()}</td>
-                            <td>${mrrA.toLocaleString()}</td>
-                            <td>${mrrB.toLocaleString()}</td>
-                            <td><strong>${readiness.toFixed(2)}%</strong></td>
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row;
+                    currentCategoryData.data.push({ office: record.office, required: toeA, actual: mrrA, serviceable: mrrB, readiness });
+                    tableBody.innerHTML += `<tr><td><strong>${record.office}</strong></td><td>${toeA.toLocaleString()}</td><td>${mrrA.toLocaleString()}</td><td>${mrrB.toLocaleString()}</td><td><strong>${readiness.toFixed(2)}%</strong></td></tr>`;
                 }
             });
         }
-
-        // Update summary statistics
         const overallReadiness = totalActual > 0 ? (totalServiceable / totalActual) * 100 : 0;
-        
-        document.getElementById('categoryDetailTitle').innerHTML = `${CATEGORY_ICONS[categoryIndex]} ${categoryName} - Office Breakdown`;
+        document.getElementById('categoryDetailTitle').innerHTML = `${CATEGORY_ICONS[categoryIndex]} ${categoryName} — Office Breakdown`;
         document.getElementById('categoryDetailIcon').textContent = CATEGORY_ICONS[categoryIndex];
         document.getElementById('category-total-required').textContent = totalRequired.toLocaleString();
         document.getElementById('category-total-actual').textContent = totalActual.toLocaleString();
         document.getElementById('category-total-serviceable').textContent = totalServiceable.toLocaleString();
         document.getElementById('category-readiness-rate').textContent = limitTo100(overallReadiness).toFixed(2) + '%';
-
-        // Show modal
         document.getElementById('categoryDetailModal').style.display = 'block';
-
     } catch (err) {
         console.error('Category Detail Error:', err);
         showMessageModal("Error", "Failed to load category details", true);
@@ -797,224 +1428,123 @@ async function showCategoryDetail(categoryName, categoryIndex) {
 }
 
 function closeCategoryDetail(event) {
-    if (!event || event.target === event.currentTarget) {
-        document.getElementById('categoryDetailModal').style.display = 'none';
-    }
+    if (!event || event.target === event.currentTarget) document.getElementById('categoryDetailModal').style.display = 'none';
 }
 
 function exportCategoryCSV() {
-    if (currentCategoryData.data.length === 0) {
-        showMessageModal("Error", "No data to export", true);
-        return;
-    }
-
+    if (currentCategoryData.data.length === 0) { showMessageModal("Error","No data to export",true); return; }
     let csv = `Office,Required (TOE A),Actual (MRR A),Serviceable (MRR B),Readiness %\n`;
-
-    currentCategoryData.data.forEach(item => {
-        csv += `${item.office},${item.required},${item.actual},${item.serviceable},${item.readiness.toFixed(2)}%\n`;
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv' });
+    currentCategoryData.data.forEach(item => { csv += `${item.office},${item.required},${item.actual},${item.serviceable},${item.readiness.toFixed(2)}%\n`; });
+    const blob = new Blob([csv],{type:'text/csv'});
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `PN_${currentCategoryData.name}_Breakdown_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-
-    showMessageModal("Success", `${currentCategoryData.name} breakdown exported to CSV`);
+    const a = document.createElement('a'); a.href=url; a.download=`PN_${currentCategoryData.name}_Breakdown_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+    showMessageModal("Success",`${currentCategoryData.name} breakdown exported to CSV`);
 }
 
 async function showSummaryReport() {
     try {
         const { data: allRecords, error } = await supabasePNJRRS.from(TABLE).select("*");
         if (error) throw error;
-
         allOfficeData = allRecords || [];
-
-        // Calculate overall statistics
-        let totalOffices = ALL_OFFICES.length;
-        let officesWithData = allOfficeData.length;
-        let grandTotalRequired = 0;
-        let grandTotalActual = 0;
-        let grandTotalServiceable = 0;
-
-        // Category totals
-        let categoryTotals = CATEGORIES.map(() => ({ required: 0, actual: 0, serviceable: 0 }));
-
-        // Build office breakdown table
+        let grandTotalRequired=0, grandTotalActual=0, grandTotalServiceable=0;
+        let categoryTotals = CATEGORIES.map(()=>({required:0,actual:0,serviceable:0}));
         const tableBody = document.getElementById('summaryTableBody');
         tableBody.innerHTML = '';
-
         allOfficeData.forEach(record => {
             const payload = record.payload;
             if (payload && payload.toe && payload.mrr) {
-                let officeRequired = 0, officeActual = 0, officeServiceable = 0;
-
-                for (let i = 0; i < 6; i++) {
-                    const toeA = parseNumber(payload.toe[i]?.[0]);
-                    const mrrA = parseNumber(payload.mrr[i]?.[0]);
-                    const mrrB = parseNumber(payload.mrr[i]?.[1]);
-
-                    officeRequired += toeA;
-                    officeActual += mrrA;
-                    officeServiceable += mrrB;
-
-                    grandTotalRequired += toeA;
-                    grandTotalActual += mrrA;
-                    grandTotalServiceable += mrrB;
-
-                    categoryTotals[i].required += toeA;
-                    categoryTotals[i].actual += mrrA;
-                    categoryTotals[i].serviceable += mrrB;
+                let offReq=0, offAct=0, offSvc=0;
+                for (let i=0;i<6;i++) {
+                    const toeA=parseNumber(payload.toe[i]?.[0]);
+                    const mrrA=parseNumber(payload.mrr[i]?.[0]);
+                    const mrrB=parseNumber(payload.mrr[i]?.[1]);
+                    offReq+=toeA; offAct+=mrrA; offSvc+=mrrB;
+                    grandTotalRequired+=toeA; grandTotalActual+=mrrA; grandTotalServiceable+=mrrB;
+                    categoryTotals[i].required+=toeA; categoryTotals[i].actual+=mrrA; categoryTotals[i].serviceable+=mrrB;
                 }
-
-                const toeRating = parseFloat(payload.computed?.toe?.total || 0);
-                const mrrRating = parseFloat(payload.computed?.mrr?.total || 0);
-                const avgRating = (toeRating + mrrRating) / 2;
-
-                let statusClass = 'status-pending';
-                if (avgRating >= 80) statusClass = 'status-active';
-                else if (avgRating < 60) statusClass = 'status-rejected';
-
-                const row = `
-                    <tr>
-                        <td><strong>${record.office}</strong></td>
-                        <td>${toeRating > 0 ? toeRating.toFixed(2) + '%' : 'N/A'}</td>
-                        <td>${mrrRating > 0 ? mrrRating.toFixed(2) + '%' : 'N/A'}</td>
-                        <td><strong>${avgRating > 0 ? avgRating.toFixed(2) + '%' : 'N/A'}</strong></td>
-                        <td>${officeRequired.toLocaleString()}</td>
-                        <td>${officeActual.toLocaleString()}</td>
-                        <td>${officeServiceable.toLocaleString()}</td>
-                        <td><span class="status-badge ${statusClass}">${avgRating >= 80 ? 'READY' : avgRating >= 60 ? 'PARTIAL' : 'LOW'}</span></td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
+                const toeRating=parseFloat(payload.computed?.toe?.total||0);
+                const mrrRating=parseFloat(payload.computed?.mrr?.total||0);
+                const avgRating=(toeRating+mrrRating)/2;
+                let statusClass = avgRating>=80?'status-active':avgRating>=60?'status-pending':'status-rejected';
+                tableBody.innerHTML += `<tr>
+                    <td><strong>${record.office}</strong></td>
+                    <td>${toeRating>0?toeRating.toFixed(2)+'%':'N/A'}</td>
+                    <td>${mrrRating>0?mrrRating.toFixed(2)+'%':'N/A'}</td>
+                    <td><strong>${avgRating>0?avgRating.toFixed(2)+'%':'N/A'}</strong></td>
+                    <td>${offReq.toLocaleString()}</td><td>${offAct.toLocaleString()}</td><td>${offSvc.toLocaleString()}</td>
+                    <td><span class="status-badge ${statusClass}">${avgRating>=80?'READY':avgRating>=60?'PARTIAL':'LOW'}</span></td>
+                </tr>`;
             }
         });
-
-        // Update summary stats
-        const fleetReadiness = grandTotalActual > 0 ? (grandTotalServiceable / grandTotalActual) * 100 : 0;
-        document.getElementById('summary-total-offices').textContent = totalOffices;
-        document.getElementById('summary-offices-data').textContent = officesWithData;
+        const fleetReadiness = grandTotalActual>0?(grandTotalServiceable/grandTotalActual)*100:0;
+        document.getElementById('summary-total-offices').textContent = ALL_OFFICES.length;
+        document.getElementById('summary-offices-data').textContent = allOfficeData.length;
         document.getElementById('summary-equip-required').textContent = grandTotalRequired.toLocaleString();
         document.getElementById('summary-equip-actual').textContent = grandTotalActual.toLocaleString();
         document.getElementById('summary-equip-serviceable').textContent = grandTotalServiceable.toLocaleString();
-        document.getElementById('summary-fleet-readiness').textContent = limitTo100(fleetReadiness).toFixed(2) + '%';
-
-        // Build category table
+        document.getElementById('summary-fleet-readiness').textContent = limitTo100(fleetReadiness).toFixed(2)+'%';
         const categoryBody = document.getElementById('categoryTableBody');
         categoryBody.innerHTML = '';
-        CATEGORIES.forEach((category, index) => {
-            const cat = categoryTotals[index];
-            const readiness = cat.actual > 0 ? (cat.serviceable / cat.actual) * 100 : 0;
-            const row = `
-                <tr>
-                    <td><strong>${category}</strong></td>
-                    <td>${cat.required.toLocaleString()}</td>
-                    <td>${cat.actual.toLocaleString()}</td>
-                    <td>${cat.serviceable.toLocaleString()}</td>
-                    <td><strong>${readiness.toFixed(2)}%</strong></td>
-                </tr>
-            `;
-            categoryBody.innerHTML += row;
+        CATEGORIES.forEach((category,index) => {
+            const cat=categoryTotals[index];
+            const readiness=cat.actual>0?(cat.serviceable/cat.actual)*100:0;
+            categoryBody.innerHTML += `<tr><td><strong>${category}</strong></td><td>${cat.required.toLocaleString()}</td><td>${cat.actual.toLocaleString()}</td><td>${cat.serviceable.toLocaleString()}</td><td><strong>${readiness.toFixed(2)}%</strong></td></tr>`;
         });
-
-        // Show modal
         document.getElementById('summaryReportModal').style.display = 'block';
-
     } catch (err) {
         console.error('Summary Report Error:', err);
-        showMessageModal("Error", "Failed to generate summary report", true);
+        showMessageModal("Error","Failed to generate summary report",true);
     }
 }
 
 function closeSummaryReport(event) {
-    if (!event || event.target === event.currentTarget) {
-        document.getElementById('summaryReportModal').style.display = 'none';
-    }
+    if (!event || event.target === event.currentTarget) document.getElementById('summaryReportModal').style.display = 'none';
 }
 
 function exportSummaryCSV() {
-    if (allOfficeData.length === 0) {
-        showMessageModal("Error", "No data to export", true);
-        return;
-    }
-
+    if (allOfficeData.length===0) { showMessageModal("Error","No data to export",true); return; }
     let csv = 'Office,TOE Rating,MRR Rating,Average Rating,Required,Actual,Serviceable,Status\n';
-
     allOfficeData.forEach(record => {
-        const payload = record.payload;
+        const payload=record.payload;
         if (payload && payload.toe && payload.mrr) {
-            let officeRequired = 0, officeActual = 0, officeServiceable = 0;
-
-            for (let i = 0; i < 6; i++) {
-                officeRequired += parseNumber(payload.toe[i]?.[0]);
-                officeActual += parseNumber(payload.mrr[i]?.[0]);
-                officeServiceable += parseNumber(payload.mrr[i]?.[1]);
-            }
-
-            const toeRating = parseFloat(payload.computed?.toe?.total || 0);
-            const mrrRating = parseFloat(payload.computed?.mrr?.total || 0);
-            const avgRating = (toeRating + mrrRating) / 2;
-            const status = avgRating >= 80 ? 'READY' : avgRating >= 60 ? 'PARTIAL' : 'LOW';
-
-            csv += `${record.office},${toeRating.toFixed(2)}%,${mrrRating.toFixed(2)}%,${avgRating.toFixed(2)}%,${officeRequired},${officeActual},${officeServiceable},${status}\n`;
+            let offReq=0,offAct=0,offSvc=0;
+            for(let i=0;i<6;i++){offReq+=parseNumber(payload.toe[i]?.[0]);offAct+=parseNumber(payload.mrr[i]?.[0]);offSvc+=parseNumber(payload.mrr[i]?.[1]);}
+            const toeRating=parseFloat(payload.computed?.toe?.total||0);
+            const mrrRating=parseFloat(payload.computed?.mrr?.total||0);
+            const avgRating=(toeRating+mrrRating)/2;
+            csv+=`${record.office},${toeRating.toFixed(2)}%,${mrrRating.toFixed(2)}%,${avgRating.toFixed(2)}%,${offReq},${offAct},${offSvc},${avgRating>=80?'READY':avgRating>=60?'PARTIAL':'LOW'}\n`;
         }
     });
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `PN_Summary_Report_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-
-    showMessageModal("Success", "Summary report exported to CSV");
+    const blob=new Blob([csv],{type:'text/csv'});
+    const url=window.URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`PN_Summary_Report_${new Date().toISOString().split('T')[0]}.csv`;a.click();
+    showMessageModal("Success","Summary report exported to CSV");
 }
 
 function printSummaryReport() {
-    // Add special class to body for print-specific styling
     document.body.classList.add('printing-summary');
-    
-    // Small delay to ensure styles are applied
-    setTimeout(() => {
-        window.print();
-        // Remove the class after printing
-        setTimeout(() => {
-            document.body.classList.remove('printing-summary');
-        }, 100);
-    }, 100);
+    setTimeout(()=>{ window.print(); setTimeout(()=>document.body.classList.remove('printing-summary'),100); },100);
 }
 
 async function showOfficeStatusModal() {
     try {
         const { data: allRecords, error } = await supabasePNJRRS.from(TABLE).select("office");
         if (error) throw error;
-
-        const officesWithData = new Set(allRecords ? allRecords.map(r => r.office) : []);
-        const officesMissingData = ALL_OFFICES.filter(office => !officesWithData.has(office));
-
+        const officesWithData = new Set(allRecords?allRecords.map(r=>r.office):[]);
+        const officesMissingData = ALL_OFFICES.filter(o=>!officesWithData.has(o));
         document.getElementById('offices-with-data').textContent = officesWithData.size;
         document.getElementById('offices-missing-data').textContent = officesMissingData.length;
-
         const listContainer = document.getElementById('officeStatusList');
         listContainer.innerHTML = ALL_OFFICES.map(office => {
-            const hasData = officesWithData.has(office);
-            const cssClass = hasData ? 'complete' : 'missing';
-            const title = hasData ? 'Has data' : 'Missing data - Click to load';
-            return `<div class="office-item ${cssClass}" title="${title}" onclick="selectOfficeFromModal('${office}')">${office}</div>`;
+            const hasData=officesWithData.has(office);
+            return `<div class="office-item ${hasData?'complete':'missing'}" title="${hasData?'Has data':'Missing data — Click to load'}" onclick="selectOfficeFromModal('${office}')">${office}</div>`;
         }).join('');
-
         document.getElementById('officeStatusModal').style.display = 'block';
-    } catch (err) {
-        showMessageModal("Error", "Failed to load office status", true);
-    }
+    } catch(err) { showMessageModal("Error","Failed to load office status",true); }
 }
 
 function closeOfficeStatusModal(event) {
-    if (!event || event.target === event.currentTarget) {
-        document.getElementById('officeStatusModal').style.display = 'none';
-    }
+    if (!event || event.target===event.currentTarget) document.getElementById('officeStatusModal').style.display = 'none';
 }
 
 function selectOfficeFromModal(office) {
@@ -1026,14 +1556,14 @@ function selectOfficeFromModal(office) {
 function applyStatusBadge(elementId, ratingValue) {
     const el = document.getElementById(elementId);
     let statusText, statusClass;
-    if (ratingValue === null || isNaN(ratingValue) || ratingValue === 0) {
-        statusText = "N/A"; statusClass = "status-pending";
-    } else if (ratingValue >= 80) {
-        statusText = ratingValue.toFixed(2) + "%"; statusClass = "status-active";
-    } else if (ratingValue >= 60) {
-        statusText = ratingValue.toFixed(2) + "%"; statusClass = "status-pending";
+    if (ratingValue===null||isNaN(ratingValue)||ratingValue===0) {
+        statusText="N/A"; statusClass="status-pending";
+    } else if (ratingValue>=80) {
+        statusText=ratingValue.toFixed(2)+"%"; statusClass="status-active";
+    } else if (ratingValue>=60) {
+        statusText=ratingValue.toFixed(2)+"%"; statusClass="status-pending";
     } else {
-        statusText = ratingValue.toFixed(2) + "%"; statusClass = "status-rejected";
+        statusText=ratingValue.toFixed(2)+"%"; statusClass="status-rejected";
     }
     el.innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
 }
@@ -1045,207 +1575,173 @@ function computeRatingsForTable(tbodyId, missionId, secondaryId, totalId) {
     rows.forEach(row => {
         const inputs = row.querySelectorAll("input");
         const ratingCell = row.querySelector(".rating");
-        if(inputs.length === 2 && ratingCell) {
-            const A = parseNumber(inputs[0].value);
-            const B = parseNumber(inputs[1].value);
-            let rating = A > 0 ? (B / A * 100) : 0;
-            rating = limitTo100(rating);
+        if(inputs.length===2 && ratingCell) {
+            const A=parseNumber(inputs[0].value);
+            const B=parseNumber(inputs[1].value);
+            let rating = A>0?(B/A*100):0;
+            rating=limitTo100(rating);
             ratingCell.textContent = rating.toFixed(2);
             ratings.push(rating);
         }
     });
-    const meRatings = ratings.slice(0, 3);
-    const meValidRatings = meRatings.filter(r => r > 0);
-    const meSum = meValidRatings.reduce((sum, r) => sum + r, 0);
-    const meCount = meValidRatings.length;
-    const meAvg = meCount > 0 ? meSum / meCount : 0;
-    const me = meAvg * 0.8;
-    document.getElementById(missionId).textContent = me.toFixed(2);
-    const seRatings = ratings.slice(3, 6);
-    const seValidRatings = seRatings.filter(r => r > 0);
-    const seSum = seValidRatings.reduce((sum, r) => sum + r, 0);
-    const seCount = seValidRatings.length;
-    const seAvg = seCount > 0 ? seSum / seCount : 0;
-    const se = seAvg * 0.2;
-    document.getElementById(secondaryId).textContent = se.toFixed(2);
-    const total = me + se;
-    applyStatusBadge(totalId, total);
+    const meRatings=ratings.slice(0,3);
+    const meValidRatings=meRatings.filter(r=>r>0);
+    const meAvg=meValidRatings.length>0?meValidRatings.reduce((s,r)=>s+r,0)/meValidRatings.length:0;
+    const me=meAvg*0.8;
+    document.getElementById(missionId).textContent=me.toFixed(2);
+    const seRatings=ratings.slice(3,6);
+    const seValidRatings=seRatings.filter(r=>r>0);
+    const seAvg=seValidRatings.length>0?seValidRatings.reduce((s,r)=>s+r,0)/seValidRatings.length:0;
+    const se=seAvg*0.2;
+    document.getElementById(secondaryId).textContent=se.toFixed(2);
+    const total=me+se;
+    applyStatusBadge(totalId,total);
+    return total;
 }
 
 window.loadAggregatedDashboardData = async () => {
     try {
         const { data: allRecords, error } = await supabasePNJRRS.from(TABLE).select("payload");
         if (error) throw error;
-        let grandTotalRequired = 0, grandTotalActual = 0, grandTotalServiceable = 0;
-        let categoryInventories = new Array(6).fill(0);
-        if (allRecords && allRecords.length > 0) {
+        let grandTotalRequired=0, grandTotalActual=0, grandTotalServiceable=0;
+        let categoryInventories=new Array(6).fill(0);
+        if (allRecords && allRecords.length>0) {
             allRecords.forEach(record => {
-                const payload = record.payload;
+                const payload=record.payload;
                 if (payload && payload.toe && payload.mrr) {
-                    for (let i = 0; i < 6; i++) {
-                        const toeA = parseNumber(payload.toe[i]?.[0]);
-                        const mrrA = parseNumber(payload.mrr[i]?.[0]);
-                        const mrrB = parseNumber(payload.mrr[i]?.[1]);
-                        grandTotalRequired += toeA;
-                        grandTotalActual += mrrA;
-                        grandTotalServiceable += mrrB;
-                        categoryInventories[i] += mrrA;
+                    for(let i=0;i<6;i++) {
+                        grandTotalRequired+=parseNumber(payload.toe[i]?.[0]);
+                        const mrrA=parseNumber(payload.mrr[i]?.[0]);
+                        const mrrB=parseNumber(payload.mrr[i]?.[1]);
+                        grandTotalActual+=mrrA; grandTotalServiceable+=mrrB;
+                        categoryInventories[i]+=mrrA;
                     }
                 }
             });
         }
-        const readiness = grandTotalActual > 0 ? (grandTotalServiceable / grandTotalActual) * 100 : 0;
-        document.getElementById('grand-total-required').textContent = grandTotalRequired.toLocaleString();
-        document.getElementById('grand-total-actual').textContent = grandTotalActual.toLocaleString();
-        document.getElementById('grand-total-serviceable').textContent = grandTotalServiceable.toLocaleString();
-        document.getElementById('overall-readiness-percent').textContent = limitTo100(readiness).toFixed(2) + '%';
-        INVENTORY_IDS.forEach((id, index) => {
-            document.getElementById(id).textContent = categoryInventories[index].toLocaleString();
-        });
-        const readinessBox = document.getElementById('overall-readiness-box');
-        const readinessValue = limitTo100(readiness);
-        const readinessIcon = readinessBox.querySelector('.summary-icon');
-        if (readinessValue >= 80) {
-            readinessBox.style.background = 'linear-gradient(145deg, #065f46 0%, #10b981 100%)';
-            readinessBox.style.color = 'white'; readinessIcon.style.color = 'white';
-        } else if (readinessValue >= 60) {
-            readinessBox.style.background = 'linear-gradient(145deg, #92400e 0%, #f59e0b 100%)';
-            readinessBox.style.color = 'white'; readinessIcon.style.color = 'white';
-        } else {
-            readinessBox.style.background = 'linear-gradient(145deg, #991b1b 0%, #ef4444 100%)';
-            readinessBox.style.color = 'white'; readinessIcon.style.color = 'white';
-        }
-    } catch (err) {
-        showMessageModal("Aggregation Error", "Failed to fetch all office data for dashboard summary.", true);
-    }
-}
+        const readiness = grandTotalActual>0?(grandTotalServiceable/grandTotalActual)*100:0;
+        document.getElementById('grand-total-required').textContent=grandTotalRequired.toLocaleString();
+        document.getElementById('grand-total-actual').textContent=grandTotalActual.toLocaleString();
+        document.getElementById('grand-total-serviceable').textContent=grandTotalServiceable.toLocaleString();
+        document.getElementById('overall-readiness-percent').textContent=limitTo100(readiness).toFixed(2)+'%';
+        INVENTORY_IDS.forEach((id,i)=>{ document.getElementById(id).textContent=categoryInventories[i].toLocaleString(); });
+        const readinessBox=document.getElementById('overall-readiness-box');
+        const rv=limitTo100(readiness);
+        const summVal=readinessBox.querySelector('.summary-value');
+        if (rv>=80) { summVal.style.color='#4ade80'; }
+        else if (rv>=60) { summVal.style.color='#fbbf24'; }
+        else { summVal.style.color='#f87171'; }
+    } catch(err) { console.error('Aggregation Error:',err); }
+};
 
 window.computeAllRatings = () => {
-    computeRatingsForTable("toe-body", "toe-mission-essential", "toe-secondary-essential", "toe-total-essential");
-    computeRatingsForTable("mrr-body", "mrr-mission-essential", "mrr-secondary-essential", "mrr-total-essential");
+    const toeTotal = computeRatingsForTable("toe-body","toe-mission-essential","toe-secondary-essential","toe-total-essential");
+    const mrrTotal = computeRatingsForTable("mrr-body","mrr-mission-essential","mrr-secondary-essential","mrr-total-essential");
+    updateRedconScale('toe-redcon-scale','toe-redcon-code','toe-banner-pct', toeTotal);
+    updateRedconScale('mrr-redcon-scale','mrr-redcon-code','mrr-banner-pct', mrrTotal);
 };
 
 function getTableData(tbodyId) {
-    const tbody = document.getElementById(tbodyId);
-    const rows = tbody.querySelectorAll("tr");
-    const data = [];
-    rows.forEach(row => {
-        const inputs = row.querySelectorAll("input");
+    const tbody=document.getElementById(tbodyId);
+    const data=[];
+    tbody.querySelectorAll("tr").forEach(row=>{
+        const inputs=row.querySelectorAll("input");
         if(inputs.length===2) data.push([inputs[0].value, inputs[1].value]);
     });
     return data;
 }
 
 function buildPayload() {
-    const getBadgeValue = (id) => {
-        const el = document.getElementById(id).querySelector(".status-badge");
-        if (el) {
-            const text = el.textContent.replace('%', '');
-            return text === "N/A" ? "" : text;
-        }
+    const getBadgeValue=(id)=>{
+        const el=document.getElementById(id).querySelector(".status-badge");
+        if(el){const text=el.textContent.replace('%','');return text==="N/A"?"":text;}
         return "";
     };
     return {
         toe: getTableData("toe-body"),
         mrr: getTableData("mrr-body"),
         computed: {
-            toe: { mission: document.getElementById("toe-mission-essential").textContent || "", secondary: document.getElementById("toe-secondary-essential").textContent || "", total: getBadgeValue("toe-total-essential") },
-            mrr: { mission: document.getElementById("mrr-mission-essential").textContent || "", secondary: document.getElementById("mrr-secondary-essential").textContent || "", total: getBadgeValue("mrr-total-essential") }
+            toe:{mission:document.getElementById("toe-mission-essential").textContent||"",secondary:document.getElementById("toe-secondary-essential").textContent||"",total:getBadgeValue("toe-total-essential")},
+            mrr:{mission:document.getElementById("mrr-mission-essential").textContent||"",secondary:document.getElementById("mrr-secondary-essential").textContent||"",total:getBadgeValue("mrr-total-essential")}
         },
         updated_at: new Date().toISOString()
     };
 }
 
 function populateTable(tbodyId, data) {
-    const rows = document.getElementById(tbodyId).querySelectorAll("tr");
-    let inputRowIndex = 0;
-    rows.forEach((row) => {
-        const inputs = row.querySelectorAll("input");
-        if (inputs.length === 2) {
-            if(data && data[inputRowIndex]) {
-                inputs[0].value = data[inputRowIndex][0];
-                inputs[1].value = data[inputRowIndex][1];
-            } else {
-                inputs[0].value = ""; inputs[1].value = "";
-            }
+    const rows=document.getElementById(tbodyId).querySelectorAll("tr");
+    let inputRowIndex=0;
+    rows.forEach(row=>{
+        const inputs=row.querySelectorAll("input");
+        if(inputs.length===2){
+            if(data&&data[inputRowIndex]){inputs[0].value=data[inputRowIndex][0];inputs[1].value=data[inputRowIndex][1];}
+            else{inputs[0].value="";inputs[1].value="";}
             inputRowIndex++;
         }
     });
 }
 
-function showMessageModal(title, message, isError = false) {
-    if (isError) { console.error(`${title}: ${message}`); } else { console.log(`${title}: ${message}`); }
-    const statusEl = document.getElementById("statusMsg");
-    statusEl.textContent = `${title}: ${message}`;
-    statusEl.style.color = isError ? '#ef4444' : '#10b981';
-    setTimeout(() => {
-        statusEl.textContent = "Ready. Select an Office to load or start a new rating.";
-        statusEl.style.color = '#6b7280';
-    }, 4000);
+function showMessageModal(title, message, isError=false) {
+    if(isError){console.error(`${title}: ${message}`);}else{console.log(`${title}: ${message}`);}
+    const statusEl=document.getElementById("statusMsg");
+    statusEl.textContent=`${title}: ${message}`;
+    statusEl.style.color=isError?'#f87171':'#4ade80';
+    setTimeout(()=>{statusEl.textContent="Ready. Select an Office to load or start a new rating.";statusEl.style.color='';},4000);
 }
 
 async function updateOfficeData() {
-    const office = document.getElementById("office-select").value;
-    const statusEl = document.getElementById("statusMsg");
-    if(!office) { showMessageModal("Error", "Select an office first.", true); return; }
+    const office=document.getElementById("office-select").value;
+    if(!office){showMessageModal("Error","Select an office first.",true);return;}
     computeAllRatings();
-    const payload = buildPayload();
+    const payload=buildPayload();
     try {
-        statusEl.textContent = "Saving..."; statusEl.style.color = '#0b1a3a';
-        const { data, error } = await supabasePNJRRS.from(TABLE).upsert([{ office: office, payload: payload }], { onConflict: ['office'] }).select();
-        if (error) throw error;
-        showMessageModal("Success", `Data saved for ${office}`);
+        document.getElementById("statusMsg").textContent="Saving...";
+        const {data,error}=await supabasePNJRRS.from(TABLE).upsert([{office,payload}],{onConflict:['office']}).select();
+        if(error) throw error;
+        showMessageModal("Success",`Data saved for ${office}`);
         loadAggregatedDashboardData();
-    } catch (err) {
-        showMessageModal("Save Failed", `Failed to save data for ${office}. Check console.`, true);
+    } catch(err) {
+        showMessageModal("Save Failed",`Failed to save data for ${office}.`,true);
     }
 }
 
 async function loadOfficeData() {
-    const office = document.getElementById("office-select").value;
-    const statusEl = document.getElementById("statusMsg");
-    document.getElementById("current-office-name").textContent = office || "N/A";
-    document.getElementById("current-office-name-mrr").textContent = office || "N/A";
-    if(!office) {
-        populateTable("toe-body", []); populateTable("mrr-body", []); computeAllRatings(); return;
-    }
+    const office=document.getElementById("office-select").value;
+    document.getElementById("current-office-name").textContent=office||"N/A";
+    document.getElementById("current-office-name-mrr").textContent=office||"N/A";
+    // Update UNIT labels on table cards
+    document.querySelectorAll('.table-card-unit').forEach(el=>{ el.textContent=office?`UNIT: ${office}`:'UNIT: —'; });
+    if(!office){populateTable("toe-body",[]);populateTable("mrr-body",[]);computeAllRatings();return;}
     try {
-        statusEl.textContent = "Loading..."; statusEl.style.color = '#f59e0b';
-        const { data, error } = await supabasePNJRRS.from(TABLE).select("payload").eq("office", office).single();
-        
-        if (error) {
-            if (error.code === 'PGRST116') {
-                console.warn(`No saved data found for ${office}.`);
-                populateTable("toe-body", []); populateTable("mrr-body", []); computeAllRatings();
-                showMessageModal("Info", `No saved data found for ${office}.`);
-                return;
-            }
+        document.getElementById("statusMsg").textContent="Loading...";
+        const {data,error}=await supabasePNJRRS.from(TABLE).select("payload").eq("office",office).single();
+        if(error){
+            if(error.code==='PGRST116'){populateTable("toe-body",[]);populateTable("mrr-body",[]);computeAllRatings();showMessageModal("Info",`No saved data found for ${office}.`);return;}
             throw error;
         }
-
-        if (data && data.payload) {
-            const payload = data.payload;
-            populateTable("toe-body", payload.toe || []);
-            populateTable("mrr-body", payload.mrr || []);
-            if (payload.computed) {
-                document.getElementById("toe-mission-essential").textContent = payload.computed.toe.mission || "0.00";
-                document.getElementById("toe-secondary-essential").textContent = payload.computed.toe.secondary || "0.00";
-                document.getElementById("mrr-mission-essential").textContent = payload.computed.mrr.mission || "0.00";
-                document.getElementById("mrr-secondary-essential").textContent = payload.computed.mrr.secondary || "0.00";
+        if(data&&data.payload){
+            const payload=data.payload;
+            populateTable("toe-body",payload.toe||[]);
+            populateTable("mrr-body",payload.mrr||[]);
+            if(payload.computed){
+                document.getElementById("toe-mission-essential").textContent=payload.computed.toe.mission||"0.00";
+                document.getElementById("toe-secondary-essential").textContent=payload.computed.toe.secondary||"0.00";
+                document.getElementById("mrr-mission-essential").textContent=payload.computed.mrr.mission||"0.00";
+                document.getElementById("mrr-secondary-essential").textContent=payload.computed.mrr.secondary||"0.00";
                 computeAllRatings();
-                const toeTotal = parseFloat(payload.computed.toe.total);
-                const mrrTotal = parseFloat(payload.computed.mrr.total);
-                if (!isNaN(toeTotal) && toeTotal > 0) applyStatusBadge("toe-total-essential", toeTotal);
-                if (!isNaN(mrrTotal) && mrrTotal > 0) applyStatusBadge("mrr-total-essential", mrrTotal);
+                const toeTotal=parseFloat(payload.computed.toe.total);
+                const mrrTotal=parseFloat(payload.computed.mrr.total);
+                if(!isNaN(toeTotal)&&toeTotal>0){applyStatusBadge("toe-total-essential",toeTotal);updateRedconScale('toe-redcon-scale','toe-redcon-code','toe-banner-pct',toeTotal);}
+                if(!isNaN(mrrTotal)&&mrrTotal>0){applyStatusBadge("mrr-total-essential",mrrTotal);updateRedconScale('mrr-redcon-scale','mrr-redcon-code','mrr-banner-pct',mrrTotal);}
             } else { computeAllRatings(); }
-            showMessageModal("Loaded", `Data loaded for ${office}`);
+            showMessageModal("Loaded",`Data loaded for ${office}`);
         } else {
-            populateTable("toe-body", []); populateTable("mrr-body", []); computeAllRatings();
-            showMessageModal("Info", `No saved data found for ${office}.`);
+            populateTable("toe-body",[]);populateTable("mrr-body",[]);computeAllRatings();
+            showMessageModal("Info",`No saved data found for ${office}.`);
         }
-    } catch (err) {
-        console.error("CRITICAL Load Failure:", err);
-        showMessageModal("Load Failed", `Failed to load data for ${office}. Check console for details.`, true);
+    } catch(err) {
+        console.error("Load Failure:",err);
+        showMessageModal("Load Failed",`Failed to load data for ${office}.`,true);
     }
 }
 
@@ -1253,5 +1749,3 @@ window.onload = () => { computeAllRatings(); loadAggregatedDashboardData(); };
 </script>
 </body>
 </html>
-
-
