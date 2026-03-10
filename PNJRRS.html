@@ -437,7 +437,7 @@ const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
 const TABLE = "office_performance";
 const supabasePNJRRS = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const ALL_OFFICES = ['FOIC','VCOM','CNS','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','N11','HSG','NIOFC','CMCPO','CRDO','CNLE','NSPAO','NPAO','ONSSSM','NJAG','TNCH','TCSN','TCNN','TCDSN','TNCE','PNOLOAC','TNIA','NSO','NASO','TNIG','OESPA','TNPM','OTNA','PNGADC','PNREO','PNMO','ONIA','FMWC','PNMCMC'];
+const ALL_OFFICES = ['FOIC','VCOM','CNS','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','N11','HSG','NIOFC','CMCPO','CRDO','CNLE','NSPAO','NPAO','ONSSSM','TNJA','TNCH','TCSN','TCNN','TCDSN','TNCE','PNOLOAC','TNIA','NSO','NASO','TNIG','OESPA','TNPM','OTNA','PNGADC','PNREO','PNMO','ONIA','FMWC','PNMCMC'];
 const CATEGORIES = ['MOBILITY','FIREPOWER','COMMUNICATION','MEDICAL','DENTAL','QUARTERMASTER'];
 const CATEGORY_ICONS = ['🚗','🔫','📡','⚕️','🦷','🪖'];
 const INVENTORY_IDS = ['inventory-mobility','inventory-firepower','inventory-communication','inventory-medical','inventory-dental','inventory-quartermaster'];
@@ -637,3 +637,4 @@ window.onload = () => { computeAllRatings(); loadAggregatedDashboardData(); };
 </script>
 </body>
 </html>
+
