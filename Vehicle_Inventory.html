@@ -8,7 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0f172a;
+            --navy:   #2D3580;
+            --royal:  #2b4acb;
+            --purple: #6248C8;
+            --primary: #2D3580;
             --accent: #ca8a04;
             --bg-body: #f1f5f9;
             --card-bg: #ffffff;
@@ -32,7 +35,7 @@
         /* --- Sidebar --- */
         .sidebar {
             width: var(--sidebar-w);
-            background: var(--primary);
+            background: linear-gradient(175deg, var(--navy) 0%, var(--royal) 50%, var(--purple) 100%);
             color: white;
             padding: 2rem 1.2rem;
             position: fixed;
@@ -63,15 +66,23 @@
             gap: 15px;
             transition: all 0.2s;
             font-weight: 600;
-            color: #94a3b8;
+            color: rgba(255,255,255,0.7);
             text-decoration: none;
             font-size: 1.1rem;
         }
 
         .nav-link:hover, .nav-link.active {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.18);
             color: white;
         }
+
+        .nav-link.active {
+            background: white;
+            color: var(--royal);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        }
+
+        .nav-link.active i { color: var(--royal); }
 
         /* --- Main Content --- */
         .content {
@@ -87,7 +98,7 @@
             padding-bottom: 1.5rem;
         }
 
-        h1 { font-size: 2.4rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; }
+        h1 { font-size: 2.4rem; font-weight: 800; color: var(--navy); margin-bottom: 0.5rem; }
         .subtitle { color: var(--text-muted); font-weight: 600; font-size: 1.1rem; }
 
         /* --- Stats Layout --- */
@@ -110,7 +121,7 @@
         }
 
         .stat-label { font-size: 1rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-        .stat-value { font-size: 3rem; font-weight: 800; color: var(--primary); }
+        .stat-value { font-size: 3rem; font-weight: 800; color: var(--navy); }
 
         /* --- Dashboard Grid --- */
         .main-grid {
@@ -154,12 +165,12 @@
             font-weight: 500;
         }
 
-        .field:focus { border-color: var(--accent); outline: none; }
+        .field:focus { border-color: var(--royal); outline: none; }
 
         .btn-submit {
             width: 100%;
             padding: 1.2rem;
-            background: var(--primary);
+            background: var(--navy);
             color: white;
             border: none;
             border-radius: 12px;
@@ -169,10 +180,11 @@
             transition: transform 0.1s;
         }
 
+        .btn-submit:hover { background: var(--royal); }
         .btn-submit:active { transform: scale(0.98); }
 
         .btn-edit {
-            background: #8b5cf6;
+            background: var(--purple);
             color: white;
             border: none;
             padding: 0.5rem 1rem;
@@ -184,7 +196,7 @@
         }
 
         .btn-edit:hover {
-            background: #7c3aed;
+            background: var(--royal);
             transform: translateY(-2px);
         }
 
@@ -207,7 +219,7 @@
         }
 
         .btn-remove-duplicates {
-            background: #f59e0b;
+            background: var(--royal);
             color: white;
             border: none;
             padding: 0.8rem 1.5rem;
@@ -220,7 +232,7 @@
         }
 
         .btn-remove-duplicates:hover {
-            background: #d97706;
+            background: var(--navy);
         }
 
         /* --- Table --- */
@@ -235,12 +247,12 @@
         .table-wrap { width: 100%; overflow-x: auto; padding: 1.5rem; }
         table { width: 100%; border-collapse: collapse; }
         th { 
-            background: #f8fafc; 
+            background: var(--navy); 
+            color: white;
             text-align: left; 
             padding: 1.2rem; 
             font-size: 0.9rem; 
             text-transform: uppercase; 
-            color: var(--text-muted); 
             border-bottom: 2px solid var(--border-color);
             white-space: nowrap;
         }
@@ -253,20 +265,19 @@
         
         tr:hover td { background-color: #fdfdfd; }
         
-        .office-cell { font-weight: 800; color: var(--primary); }
+        .office-cell { font-weight: 800; color: var(--navy); }
         .plate-cell { font-family: 'Courier New', Courier, monospace; font-weight: 700; color: #1e293b; }
 
-        /* OFFICE GROUPING HEADER */
         .office-group-row {
             background: #e2e8f0 !important;
             font-weight: 800;
-            color: #0f172a;
+            color: var(--navy);
             text-transform: uppercase;
             letter-spacing: 1px;
             pointer-events: none;
         }
 
-        /* --- Print Optimization --- */
+        /* --- Print --- */
         @media print {
             .sidebar, .stats-grid, .card:first-child, .btn-remove-duplicates, .search-input, .btn-edit, .badge-print-hide { display: none !important; }
             .content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
@@ -304,8 +315,8 @@
                 <div><div class="stat-label">Offices Units</div><div class="stat-value" id="statOffices">0</div></div>
                 <i class="fas fa-building fa-2x" style="color: var(--border-color)"></i>
             </div>
-            <div class="stat-card badge-print-hide" style="background: var(--accent); color: white; cursor: pointer;" onclick="window.print()">
-                <div><div class="stat-label" style="color: white">Reports</div><div class="stat-value" style="color: white; font-size: 1.5rem;">GENERATE PDF</div></div>
+            <div class="stat-card badge-print-hide" style="background: var(--royal); color: white; cursor: pointer;" onclick="window.print()">
+                <div><div class="stat-label" style="color: rgba(255,255,255,0.8)">Reports</div><div class="stat-value" style="color: white; font-size: 1.5rem;">GENERATE PDF</div></div>
                 <i class="fas fa-file-pdf fa-2x"></i>
             </div>
         </section>
@@ -334,38 +345,16 @@
                             <option value="ONIA">ONIA</option><option value="FMWC">FMWC</option><option value="PNMCMC">PNMCMC</option>
                         </select>
                     </div>
-                    <div class="group">
-                        <label>Vehicle Model / Type</label>
-                        <input type="text" id="vehicle_type" class="field" placeholder="e.g., M35 Truck">
-                    </div>
-                    <div class="group">
-                        <label>Plate Number</label>
-                        <input type="text" id="plate_number" class="field" placeholder="SJN-123">
-                    </div>
+                    <div class="group"><label>Vehicle Model / Type</label><input type="text" id="vehicle_type" class="field" placeholder="e.g., M35 Truck"></div>
+                    <div class="group"><label>Plate Number</label><input type="text" id="plate_number" class="field" placeholder="SJN-123"></div>
                     <div style="display: flex; gap: 15px;">
-                        <div class="group" style="flex:1">
-                            <label>Engine No.</label>
-                            <input type="text" id="engine_number" class="field">
-                        </div>
-                        <div class="group" style="flex:1">
-                            <label>Chassis No.</label>
-                            <input type="text" id="chassis_number" class="field">
-                        </div>
+                        <div class="group" style="flex:1"><label>Engine No.</label><input type="text" id="engine_number" class="field"></div>
+                        <div class="group" style="flex:1"><label>Chassis No.</label><input type="text" id="chassis_number" class="field"></div>
                     </div>
-                    <div class="group">
-                        <label>Year Model</label>
-                        <input type="number" id="year" class="field" placeholder="e.g., 2020" min="1900" max="2099">
-                    </div>
-                    <div class="group">
-                        <label>Status / Remarks</label>
-                        <input type="text" id="remarks" class="field">
-                    </div>
-                    <div class="group">
-                        <label>Registration Date</label>
-                        <input type="date" id="date_of_registration" class="field">
-                    </div>
+                    <div class="group"><label>Status / Remarks</label><input type="text" id="remarks" class="field"></div>
+                    <div class="group"><label>Registration Date</label><input type="date" id="date_of_registration" class="field"></div>
                     <button class="btn-submit" id="submitBtn" onclick="addData()">REGISTER ASSET</button>
-                    <button class="btn-submit" id="updateBtn" onclick="updateData()" style="display:none; background: #8b5cf6;">UPDATE ASSET</button>
+                    <button class="btn-submit" id="updateBtn" onclick="updateData()" style="display:none; background: var(--purple);">UPDATE ASSET</button>
                     <button class="btn-submit" onclick="cancelEdit()" id="cancelBtn" style="display:none; background: #6b7280; margin-top: 0.5rem;">CANCEL</button>
                 </div>
             </div>
@@ -375,30 +364,19 @@
                     Master Fleet Record
                     <div>
                         <input type="text" id="searchInput" class="search-input" placeholder="Quick search records..." onkeyup="filterTable()">
-                        <button class="btn-remove-duplicates" onclick="removeDuplicates()">
-                            <i class="fas fa-broom"></i> Remove Duplicates
-                        </button>
-                        <button class="btn-remove-duplicates" style="background: #ef4444;" onclick="deleteSelected()">
-                            <i class="fas fa-trash"></i> Delete Selected
-                        </button>
+                        <button class="btn-remove-duplicates" onclick="removeDuplicates()"><i class="fas fa-broom"></i> Remove Duplicates</button>
+                        <button class="btn-remove-duplicates" style="background: #ef4444;" onclick="deleteSelected()"><i class="fas fa-trash"></i> Delete Selected</button>
                     </div>
                 </div>
                 <div class="table-wrap">
                     <table id="mainTable">
                         <thead>
                             <tr>
-                                <th class="badge-print-hide" style="width: 50px;">
-                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
-                                </th>
+                                <th class="badge-print-hide" style="width: 50px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
                                 <th style="width: 50px;">#</th>
-                                <th>Office</th>
-                                <th>Vehicle Model</th>
-                                <th>Plate ID</th>
-                                <th>Engine No.</th>
-                                <th>Chassis No.</th>
-                                <th>Remarks</th>
-                                <th>Reg. Date</th>
-                                <th class="badge-print-hide" style="width: 120px;">Actions</th>
+                                <th>Office</th><th>Vehicle Model</th><th>Plate ID</th>
+                                <th>Engine No.</th><th>Chassis No.</th><th>Remarks</th>
+                                <th>Reg. Date</th><th class="badge-print-hide" style="width: 120px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="vehicleTable"></tbody>
@@ -416,22 +394,12 @@
         const db = window.supabase.createClient(SB_URL, SB_KEY);
 
         async function refreshData() {
-            const { data, error } = await db.from('vehicles')
-                .select('*')
-                .order('office', { ascending: true })
-                .order('vehicle_type', { ascending: true });
-
-            if (error) {
-                console.error('Error fetching data:', error);
-                return;
-            }
-
+            const { data, error } = await db.from('vehicles').select('*').order('office', { ascending: true }).order('vehicle_type', { ascending: true });
+            if (error) return console.error(error);
             const tbody = document.getElementById("vehicleTable");
             tbody.innerHTML = "";
-            
             let currentOffice = "";
             let counter = 1;
-
             data.forEach((v) => {
                 if (v.office !== currentOffice) {
                     currentOffice = v.office;
@@ -439,13 +407,9 @@
                     groupRow.className = "office-group-row";
                     groupRow.innerHTML = `<td colspan="10" style="padding: 10px 20px;">OFFICE: ${currentOffice}</td>`;
                 }
-
                 const row = tbody.insertRow();
-                
                 row.innerHTML = `
-                    <td class="badge-print-hide">
-                        <input type="checkbox" class="row-checkbox" data-id="${v.id}">
-                    </td>
+                    <td class="badge-print-hide"><input type="checkbox" class="row-checkbox" data-id="${v.id}"></td>
                     <td style="font-weight: 700; color: #94a3b8;">${counter++}</td>
                     <td class="office-cell">${v.office || ''}</td>
                     <td>${v.vehicle_type || ''}</td>
@@ -454,14 +418,9 @@
                     <td style="font-size: 0.95rem; color: #64748b;">${v.chassis_number || '---'}</td>
                     <td style="font-size: 0.95rem; color: #64748b;">${v.remarks || ''}</td>
                     <td style="font-size: 0.95rem; color: #64748b;">${v.date_of_registration || '---'}</td>
-                    <td class="badge-print-hide">
-                        <button class="btn-edit" onclick="editRecord(${v.id})">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                    </td>
+                    <td class="badge-print-hide"><button class="btn-edit" onclick="editRecord(${v.id})"><i class="fas fa-edit"></i> Edit</button></td>
                 `;
             });
-            
             document.getElementById('statTotal').innerText = data.length;
             document.getElementById('statOffices').innerText = [...new Set(data.map(v => v.office))].length;
         }
@@ -469,74 +428,30 @@
         function filterTable() {
             const filter = document.getElementById('searchInput').value.toUpperCase();
             const rows = document.getElementById('vehicleTable').getElementsByTagName('tr');
-
             for (let i = 0; i < rows.length; i++) {
-                if(rows[i].classList.contains('office-group-row')) {
-                    rows[i].style.display = filter === "" ? "" : "none";
-                    continue;
-                }
-
+                if(rows[i].classList.contains('office-group-row')) { rows[i].style.display = filter === "" ? "" : "none"; continue; }
                 const text = rows[i].textContent.toUpperCase();
                 rows[i].style.display = text.indexOf(filter) > -1 ? "" : "none";
             }
         }
 
         async function addData() {
-            try {
-                // Validate required fields
-                const office = document.getElementById('office').value;
-                const vehicleType = document.getElementById('vehicle_type').value.trim();
-                const plateNumber = document.getElementById('plate_number').value.trim();
-                const year = document.getElementById('year').value.trim();
-                
-                if (!vehicleType || !plateNumber || !year) {
-                    alert('Please fill in Vehicle Type, Plate Number, and Year');
-                    return;
-                }
-
-                const payload = {
-                    office: office,
-                    vehicle_type: vehicleType,
-                    plate_number: plateNumber,
-                    year: parseInt(year),
-                    engine_number: document.getElementById('engine_number').value.trim(),
-                    chassis_number: document.getElementById('chassis_number').value.trim(),
-                    remarks: document.getElementById('remarks').value.trim(),
-                    date_of_registration: document.getElementById('date_of_registration').value || null
-                };
-
-                const { data, error } = await db.from('vehicles').insert([payload]);
-                
-                if (error) {
-                    console.error('Error adding record:', error);
-                    alert('Error adding record: ' + error.message);
-                    return;
-                }
-
-                clearForm();
-                await refreshData();
-                alert('Asset registered successfully!');
-                
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                alert('An unexpected error occurred. Please try again.');
-            }
+            const payload = { office: document.getElementById('office').value, vehicle_type: document.getElementById('vehicle_type').value, plate_number: document.getElementById('plate_number').value, engine_number: document.getElementById('engine_number').value, chassis_number: document.getElementById('chassis_number').value, remarks: document.getElementById('remarks').value, date_of_registration: document.getElementById('date_of_registration').value || null };
+            const { error } = await db.from('vehicles').insert([payload]);
+            if(!error) { clearForm(); refreshData(); }
         }
 
         async function editRecord(id) {
             const { data, error } = await db.from('vehicles').select('*').eq('id', id).single();
             if (error) return;
-
             document.getElementById('edit_id').value = data.id;
             document.getElementById('office').value = data.office || '';
             document.getElementById('vehicle_type').value = data.vehicle_type || '';
             document.getElementById('plate_number').value = data.plate_number || '';
-            document.getElementById('year').value = data.year || '';
             document.getElementById('engine_number').value = data.engine_number || '';
             document.getElementById('chassis_number').value = data.chassis_number || '';
             document.getElementById('remarks').value = data.remarks || '';
             document.getElementById('date_of_registration').value = data.date_of_registration || '';
-
             document.getElementById('submitBtn').style.display = 'none';
             document.getElementById('updateBtn').style.display = 'block';
             document.getElementById('cancelBtn').style.display = 'block';
@@ -545,101 +460,48 @@
 
         async function updateData() {
             const id = document.getElementById('edit_id').value;
-            const payload = {
-                office: document.getElementById('office').value,
-                vehicle_type: document.getElementById('vehicle_type').value,
-                plate_number: document.getElementById('plate_number').value,
-                year: parseInt(document.getElementById('year').value),
-                engine_number: document.getElementById('engine_number').value,
-                chassis_number: document.getElementById('chassis_number').value,
-                remarks: document.getElementById('remarks').value,
-                date_of_registration: document.getElementById('date_of_registration').value || null
-            };
-
+            const payload = { office: document.getElementById('office').value, vehicle_type: document.getElementById('vehicle_type').value, plate_number: document.getElementById('plate_number').value, engine_number: document.getElementById('engine_number').value, chassis_number: document.getElementById('chassis_number').value, remarks: document.getElementById('remarks').value, date_of_registration: document.getElementById('date_of_registration').value || null };
             const { error } = await db.from('vehicles').update(payload).eq('id', id);
-            if(!error) { 
-                cancelEdit(); 
-                await refreshData();
-                alert('Asset updated successfully!');
-            }
+            if(!error) { cancelEdit(); refreshData(); }
         }
 
-        function toggleSelectAll() {
-            const checked = document.getElementById('selectAll').checked;
-            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked);
-        }
+        function toggleSelectAll() { const checked = document.getElementById('selectAll').checked; document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked); }
 
         async function deleteSelected() {
             const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.id));
             if (ids.length === 0) return alert('Select records first');
-            if (confirm(`Delete ${ids.length} records?`)) {
-                await db.from('vehicles').delete().in('id', ids);
-                await refreshData();
-            }
+            if (confirm(`Delete ${ids.length} records?`)) { await db.from('vehicles').delete().in('id', ids); refreshData(); }
         }
 
         async function removeDuplicates() {
             const { data } = await db.from('vehicles').select('*').order('id', { ascending: true });
-            const seen = new Set();
-            const dups = [];
-            data.forEach(v => {
-                const key = `${v.plate_number}`.toLowerCase().trim();
-                if (seen.has(key)) dups.push(v.id);
-                else seen.add(key);
-            });
-            if (dups.length > 0 && confirm(`Delete ${dups.length} duplicates?`)) {
-                await db.from('vehicles').delete().in('id', dups);
-                await refreshData();
-            } else { alert('No duplicates found'); }
+            const seen = new Set(); const dups = [];
+            data.forEach(v => { const key = `${v.plate_number}`.toLowerCase().trim(); if (seen.has(key)) dups.push(v.id); else seen.add(key); });
+            if (dups.length > 0 && confirm(`Delete ${dups.length} duplicates?`)) { await db.from('vehicles').delete().in('id', dups); refreshData(); }
+            else { alert('No duplicates found'); }
         }
 
-        function cancelEdit() {
-            clearForm();
-            document.getElementById('submitBtn').style.display = 'block';
-            document.getElementById('updateBtn').style.display = 'none';
-            document.getElementById('cancelBtn').style.display = 'none';
-        }
-
-        function clearForm() {
-            document.getElementById('edit_id').value = '';
-            ['vehicle_type', 'plate_number', 'year', 'engine_number', 'chassis_number', 'remarks', 'date_of_registration'].forEach(id => {
-                document.getElementById(id).value = "";
-            });
-            document.getElementById('office').value = 'FOIC';
-        }
+        function cancelEdit() { clearForm(); document.getElementById('submitBtn').style.display = 'block'; document.getElementById('updateBtn').style.display = 'none'; document.getElementById('cancelBtn').style.display = 'none'; }
+        function clearForm() { ['vehicle_type', 'plate_number', 'engine_number', 'chassis_number', 'remarks', 'date_of_registration'].forEach(id => { document.getElementById(id).value = ""; }); }
 
         function downloadTemplate() {
-            const template = [['Office', 'Vehicle Type', 'Plate Number', 'Year', 'Engine Number', 'Chassis Number', 'Remarks']];
-            const ws = XLSX.utils.aoa_to_sheet(template);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Vehicles');
-            XLSX.writeFile(wb, 'PN_Fleet_Template.xlsx');
+            const template = [['Office', 'Vehicle Type', 'Plate Number', 'Engine Number', 'Chassis Number', 'Remarks']];
+            const ws = XLSX.utils.aoa_to_sheet(template); const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Vehicles'); XLSX.writeFile(wb, 'PN_Fleet_Template.xlsx');
         }
 
         async function importExcel(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
+            const file = event.target.files[0]; const reader = new FileReader();
             reader.onload = async function(e) {
                 const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                 const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                const vehicles = rows.map(r => ({
-                    office: (r['Office'] || '').toString().toUpperCase(),
-                    vehicle_type: (r['Vehicle Type'] || r['Vehicle Model'] || '').toString(),
-                    plate_number: (r['Plate Number'] || r['Plate ID'] || '').toString(),
-                    engine_number: (r['Engine Number'] || '').toString(),
-                    chassis_number: (r['Chassis Number'] || '').toString(),
-                    remarks: (r['Remarks'] || '').toString()
-                }));
-                await db.from('vehicles').insert(vehicles);
-                await refreshData();
-                alert('Excel data imported successfully!');
+                const vehicles = rows.map(r => ({ office: (r['Office'] || '').toString().toUpperCase(), vehicle_type: (r['Vehicle Type'] || r['Vehicle Model'] || '').toString(), plate_number: (r['Plate Number'] || r['Plate ID'] || '').toString(), engine_number: (r['Engine Number'] || '').toString(), chassis_number: (r['Chassis Number'] || '').toString(), remarks: (r['Remarks'] || '').toString() }));
+                await db.from('vehicles').insert(vehicles); refreshData();
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // Initial Load
         refreshData();
     </script>
 </body>
 </html>
-
