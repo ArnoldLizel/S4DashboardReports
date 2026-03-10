@@ -11,8 +11,9 @@
 
     <style>
         :root {
-            --navy: #0f172a;
-            --indigo: #4338ca;
+            --navy: #2D3580;
+            --royal: #2b4acb;
+            --purple: #6248C8;
             --slate-200: #e2e8f0;
             --slate-700: #334155;
             --glass: rgba(255, 255, 255, 0.98);
@@ -32,7 +33,7 @@
         }
 
         .main-wrapper {
-            max-width: 1750px; /* Wider container for more horizontal breathing room */
+            max-width: 1750px;
             margin: 0 auto;
             background: var(--glass);
             border-radius: 12px;
@@ -50,8 +51,8 @@
         .summary-card { padding: 1.5rem; border-radius: 8px; color: white; }
         .summary-card .amount { font-size: 1.6rem; font-weight: 800; margin-top: 5px; }
         .card-total { background: var(--navy); }
-        .card-svp { background: #2563eb; }
-        .card-shop { background: #059669; }
+        .card-svp { background: var(--royal); }
+        .card-shop { background: var(--purple); }
         .card-nego { background: #d97706; }
 
         /* --- ACTION BAR --- */
@@ -76,7 +77,7 @@
             font-size: 0.95rem;
         }
 
-        /* --- TABLE FIXES FOR OVERLAP --- */
+        /* --- TABLE FIXES --- */
         .table-container { 
             overflow-x: auto; 
             border: 1px solid var(--slate-200);
@@ -87,8 +88,8 @@
         table { 
             width: 100%; 
             border-collapse: collapse; 
-            table-layout: auto; /* Auto layout prevents fixed-width clipping */
-            min-width: 1200px; /* Ensures the table doesn't crush on small screens */
+            table-layout: auto;
+            min-width: 1200px;
         }
         
         thead th {
@@ -102,14 +103,11 @@
             text-align: left;
         }
 
-        /* FIXED WIDTH COLUMNS */
         .col-id { width: 50px; text-align: center; }
         .col-date { width: 160px; }
         .col-mode { width: 220px; }
         .col-money { width: 150px; }
         .col-action { width: 60px; text-align: center; }
-
-        /* FLUID COLUMNS (Will wrap text) */
         .col-desc { min-width: 350px; }
         .col-remarks { min-width: 300px; }
 
@@ -119,11 +117,10 @@
             vertical-align: top; 
             font-size: 0.95rem;
             line-height: 1.5;
-            word-wrap: break-word; /* Allows long words to break */
-            white-space: normal;  /* Essential for wrapping */
+            word-wrap: break-word;
+            white-space: normal;
         }
 
-        /* Editable Cells Enhancement */
         td[contenteditable="true"] {
             background: #fafbfc;
             border: 1px solid transparent;
@@ -134,9 +131,9 @@
         }
         td[contenteditable="true"]:focus { 
             background: white; 
-            border-color: var(--indigo); 
+            border-color: var(--royal); 
             outline: none; 
-            box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
+            box-shadow: 0 0 0 3px rgba(43, 74, 203, 0.1);
         }
 
         select, input[type="date"] {
@@ -153,7 +150,7 @@
             cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; transition: 0.2s;
         }
         .btn-primary { background: var(--navy); color: white; }
-        .btn-primary:hover { background: #000; }
+        .btn-primary:hover { background: var(--royal); }
         .btn-outline { background: white; border: 1px solid var(--slate-200); color: var(--slate-700); }
         .btn-danger { color: #be123c; background: #fff1f2; width: 35px; height: 35px; justify-content: center; border-radius: 6px; cursor: pointer; border: none; }
         .btn-danger:hover { background: #ffe4e6; }
@@ -271,7 +268,7 @@
                     </select>
                 </td>
                 <td class="col-money" contenteditable="true" style="font-weight:700;">${row.abc || ""}</td>
-                <td class="col-money" contenteditable="true" style="color:var(--indigo); font-weight:700;">${row.bid_amount || ""}</td>
+                <td class="col-money" contenteditable="true" style="color:var(--purple); font-weight:700;">${row.bid_amount || ""}</td>
                 <td class="col-remarks" contenteditable="true">${row.remarks || ""}</td>
                 <td class="col-action">
                     <button class="btn-danger delete-btn" data-id="${row.id}"><i class="fas fa-trash"></i></button>
