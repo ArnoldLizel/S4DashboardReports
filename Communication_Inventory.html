@@ -12,9 +12,12 @@
 
     <style>
         :root {
+            --navy:   #2D3580;
+            --royal:  #2b4acb;
+            --purple: #6248C8;
             --sidebar-width: 300px;
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --bg-gradient: linear-gradient(135deg, #5c6bc0 0%, #311b92 100%);
+            --primary-gradient: linear-gradient(135deg, #2D3580 0%, #2b4acb 60%, #6248C8 100%);
+            --bg-gradient: linear-gradient(135deg, #2D3580 0%, #2b4acb 60%, #6248C8 100%);
             --accent-green: #2ecc71;
             --accent-orange: #e67e22;
             --text-dark: #2d3436;
@@ -27,7 +30,7 @@
         /* UI COMPONENTS */
         .sidebar { width: var(--sidebar-width); background: white; margin: 20px; border-radius: 15px; padding: 35px 25px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: sticky; top: 20px; height: calc(100vh - 40px); overflow-y: auto; }
         .brand { text-align: center; margin-bottom: 40px; }
-        .brand-icon { background: #764ba2; width: 70px; height: 70px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto 15px; }
+        .brand-icon { background: var(--purple); width: 70px; height: 70px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto 15px; }
         .brand h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; }
         .brand p { font-size: 1rem; color: var(--text-muted); font-weight: 500; }
         .section-label { font-size: 0.85rem; font-weight: 800; color: #b2bec3; text-transform: uppercase; margin: 25px 0 12px 5px; letter-spacing: 0.5px; }
@@ -46,11 +49,12 @@
         /* MAIN CONTENT */
         .main-content { flex: 1; margin: 20px 20px 20px 0; display: flex; flex-direction: column; min-width: 0; }
         .inventory-panel { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; height: 100%; }
-        .panel-header { background: linear-gradient(to right, #667eea, #764ba2); padding: 30px 40px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .panel-header { background: linear-gradient(to right, var(--navy), var(--royal)); padding: 30px 40px; color: white; display: flex; justify-content: space-between; align-items: center; }
         .panel-header h2 { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
         .panel-header p { font-size: 1.1rem; opacity: 0.9; }
         .toolbar { padding: 25px 40px; border-bottom: 2px solid #f1f2f6; }
-        .search-input { width: 100%; padding: 15px 15px 15px 50px; border: 2px solid #3498db; border-radius: 10px; outline: none; font-size: 1.05rem; font-weight: 500; }
+        .search-input { width: 100%; padding: 15px 15px 15px 50px; border: 2px solid var(--royal); border-radius: 10px; outline: none; font-size: 1.05rem; font-weight: 500; }
+        .search-input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(98,72,200,0.1); }
 
         /* TABLE */
         .data-container { padding: 0; overflow-y: auto; flex: 1; }
@@ -58,14 +62,14 @@
         .col-desc { width: 50%; }
         .col-qty { width: 16.66%; }
 
-        th { position: sticky; top: 0; background: #f8fafc; z-index: 10; padding: 18px 15px; text-align: center; font-size: 0.95rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); border-bottom: 3px solid #edf2f7; letter-spacing: 0.5px; }
+        th { position: sticky; top: 0; background: var(--navy); z-index: 10; padding: 18px 15px; text-align: center; font-size: 0.95rem; font-weight: 800; text-transform: uppercase; color: rgba(255,255,255,0.85); border-bottom: 3px solid var(--royal); letter-spacing: 0.5px; }
         th:first-child { text-align: left; padding-left: 40px; }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 1.05rem; }
         td:first-child { padding-left: 40px; font-weight: 600; font-size: 1.1rem; }
-        .category-row td { background: #f1f5f9 !important; color: #764ba2 !important; font-weight: 800; font-size: 1.15rem; padding: 20px 40px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .total-row td { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; font-weight: 800; font-size: 1.25rem; padding: 25px 40px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 3px solid #764ba2; }
+        .category-row td { background: #eff2ff !important; color: var(--royal) !important; font-weight: 800; font-size: 1.15rem; padding: 20px 40px; text-transform: uppercase; letter-spacing: 0.5px; border-left: 4px solid var(--purple); }
+        .total-row td { background: linear-gradient(135deg, var(--navy) 0%, var(--purple) 100%) !important; color: white !important; font-weight: 800; font-size: 1.25rem; padding: 25px 40px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 3px solid var(--navy); }
         .qty-input { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 8px; text-align: center; font-weight: 700; font-size: 1.1rem; transition: all 0.2s; }
-        .qty-input:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .qty-input:focus { border-color: var(--royal); outline: none; box-shadow: 0 0 0 3px rgba(43,74,203,0.12); }
         .qty-input.zero-value { background: #95a5a6 !important; color: white !important; border-color: #7f8c8d !important; }
         .qty-input.has-value { background: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; }
 
@@ -81,7 +85,7 @@
         .notification { position: fixed; top: 20px; right: 20px; padding: 20px 30px; border-radius: 10px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2000; font-weight: 600; animation: slideIn 0.3s ease; }
         .notification.success { border-left: 5px solid #2ecc71; }
         .notification.error { border-left: 5px solid #e74c3c; }
-        .notification.info { border-left: 5px solid #3498db; }
+        .notification.info { border-left: 5px solid var(--royal); }
         @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         /* IMPORT PREVIEW MODAL */
@@ -95,7 +99,6 @@
             body { background: white !important; display: block !important; }
             .sidebar, .no-print, .toolbar, .btn, .brand { display: none !important; }
             
-            /* Office Print Mode */
             body.printing-office .main-content { display: block !important; margin: 0 !important; width: 100% !important; }
             body.printing-office .inventory-panel { box-shadow: none !important; border: none !important; }
             body.printing-office .panel-header { background: white !important; color: black !important; border-bottom: 2px solid #000; }
@@ -103,20 +106,17 @@
             body.printing-office .panel-header p { font-size: 11pt !important; }
             body.printing-office .modal { display: none !important; }
 
-            /* Global Print Mode */
             body.printing-global .main-content { display: none !important; }
             body.printing-global .modal { display: block !important; position: static !important; background: white !important; padding: 0 !important; }
             body.printing-global .modal-content { height: auto !important; width: 100% !important; padding: 20px !important; box-shadow: none !important; }
 
             table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
-            th { background: #eee !important; border: 1px solid #000 !important; font-size: 11pt !important; color: black !important; padding: 10px !important; }
+            th { background: #2D3580 !important; border: 1px solid #000 !important; font-size: 11pt !important; color: white !important; padding: 10px !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
             td { border: 1px solid #000 !important; font-size: 11pt !important; color: black !important; padding: 8px !important; }
             td[style*="background"] { background: white !important; color: black !important; }
             td:first-child { font-size: 10pt !important; }
             .total-row td { background: #ddd !important; color: black !important; font-weight: bold !important; border: 2px solid #000 !important; }
             .signature-section { display: grid !important; }
-            
-            /* Hide input boxes, show text values */
             .qty-input { display: none !important; }
             .qty-input.zero-value, .qty-input.has-value { background: white !important; color: black !important; border-color: #000 !important; }
             .print-val { display: block !important; text-align: center; font-weight: bold; font-size: 11pt !important; }
@@ -188,7 +188,7 @@
     <div id="summaryModal" class="modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;" class="no-print">
-                <h2 style="color: #764ba2;">Global Consolidated Summary</h2>
+                <h2 style="color: var(--navy);">Global Consolidated Summary</h2>
                 <div style="gap: 12px; display: flex;">
                     <button class="btn btn-purple" onclick="printGlobalReport()" style="width:auto; padding: 12px 24px;"><i class="fas fa-print"></i> Print Report</button>
                     <button class="btn btn-outline" onclick="closeSummary()" style="width:auto; padding: 12px 24px;">Close</button>
@@ -201,7 +201,7 @@
 
     <div id="importModal" class="modal">
         <div class="modal-content">
-            <h2 style="color: #764ba2; margin-bottom: 20px;">Import Data Preview</h2>
+            <h2 style="color: var(--navy); margin-bottom: 20px;">Import Data Preview</h2>
             <div id="importPreviewArea" class="import-preview"></div>
             <div style="display: flex; gap: 12px; margin-top: 20px;">
                 <button class="btn btn-green" onclick="confirmImport()" style="flex: 1;"><i class="fas fa-check"></i> Confirm Import</button>
@@ -354,24 +354,20 @@
         fetchAllData();
     }
 
-    // ============= TEMPLATE DOWNLOAD =============
     function downloadTemplate() {
         const wb = XLSX.utils.book_new();
         const instructions = [
-            ['HPN & HSG COMMUNICATION - DATA IMPORT TEMPLATE'],
-            [''],
+            ['HPN & HSG COMMUNICATION - DATA IMPORT TEMPLATE'],[''],
             ['INSTRUCTIONS:'],
             ['1. Fill in the data for each office in the corresponding sheet'],
             ['2. Do not modify the "Item Description" column'],
             ['3. Enter numeric values only in TE 2019, On Hand, and TE 2025 columns'],
             ['4. Leave category header rows empty (they are for organization only)'],
-            ['5. Save the file and use "Import Data" button to upload'],
-            [''],
+            ['5. Save the file and use "Import Data" button to upload'],[''],
             ['NOTE: Each office has its own sheet. Fill only the offices you need to update.']
         ];
         const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
         XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions');
-
         ALL_OFFICES.forEach(office => {
             const sheetData = [['Item Description', 'TE 2019', 'On Hand', 'TE 2025']];
             MASTER_ITEMS.forEach(item => {
@@ -382,169 +378,92 @@
             const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
         });
-
         XLSX.writeFile(wb, 'HPN_HSG_Communication_Template.xlsx');
         showNotification('📥 Template downloaded successfully', 'success');
     }
 
-    // ============= EXPORT ALL DATA =============
     function exportAllData() {
-        if (ALL_DATA.length === 0) {
-            showNotification('⚠️ No data found to export. Please wait for data to load.', 'error');
-            return;
-        }
-
+        if (ALL_DATA.length === 0) { showNotification('⚠️ No data found to export.', 'error'); return; }
         showNotification('⏳ Preparing export...', 'info');
-
         const wb = XLSX.utils.book_new();
-
-        // ── Sheet 1: Summary (all offices consolidated) ──────────────────────
         const summaryData = [
             ['HPN & HSG COMMUNICATION - CONSOLIDATED SUMMARY'],
-            ['Exported on: ' + new Date().toLocaleString()],
-            [''],
+            ['Exported on: ' + new Date().toLocaleString()],[''],
             ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
         ];
-
         let grandTE2019 = 0, grandOnHand = 0, grandTE2025 = 0;
-
         MASTER_ITEMS.forEach(item => {
-            if (item.colspan) {
-                summaryData.push([item.item_name, '', '', '']);
-            } else {
+            if (item.colspan) { summaryData.push([item.item_name, '', '', '']); }
+            else {
                 const recs = ALL_DATA.filter(d => d.item_id === item.id);
                 const te2019 = recs.reduce((a, b) => a + (b.te_2019 || 0), 0);
                 const onhand = recs.reduce((a, b) => a + (b.onhand || 0), 0);
                 const te2025 = recs.reduce((a, b) => a + (b.proposed_te_2025 || 0), 0);
-                grandTE2019 += te2019;
-                grandOnHand += onhand;
-                grandTE2025 += te2025;
+                grandTE2019 += te2019; grandOnHand += onhand; grandTE2025 += te2025;
                 summaryData.push([item.item_name, te2019, onhand, te2025]);
             }
         });
-
-        summaryData.push(['']);
-        summaryData.push(['GRAND TOTAL', grandTE2019, grandOnHand, grandTE2025]);
-
+        summaryData.push(['']); summaryData.push(['GRAND TOTAL', grandTE2019, grandOnHand, grandTE2025]);
         const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
         wsSummary['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-
-        // Style the header row (row 4, index 3) and grand total row
-        const summaryHeaderRow = 4; // 1-indexed row where column headers are
-        const grandTotalRow = summaryData.length; // last row
-
-        // Bold + background for column header row
         ['A4','B4','C4','D4'].forEach(cellRef => {
             if (!wsSummary[cellRef]) wsSummary[cellRef] = { v: '', t: 's' };
-            wsSummary[cellRef].s = {
-                font: { bold: true, color: { rgb: 'FFFFFF' } },
-                fill: { fgColor: { rgb: '764BA2' } },
-                alignment: { horizontal: 'center' }
-            };
+            wsSummary[cellRef].s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '2D3580' } }, alignment: { horizontal: 'center' } };
         });
-
         XLSX.utils.book_append_sheet(wb, wsSummary, 'Consolidated Summary');
-
-        // ── Per-Office Sheets ─────────────────────────────────────────────────
         ALL_OFFICES.forEach(office => {
-            // Build a map of item values for this office
             const officeRecords = ALL_DATA.filter(d => d.office_id === office.id);
             const valMap = {};
             officeRecords.forEach(r => valMap[r.item_id] = r);
-
-            const sheetData = [
-                [office.office_name],
-                ['Generated: ' + new Date().toLocaleString()],
-                [''],
-                ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
-            ];
-
+            const sheetData = [[office.office_name],['Generated: ' + new Date().toLocaleString()],[''],['Item Description', 'TE 2019', 'On Hand', 'TE 2025']];
             let totalTE2019 = 0, totalOnHand = 0, totalTE2025 = 0;
-
             MASTER_ITEMS.forEach(item => {
-                if (item.colspan) {
-                    // Category header row — leave numeric columns empty
-                    sheetData.push([item.item_name, '', '', '']);
-                } else {
+                if (item.colspan) { sheetData.push([item.item_name, '', '', '']); }
+                else {
                     const v = valMap[item.id] || { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
-                    const te2019 = v.te_2019 || 0;
-                    const onhand = v.onhand || 0;
-                    const te2025 = v.proposed_te_2025 || 0;
-                    totalTE2019 += te2019;
-                    totalOnHand += onhand;
-                    totalTE2025 += te2025;
+                    const te2019 = v.te_2019 || 0; const onhand = v.onhand || 0; const te2025 = v.proposed_te_2025 || 0;
+                    totalTE2019 += te2019; totalOnHand += onhand; totalTE2025 += te2025;
                     sheetData.push([item.item_name, te2019, onhand, te2025]);
                 }
             });
-
-            sheetData.push(['']);
-            sheetData.push(['OFFICE TOTAL', totalTE2019, totalOnHand, totalTE2025]);
-
+            sheetData.push(['']); sheetData.push(['OFFICE TOTAL', totalTE2019, totalOnHand, totalTE2025]);
             const ws = XLSX.utils.aoa_to_sheet(sheetData);
             ws['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-
             const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
         });
-
-        // Generate timestamp for filename
         const now = new Date();
         const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
         XLSX.writeFile(wb, `HPN_HSG_Communication_Export_${timestamp}.xlsx`);
-
         showNotification(`✅ Exported ${ALL_OFFICES.length} offices successfully`, 'success');
     }
 
-    // ============= FILE IMPORT =============
     function handleFileImport(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-                
                 importedData = [];
                 let totalRecords = 0;
-
                 workbook.SheetNames.forEach(sheetName => {
                     if (sheetName === 'Instructions') return;
-                    
                     const worksheet = workbook.Sheets[sheetName];
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    
-                    const office = ALL_OFFICES.find(o => 
-                        o.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '') === sheetName
-                    );
-                    
+                    const office = ALL_OFFICES.find(o => o.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '') === sheetName);
                     if (!office) { console.warn(`Office not found for sheet: ${sheetName}`); return; }
-
                     for (let i = 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
-                        const itemName = row[0];
-                        const te2019 = parseInt(row[1]) || 0;
-                        const onhand = parseInt(row[2]) || 0;
-                        const te2025 = parseInt(row[3]) || 0;
+                        const itemName = row[0]; const te2019 = parseInt(row[1]) || 0; const onhand = parseInt(row[2]) || 0; const te2025 = parseInt(row[3]) || 0;
                         const item = MASTER_ITEMS.find(m => m.item_name === itemName && !m.colspan);
-                        if (item) {
-                            importedData.push({ office_id: office.id, office_name: office.office_name, item_id: item.id, item_name: item.item_name, te_2019: te2019, onhand: onhand, proposed_te_2025: te2025 });
-                            totalRecords++;
-                        }
+                        if (item) { importedData.push({ office_id: office.id, office_name: office.office_name, item_id: item.id, item_name: item.item_name, te_2019: te2019, onhand: onhand, proposed_te_2025: te2025 }); totalRecords++; }
                     }
                 });
-
-                if (importedData.length > 0) {
-                    showImportPreview();
-                    showNotification(`📊 ${totalRecords} records ready to import`, 'info');
-                } else {
-                    showNotification('⚠️ No valid data found in file', 'error');
-                }
-            } catch (error) {
-                console.error('Error reading file:', error);
-                showNotification('❌ Error reading file. Please check format.', 'error');
-            }
+                if (importedData.length > 0) { showImportPreview(); showNotification(`📊 ${totalRecords} records ready to import`, 'info'); }
+                else { showNotification('⚠️ No valid data found in file', 'error'); }
+            } catch (error) { console.error('Error reading file:', error); showNotification('❌ Error reading file. Please check format.', 'error'); }
         };
         reader.readAsArrayBuffer(file);
         event.target.value = '';
@@ -556,65 +475,36 @@
             if (!groupedData[record.office_name]) groupedData[record.office_name] = [];
             groupedData[record.office_name].push(record);
         });
-
         let html = '<div style="padding: 20px;">';
-        html += `<p style="margin-bottom: 20px; font-weight: 600; color: #764ba2;">Preview: ${importedData.length} records from ${Object.keys(groupedData).length} offices</p>`;
-        
+        html += `<p style="margin-bottom: 20px; font-weight: 600; color: #2D3580;">Preview: ${importedData.length} records from ${Object.keys(groupedData).length} offices</p>`;
         Object.keys(groupedData).forEach(officeName => {
-            html += `<h3 style="margin: 20px 0 10px; color: #667eea; font-size: 1.1rem;">${officeName}</h3>`;
+            html += `<h3 style="margin: 20px 0 10px; color: #2b4acb; font-size: 1.1rem;">${officeName}</h3>`;
             html += `<table style="width: 100%; margin-bottom: 20px; font-size: 0.9rem;">`;
-            html += `<thead><tr style="background: #f8fafc;">
-                <th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Item</th>
-                <th style="padding: 8px; border: 1px solid #ddd;">TE 2019</th>
-                <th style="padding: 8px; border: 1px solid #ddd;">On Hand</th>
-                <th style="padding: 8px; border: 1px solid #ddd;">TE 2025</th>
-            </tr></thead><tbody>`;
-            
+            html += `<thead><tr style="background: #eff2ff;"><th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Item</th><th style="padding: 8px; border: 1px solid #ddd;">TE 2019</th><th style="padding: 8px; border: 1px solid #ddd;">On Hand</th><th style="padding: 8px; border: 1px solid #ddd;">TE 2025</th></tr></thead><tbody>`;
             groupedData[officeName].slice(0, 5).forEach(record => {
-                html += `<tr>
-                    <td style="padding: 6px; border: 1px solid #eee;">${record.item_name}</td>
-                    <td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.te_2019}</td>
-                    <td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.onhand}</td>
-                    <td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.proposed_te_2025}</td>
-                </tr>`;
+                html += `<tr><td style="padding: 6px; border: 1px solid #eee;">${record.item_name}</td><td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.te_2019}</td><td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.onhand}</td><td style="text-align: center; padding: 6px; border: 1px solid #eee;">${record.proposed_te_2025}</td></tr>`;
             });
-            
-            if (groupedData[officeName].length > 5) {
-                html += `<tr><td colspan="4" style="text-align: center; padding: 6px; color: #999; font-style: italic;">... and ${groupedData[officeName].length - 5} more items</td></tr>`;
-            }
+            if (groupedData[officeName].length > 5) { html += `<tr><td colspan="4" style="text-align: center; padding: 6px; color: #999; font-style: italic;">... and ${groupedData[officeName].length - 5} more items</td></tr>`; }
             html += `</tbody></table>`;
         });
-        
         html += '</div>';
         document.getElementById('importPreviewArea').innerHTML = html;
         document.getElementById('importModal').style.display = 'block';
     }
 
-    function closeImportModal() {
-        document.getElementById('importModal').style.display = 'none';
-        importedData = null;
-    }
+    function closeImportModal() { document.getElementById('importModal').style.display = 'none'; importedData = null; }
 
     async function confirmImport() {
         if (!importedData || importedData.length === 0) return;
         try {
-            const records = importedData.map(item => ({
-                office_id: item.office_id,
-                item_id: item.item_id,
-                te_2019: item.te_2019,
-                onhand: item.onhand,
-                proposed_te_2025: item.proposed_te_2025
-            }));
+            const records = importedData.map(item => ({ office_id: item.office_id, item_id: item.item_id, te_2019: item.te_2019, onhand: item.onhand, proposed_te_2025: item.proposed_te_2025 }));
             const { error } = await supabaseClient.from('office_communications').upsert(records, { onConflict: 'office_id,item_id' });
             if (error) throw error;
             showNotification(`✅ Successfully imported ${records.length} records`, 'success');
             closeImportModal();
             await fetchAllData();
             if (currentOfficeId) await loadOffice(currentOfficeId);
-        } catch (error) {
-            console.error('Error importing data:', error);
-            showNotification('❌ Error importing data: ' + error.message, 'error');
-        }
+        } catch (error) { console.error('Error importing data:', error); showNotification('❌ Error importing data: ' + error.message, 'error'); }
     }
 
     init();
