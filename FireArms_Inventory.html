@@ -5,196 +5,245 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weapons Inventory</title>
 
-<link rel="stylesheet" href="navy-dashboard-styles.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+    :root {
+        --navy:   #2D3580;
+        --royal:  #2b4acb;
+        --purple: #6248C8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-        background-image: url('');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed; /* Keeps background still while scrolling */
-        background-repeat: no-repeat;
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, var(--navy) 0%, var(--royal) 60%, var(--purple) 100%);
         min-height: 100vh;
+        padding: 1.5rem;
+        color: #1e293b;
     }
 
-    /* Optional: If the background makes text hard to read, 
-       this adds a subtle white overlay to the container */
     .container {
-        background-color: rgba(255, 255, 255, 0.9); 
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 0 auto;
+        max-width: 1400px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
     }
-</style>
-<style>
-  /* Additional custom styles for this page */
-  body {
-    padding: 1rem;
-  }
 
-  .page-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .page-header h1 {
-    color: #0b1a3a;
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-
-  .page-header p {
-    color: #6b7280;
-    font-size: 0.95rem;
-  }
-
-  /* Section headers in table */
-  .section-header td {
-    background: linear-gradient(135deg, #475569 0%, #334155 100%) !important;
-    color: white !important;
-    font-weight: 700 !important;
-    text-align: left !important;
-    padding: 0.75rem 1rem !important;
-    border-left: 4px solid #f1c232 !important;
-    font-size: 0.9375rem;
-  }
-
-  /* Editable cells */
-  td[contenteditable="true"] {
-    background-color: #fffbeb;
-    cursor: text;
-    transition: background-color 0.15s ease;
-    min-height: 2rem;
-  }
-
-  td[contenteditable="true"]:hover {
-    background-color: #fef3c7;
-  }
-
-  td[contenteditable="true"]:focus {
-    outline: 2px solid #2563eb;
-    background-color: #fff;
-  }
-
-  /* Unit/Item select dropdown */
-  select.uicell {
-    width: 100%;
-    padding: 0.5rem;
-    font-size: 0.875rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.25rem;
-    background-color: white;
-    cursor: pointer;
-  }
-
-  select.uicell:focus {
-    border-color: #2563eb;
-    outline: 0;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-
-  /* Total column styling */
-  td.total {
-    background-color: #dbeafe !important;
-    font-weight: 700;
-    color: #1e40af;
-  }
-
-  /* Stats cards */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .stat-card {
-    background: linear-gradient(135deg, #0b1a3a 0%, #1e3a8a 100%);
-    color: white;
-    padding: 1.25rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .stat-card .stat-label {
-    font-size: 0.875rem;
-    opacity: 0.9;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .stat-card .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
-
-  /* Toast container */
-  .toast-container {
-    position: fixed;
-    top: 2rem;
-    right: 2rem;
-    z-index: 1000;
-    min-width: 300px;
-  }
-
-  /* Loading overlay */
-  .loading-overlay {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-    backdrop-filter: blur(2px);
-  }
-
-  .loading-overlay.show {
-    display: flex;
-  }
-
-  /* Print styles */
-  @media print {
-    .no-print {
-      display: none !important;
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 3px solid var(--royal);
     }
-    
-    body {
-      padding: 0;
-    }
-    
-    .card {
-      box-shadow: none;
-      border: 1px solid #ddd;
-    }
-    
     .page-header h1 {
-      font-size: 1.5rem;
+        color: var(--navy);
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.05em;
     }
-  }
+    .page-header p {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
 
-  /* Column widths */
-  .table th:nth-child(1), .table td:nth-child(1) { width: 5%; }
-  .table th:nth-child(2), .table td:nth-child(2) { width: 12%; }
-  .table th:nth-child(3), .table td:nth-child(3) { width: 15%; }
-  .table th:nth-child(4), .table td:nth-child(4) { width: 8%; }
-  .table th:nth-child(5), .table td:nth-child(5) { width: 10%; }
-  .table th:nth-child(6), .table td:nth-child(6) { width: 10%; }
-  .table th:nth-child(7), .table td:nth-child(7) { width: 10%; }
-  .table th:nth-child(8), .table td:nth-child(8) { width: 10%; }
-  .table th:nth-child(9), .table td:nth-child(9) { width: 10%; }
-  .table th:nth-child(10), .table td:nth-child(10) { width: 10%; }
+    /* ===== STATS CARDS ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-card {
+        color: white;
+        padding: 1.25rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .stat-card:nth-child(1) { background: linear-gradient(135deg, var(--navy), var(--royal)); }
+    .stat-card:nth-child(2) { background: linear-gradient(135deg, var(--royal), var(--purple)); }
+    .stat-card:nth-child(3) { background: linear-gradient(135deg, var(--purple), var(--navy)); }
+    .stat-card:nth-child(4) { background: linear-gradient(135deg, var(--navy), var(--purple)); }
+    .stat-card:nth-child(5) { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+    .stat-card:nth-child(6) { background: linear-gradient(135deg, var(--royal), var(--navy)); }
+
+    .stat-card .stat-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+        background: white;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .card-header {
+        background: linear-gradient(90deg, var(--navy), var(--royal));
+        color: white;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+    .card-body { padding: 1.5rem; }
+    .card-footer {
+        padding: 0.875rem 1.5rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.5rem 1rem; border-radius: 0.375rem; border: none;
+        font-size: 0.875rem; font-weight: 600; cursor: pointer;
+        transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+    .btn-success { background: #16a34a; color: white; }
+    .btn-success:hover { background: #15803d; }
+    .btn-info    { background: var(--royal); color: white; }
+    .btn-info:hover { background: var(--navy); }
+    .btn-secondary { background: #64748b; color: white; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-primary { background: var(--navy); color: white; }
+    .btn-primary:hover { background: var(--royal); }
+
+    .d-flex { display: flex; }
+    .gap-2 { gap: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .flex-wrap { flex-wrap: wrap; }
+    .justify-content-between { justify-content: space-between; }
+    .align-items-center { align-items: center; }
+    .text-muted { color: #64748b; }
+
+    /* ===== ALERTS ===== */
+    .alert {
+        padding: 0.875rem 1rem; border-radius: 0.375rem;
+        font-size: 0.875rem; border: 1px solid transparent;
+    }
+    .alert-info { background: #eff2ff; border-color: #c7d2fe; color: var(--royal); }
+    .alert-success { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+    .alert-danger { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+    .alert-dismissible { display: flex; justify-content: space-between; align-items: flex-start; }
+    .alert-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: inherit; padding: 0; }
+
+    /* ===== TABLE ===== */
+    .table-responsive { overflow-x: auto; }
+    .table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .table thead tr { background: var(--navy); }
+    .table thead th {
+        padding: 0.75rem 0.875rem; text-align: center;
+        font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.06em; color: rgba(255,255,255,0.9);
+        border-bottom: 2px solid var(--royal);
+    }
+    .table thead th:first-child { text-align: left; }
+    .table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+    .table tbody tr:nth-child(even):not(.section-header) { background: #f8fafc; }
+    .table tbody tr:hover:not(.section-header) { background: #eff2ff; }
+    .table tbody td { padding: 0.625rem 0.875rem; vertical-align: middle; color: #1e293b; }
+
+    /* Section headers in table */
+    .section-header td {
+        background: linear-gradient(135deg, var(--navy) 0%, var(--royal) 100%) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        text-align: left !important;
+        padding: 0.75rem 1rem !important;
+        border-left: 4px solid var(--purple) !important;
+        font-size: 0.9375rem;
+    }
+
+    /* Editable cells */
+    td[contenteditable="true"] {
+        background-color: #fffbeb;
+        cursor: text;
+        transition: background-color 0.15s ease;
+        min-height: 2rem;
+    }
+    td[contenteditable="true"]:hover { background-color: #fef3c7; }
+    td[contenteditable="true"]:focus { outline: 2px solid var(--royal); background-color: #fff; }
+
+    /* Unit/Item select dropdown */
+    select.uicell {
+        width: 100%; padding: 0.5rem; font-size: 0.875rem;
+        border: 1px solid #d1d5db; border-radius: 0.25rem;
+        background-color: white; cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    select.uicell:focus { border-color: var(--royal); outline: 0; box-shadow: 0 0 0 3px rgba(43,74,203,0.1); }
+
+    /* Total column */
+    td.total { background-color: #eff2ff !important; font-weight: 700; color: var(--navy); }
+
+    /* Column widths */
+    .table th:nth-child(1), .table td:nth-child(1) { width: 5%; }
+    .table th:nth-child(2), .table td:nth-child(2) { width: 12%; }
+    .table th:nth-child(3), .table td:nth-child(3) { width: 15%; }
+    .table th:nth-child(4), .table td:nth-child(4) { width: 8%; }
+    .table th:nth-child(5), .table td:nth-child(5) { width: 10%; }
+    .table th:nth-child(6), .table td:nth-child(6) { width: 10%; }
+    .table th:nth-child(7), .table td:nth-child(7) { width: 10%; }
+    .table th:nth-child(8), .table td:nth-child(8) { width: 10%; }
+    .table th:nth-child(9), .table td:nth-child(9) { width: 10%; }
+    .table th:nth-child(10), .table td:nth-child(10) { width: 10%; }
+
+    /* ===== TOAST ===== */
+    .toast-container { position: fixed; top: 2rem; right: 2rem; z-index: 1000; min-width: 300px; }
+
+    /* ===== LOADING ===== */
+    .loading-overlay {
+        position: fixed; inset: 0; display: none; align-items: center;
+        justify-content: center; background: rgba(15,23,42,0.5);
+        z-index: 9999; backdrop-filter: blur(2px);
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner {
+        width: 42px; height: 42px; border-radius: 50%;
+        border: 4px solid rgba(255,255,255,0.25);
+        border-top-color: white; animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== PRINT ===== */
+    @media print {
+        body { background: white !important; padding: 0; }
+        .no-print { display: none !important; }
+        .card { box-shadow: none; border: 1px solid #ddd; }
+        .page-header h1 { font-size: 1.5rem; color: #000; }
+        .stats-grid { display: none !important; }
+        .table thead tr { background: #2D3580 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .table thead th { color: white !important; }
+        .section-header td { background: #2D3580 !important; color: white !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .card-header { background: #2D3580 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
 </style>
 </head>
 <body>
 
 <!-- Loading Overlay -->
 <div class="loading-overlay" id="loader">
-  <div class="spinner spinner-lg"></div>
+  <div class="spinner"></div>
 </div>
 
 <div class="container">
@@ -258,12 +307,12 @@
 
       <!-- Info Alert -->
       <div class="alert alert-info mb-3 no-print">
-        <i class="fas fa-info-circle"></i> <strong>Tip:</strong> Click on yellow cells to edit. Total On-Hand is calculated automatically. Changes are saved when you click "Save Changes".
+        <span><i class="fas fa-info-circle"></i> <strong>Tip:</strong> Click on yellow cells to edit. Total On-Hand is calculated automatically. Changes are saved when you click "Save Changes".</span>
       </div>
 
       <!-- Table -->
       <div class="table-responsive">
-        <table class="table table-striped" id="weaponTable">
+        <table class="table" id="weaponTable">
           <thead>
             <tr>
               <th>L/I</th>
@@ -326,8 +375,7 @@ const loader = document.getElementById("loader");
 const toastContainer = document.getElementById("toastContainer");
 const lastUpdated = document.getElementById("lastUpdated");
 
-/* ---------- Helpers ---------- */
-function showLoader(on = true) { 
+function showLoader(on = true) {
   if (on) loader.classList.add('show');
   else loader.classList.remove('show');
 }
@@ -336,7 +384,7 @@ function showToast(message, type = 'success') {
   const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
   toastContainer.innerHTML = `
     <div class="alert ${alertClass} alert-dismissible">
-      ${message}
+      <span>${message}</span>
       <button class="alert-close" onclick="this.parentElement.remove()">×</button>
     </div>
   `;
@@ -348,14 +396,11 @@ const uiOptions = ["pcs","units","sets","box","pack","rounds","rifles","mags"];
 document.querySelectorAll('td[data-ui="true"]').forEach(td=>{
     const select = document.createElement("select");
     select.className="uicell";
-    const blank = document.createElement("option"); 
-    blank.value=""; 
-    blank.innerText="--"; 
-    select.appendChild(blank);
-    
+    const blank = document.createElement("option");
+    blank.value=""; blank.innerText="--"; select.appendChild(blank);
     uiOptions.forEach(opt=>{
-        const o = document.createElement("option"); 
-        o.value = o.innerText = opt; 
+        const o = document.createElement("option");
+        o.value = o.innerText = opt;
         select.appendChild(o);
     });
     td.appendChild(select);
@@ -370,13 +415,7 @@ function computeTotals(row){
 }
 
 function updateAllStats() {
-  let totalAuthorized = 0;
-  let totalIssued = 0;
-  let totalStock = 0;
-  let totalServiceable = 0;
-  let totalUnserviceable = 0;
-  let totalOnHand = 0;
-
+  let totalAuthorized=0, totalIssued=0, totalStock=0, totalServiceable=0, totalUnserviceable=0, totalOnHand=0;
   document.querySelectorAll("#tableBody tr:not(.section-header)").forEach(row => {
     totalAuthorized += parseFloat(row.cells[4]?.innerText || 0);
     totalIssued += parseFloat(row.cells[5]?.innerText || 0);
@@ -385,7 +424,6 @@ function updateAllStats() {
     totalUnserviceable += parseFloat(row.cells[8]?.innerText || 0);
     totalOnHand += parseFloat(row.cells[9]?.innerText || 0);
   });
-
   document.getElementById('totalAuthorized').textContent = totalAuthorized;
   document.getElementById('totalIssued').textContent = totalIssued;
   document.getElementById('totalStock').textContent = totalStock;
@@ -394,7 +432,7 @@ function updateAllStats() {
   document.getElementById('totalOnHand').textContent = totalOnHand;
 }
 
-/* ---------- Event Listeners for Editable Cells ---------- */
+/* ---------- Event Listeners ---------- */
 document.querySelectorAll("td[contenteditable='true']").forEach(td=>{
     td.addEventListener("input", e=>{
         computeTotals(e.target.parentElement);
@@ -402,7 +440,7 @@ document.querySelectorAll("td[contenteditable='true']").forEach(td=>{
     });
 });
 
-/* ---------- Collect Data from Table ---------- */
+/* ---------- Collect Data ---------- */
 function collectRows(){
     const rows = [];
     document.querySelectorAll("#tableBody tr:not(.section-header)").forEach(r=>{
@@ -417,91 +455,50 @@ function collectRows(){
         const unserviceable = parseFloat(r.cells[8].innerText) || 0;
         const total_on_hand = issued_to_individual + stock_at_armory;
         const year = 2025;
-        
         if(!li || !category) return;
-        rows.push({
-          li, category, nomenclature, ui, authorized_allowance, 
-          issued_to_individual, stock_at_armory, serviceable, 
-          unserviceable, total_on_hand, year
-        });
+        rows.push({ li, category, nomenclature, ui, authorized_allowance, issued_to_individual, stock_at_armory, serviceable, unserviceable, total_on_hand, year });
     });
     return rows;
 }
 
-/* ---------- Save to Database ---------- */
+/* ---------- Save ---------- */
 async function saveTable(){
     const rows = collectRows();
-    if(rows.length === 0){ 
-      showToast("No valid rows to save", 'error'); 
-      return; 
-    }
-
+    if(rows.length === 0){ showToast("No valid rows to save", 'error'); return; }
     showLoader(true);
-    
     try {
-      const { error } = await sb
-          .from("weapons_inventory")
-          .upsert(rows, { onConflict:["li","category","year"] });
-
+      const { error } = await sb.from("weapons_inventory").upsert(rows, { onConflict:["li","category","year"] });
       if(error) throw error;
-
-      const now = new Date().toLocaleString();
-      lastUpdated.textContent = `Last updated: ${now}`;
+      lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
       showToast("✅ Data saved successfully!", 'success');
-    } catch(err) {
-      console.error("Save error:", err);
-      showToast("Save failed - check console", 'error');
-    } finally {
-      showLoader(false);
-    }
+    } catch(err) { console.error("Save error:", err); showToast("Save failed - check console", 'error'); }
+    finally { showLoader(false); }
 }
 
-async function updateTable() { 
-  await saveTable(); 
-}
+async function updateTable() { await saveTable(); }
+function printPage() { window.print(); }
+async function refreshData() { await loadTable(); showToast("Data refreshed!", 'info'); }
 
-function printPage() { 
-  window.print(); 
-}
-
-async function refreshData() {
-  await loadTable();
-  showToast("Data refreshed!", 'info');
-}
-
-/* ---------- Load Data from Database ---------- */
+/* ---------- Load ---------- */
 async function loadTable() {
     showLoader(true);
-    
     try {
-      const { data, error } = await sb
-          .from("weapons_inventory")
-          .select("*")
-          .order("li", { ascending: true });
-
+      const { data, error } = await sb.from("weapons_inventory").select("*").order("li", { ascending: true });
       if (error) throw error;
-
       renderTable(data || []);
       showToast("Data loaded successfully", 'info');
-    } catch(err) {
-      console.error("Load error:", err);
-      showToast("Failed to load data", 'error');
-    } finally {
-      showLoader(false);
-    }
+    } catch(err) { console.error("Load error:", err); showToast("Failed to load data", 'error'); }
+    finally { showLoader(false); }
 }
 
-/* ---------- Render Data into Table ---------- */
+/* ---------- Render ---------- */
 function renderTable(data) {
     const tableBody = document.getElementById("tableBody");
     const rows = Array.from(tableBody.querySelectorAll("tr:not(.section-header)"));
-    
     rows.forEach(row => {
         const li = parseInt(row.cells[0].innerText.trim());
         const category = row.cells[1].innerText.trim();
-
         const match = data.find(d => d.li === li && d.category === category);
-
         if (match) {
             row.cells[2].innerText = match.nomenclature || "";
             row.querySelector("select.uicell").value = match.ui || "";
@@ -510,21 +507,14 @@ function renderTable(data) {
             row.cells[6].innerText = match.stock_at_armory || "";
             row.cells[7].innerText = match.serviceable || "";
             row.cells[8].innerText = match.unserviceable || "";
-
             computeTotals(row);
         }
     });
-
     updateAllStats();
 }
 
-/* ---------- Initialize on Load ---------- */
-document.addEventListener("DOMContentLoaded", () => {
-  loadTable();
-  updateAllStats();
-});
+document.addEventListener("DOMContentLoaded", () => { loadTable(); updateAllStats(); });
 </script>
 
 </body>
-
 </html>
