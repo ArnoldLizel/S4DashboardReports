@@ -12,31 +12,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+    body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; font-size: 16px; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
 
-    /* ═══════════════════════════════════════════════
-       3-COLOR PALETTE
-       --navy:   #2D3580  → headers, sidebar base
-       --royal:  #2b4acb  → primary buttons, active
-       --purple: #6248C8  → accents, highlights, badges
-    ═══════════════════════════════════════════════ */
     :root {
       --navy:   #2D3580;
       --royal:  #2b4acb;
       --purple: #6248C8;
     }
 
-    /* ═══════════════════════════════════════════════
-       SIDEBAR — 3-color gradient, white pill active
-    ═══════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════════ */
     #sidebar {
       background: linear-gradient(175deg, var(--navy) 0%, var(--royal) 50%, var(--purple) 100%);
       position: relative;
       overflow: hidden;
+      width: 19.5rem;
+      min-width: 19.5rem;
     }
 
-    /* Subtle inner glow overlay */
     #sidebar::before {
       content: '';
       position: absolute;
@@ -46,71 +41,87 @@
       z-index: 0;
     }
 
-    /* Profile block at top */
+    /* ── Profile block ── */
     .sidebar-profile {
       position: relative; z-index: 1;
       display: flex; flex-direction: column; align-items: center;
-      padding: 28px 16px 20px;
+      padding: 30px 16px 22px;
       border-bottom: 1px solid rgba(255,255,255,0.12);
       margin-bottom: 6px;
     }
     .sidebar-avatar-ring {
-      width: 64px; height: 64px;
+      width: 84px; height: 84px;
       border-radius: 50%;
       background: rgba(255,255,255,0.18);
       border: 3px solid rgba(255,255,255,0.5);
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.2);
       overflow: hidden;
     }
     .sidebar-avatar-ring img { width: 100%; height: 100%; object-fit: cover; }
-    .sidebar-avatar-ring .fa-user { font-size: 24px; color: rgba(255,255,255,0.85); }
+
+    /* ↑ ENLARGED: avatar icon */
+    .sidebar-avatar-ring .fa-user { font-size: 36px; color: rgba(255,255,255,0.85); }
+
+    /* ↑ ENLARGED: greeting & role */
     .sidebar-greeting {
-      font-size: 0.78rem; font-weight: 600;
+      font-size: 1.25rem;
+      font-weight: 700;
       color: rgba(255,255,255,0.95);
       letter-spacing: 0.01em;
     }
     .sidebar-role {
-      font-size: 0.65rem; font-weight: 500;
-      color: rgba(255,255,255,0.55);
-      margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.60);
+      margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em;
     }
 
-    /* Section labels */
+    /* ── Section labels ── */
+    /* ↑ ENLARGED: section labels */
     .section-head {
       position: relative; z-index: 1;
-      padding: 14px 18px 4px;
-      font-size: 0.62rem; font-weight: 800;
-      color: rgba(255,255,255,0.45);
-      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 16px 18px 5px;
+      font-size: 0.72rem;       /* was 0.62rem */
+      font-weight: 800;
+      color: rgba(255,255,255,0.50);
+      text-transform: uppercase; letter-spacing: 0.11em;
     }
 
-    /* Nav buttons */
+    /* ── Nav buttons ── */
     .menu-btn {
       position: relative; z-index: 1;
       transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
       border-left: none !important;
-      color: rgba(255,255,255,0.78);
+      color: rgba(255,255,255,0.88);
       cursor: pointer;
       border-radius: 10px;
-      margin: 1px 10px;
+      margin: 3px 10px;
       width: calc(100% - 20px);
-      padding: 9px 14px;
+      padding: 13px 16px;
     }
     .menu-btn:hover {
       background: rgba(255,255,255,0.15) !important;
       color: white !important;
       transform: translateX(3px);
     }
-    .menu-btn i {
-      font-size: 0.85rem;
-      width: 18px; text-align: center;
-      opacity: 0.85;
-    }
-    .menu-btn span { font-size: 0.8rem; font-weight: 500; }
 
-    /* ACTIVE STATE — white pill with navy/royal text */
+    /* ↑ ENLARGED: nav icon */
+    .menu-btn i {
+      font-size: 1.1rem;
+      width: 22px; text-align: center;
+      opacity: 0.90;
+    }
+
+    /* ↑ ENLARGED: nav label text */
+    .menu-btn span {
+      font-size: 1.05rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    /* Active pill */
     .active-tab {
       background: white !important;
       color: var(--royal) !important;
@@ -121,7 +132,6 @@
     .active-tab i { opacity: 1; color: var(--royal) !important; }
     .active-tab span { font-weight: 700 !important; color: var(--royal) !important; }
 
-    /* Click ripple effect */
     .menu-btn::after {
       content: '';
       position: absolute;
@@ -130,27 +140,96 @@
       background: rgba(255,255,255,0);
       transition: background 0.15s ease;
     }
-    .menu-btn:active::after {
-      background: rgba(255,255,255,0.25);
+    .menu-btn:active::after { background: rgba(255,255,255,0.25); }
+
+    /* ── Collapsible section headers ── */
+    .section-head {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 8px;
+      margin: 4px 10px 0;
+      padding: 12px 12px 12px !important;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      position: relative; z-index: 1;
+      transition: background 0.18s;
+    }
+    .section-head:hover {
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.80);
+    }
+    .section-head-label {
+      flex: 1;
+    }
+    .section-arrow {
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.65);
+      font-size: 0.70rem;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                  background 0.18s,
+                  color 0.18s;
+      flex-shrink: 0;
+    }
+    .section-head:hover .section-arrow {
+      background: rgba(255,255,255,0.26);
+      color: rgba(255,255,255,0.95);
+    }
+    .section-head.collapsed .section-arrow {
+      transform: rotate(-90deg);
     }
 
-    /* Powered by footer */
+    /* Section content wrapper — smooth slide */
+    .section-items {
+      overflow: hidden;
+      max-height: 600px;           /* large enough for any group */
+      transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity    0.28s ease;
+      opacity: 1;
+    }
+    .section-items.collapsed {
+      max-height: 0;
+      opacity: 0;
+    }
+
+    /* ── Sidebar footer ── */
+    /* ↑ ENLARGED: footer text */
     .sidebar-footer {
       position: relative; z-index: 1;
-      padding: 16px 18px;
-      font-size: 0.62rem; font-weight: 600;
-      color: rgba(255,255,255,0.3);
+      padding: 18px 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.38);
       text-align: center;
       letter-spacing: 0.04em;
       border-top: 1px solid rgba(255,255,255,0.1);
       margin-top: auto;
     }
 
-    /* ─── REST OF ORIGINAL STYLES ─── */
+    /* ══════════════════════════════════════════
+       MAIN CONTENT
+    ══════════════════════════════════════════ */
     .main-content-bg {
       position: relative;
-      background-image: url('');
+      background-image: url('image/bg2.jpg');
       background-size: cover; background-position: center; background-attachment: fixed;
+    }
+
+    /* ↑ ENLARGED: dashboard heading */
+    #dashboard-view h2 {
+      font-size: 2.1rem !important;
+    }
+    /* ↑ ENLARGED: dashboard subtext */
+    #dashboard-view .text-gray-600 {
+      font-size: 1.0rem !important;
     }
 
     #iframe-view {
@@ -158,7 +237,7 @@
       top: 64px; left: 0; right: 0; bottom: 0;
       z-index: 100; background: white;
     }
-    @media (min-width: 768px) { #iframe-view { left: 16rem; } }
+    @media (min-width: 768px) { #iframe-view { left: 19.5rem; } }
     #iframe-view iframe { width: 100%; height: 100%; border: none; }
 
     :root {
@@ -175,9 +254,9 @@
 
     #zoom-widget {
         position: fixed;
-        left: 17rem;
+        left: 20rem;
         bottom: 20px;
-        width: 320px;
+        width: 340px;
         background: white;
         border-radius: 12px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -186,7 +265,6 @@
         display: block;
         transition: opacity 0.3s;
     }
-
     @media (max-width: 768px) {
         #zoom-widget { left: 20px; width: calc(100% - 40px); }
     }
@@ -194,13 +272,17 @@
     .zoom-header {
         background: linear-gradient(135deg, var(--royal) 0%, var(--purple) 100%);
         color: white;
-        padding: 0.75rem 1rem;
+        padding: 0.85rem 1rem;
         display: flex;
         align-items: center;
         gap: 0.75rem;
     }
+    /* ↑ ENLARGED: zoom header text */
+    .zoom-header h3 { font-size: 1.05rem !important; }
+    .zoom-header p  { font-size: 0.85rem !important; }
+
     .zoom-icon {
-        width: 32px; height: 32px;
+        width: 34px; height: 34px;
         background: white; border-radius: 8px; padding: 4px;
     }
     .zoom-body { max-height: 300px; overflow-y: auto; }
@@ -208,20 +290,21 @@
     .zoom-body::-webkit-scrollbar-track { background: transparent; }
     .zoom-body::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
 
-    .conference-item { padding: 1rem; border-bottom: 1px solid #f3f4f6; transition: background 0.2s; }
+    /* ↑ ENLARGED: conference items */
+    .conference-item { padding: 1.1rem 1rem; border-bottom: 1px solid #f3f4f6; transition: background 0.2s; }
     .conference-item:hover { background: #f9fafb; }
     .conference-item:last-child { border-bottom: none; }
-    .conference-title { font-weight: 600; color: #1f2937; font-size: 0.875rem; margin-bottom: 0.25rem; }
-    .conference-date { font-size: 0.75rem; color: #6b7280; display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.25rem; }
-    .conference-location { font-size: 0.75rem; color: #6b7280; display: flex; align-items: center; gap: 0.25rem; }
-    .no-conferences { padding: 2rem; text-align: center; color: #9ca3af; font-size: 0.875rem; }
+    .conference-title  { font-weight: 600; color: #1f2937; font-size: 1.0rem; margin-bottom: 0.3rem; }
+    .conference-date   { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.25rem; }
+    .conference-location { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.3rem; }
+    .no-conferences { padding: 2rem; text-align: center; color: #9ca3af; font-size: 1.0rem; }
     .widget-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
     .branch-row { display: flex; align-items: center; justify-content: flex-end; position: relative; }
 
     .pulse-gold { border: 5px solid var(--pulse-gold) !important; animation: goldGlow 2s infinite; }
     @keyframes goldGlow {
         0%, 100% { box-shadow: 0 0 15px var(--pulse-gold); }
-        50% { box-shadow: 0 0 35px var(--pulse-gold); }
+        50%       { box-shadow: 0 0 35px var(--pulse-gold); }
     }
 
     .portrait-box {
@@ -240,56 +323,74 @@
     }
     @keyframes slideIn {
         from { opacity: 0; transform: translateY(-50%) translateX(20px); }
-        to { opacity: 1; transform: translateY(-50%) translateX(0); }
+        to   { opacity: 1; transform: translateY(-50%) translateX(0); }
     }
     .branch-row:hover .mini-screen { display: block; }
-    .mini-header { background: var(--navy-blue); color: white; padding: 12px; font-weight: bold; font-size: 0.9rem; border-top-left-radius: 8px; border-top-right-radius: 8px; }
+    .mini-header { background: var(--navy-blue); color: white; padding: 12px; font-weight: bold; font-size: 0.95rem; border-top-left-radius: 8px; border-top-right-radius: 8px; }
     .mini-body { padding: 10px; max-height: 300px; overflow-y: auto; }
-    .comp-table { width: 100%; font-size: 0.85rem; border-collapse: collapse; }
+    .comp-table { width: 100%; font-size: 0.88rem; border-collapse: collapse; }
     .comp-table th { text-align: left; padding: 8px; background: #f1f5f9; color: #475569; }
     .comp-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
-    .status-pill { padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; }
+    .status-pill { padding: 2px 8px; border-radius: 10px; font-size: 0.78rem; font-weight: bold; }
     .compliant { background: #dcfce7; color: #166534; }
-    .pending { background: #fef3c7; color: #854d0e; }
+    .pending   { background: #fef3c7; color: #854d0e; }
 
+    /* ↑ ENLARGED: activity cards */
     .activity-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
-    .activity-header { padding: 1rem; color: white; font-weight: bold; text-transform: uppercase; font-size: 0.875rem; display: flex; justify-content: space-between; align-items: center; }
+
+    /* ↑ ENLARGED: quarter header text */
+    .activity-header {
+      padding: 1.1rem;
+      color: white; font-weight: bold; text-transform: uppercase;
+      font-size: 1.0rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
     .quarter-1 { background: var(--navy); }
     .quarter-2 { background: var(--royal); }
     .quarter-3 { background: var(--purple); }
     .quarter-4 { background: linear-gradient(135deg, var(--navy), var(--purple)); }
-    .activity-table { display: flex; flex-direction: column; font-size: 0.75rem; }
-    .table-header { display: flex; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em; }
-    .table-header-cell { padding: 0.5rem; }
+
+    .activity-table { display: flex; flex-direction: column; font-size: 0.90rem; }
+
+    /* ↑ ENLARGED: table column headers */
+    .table-header { display: flex; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #6b7280; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+    .table-header-cell { padding: 0.65rem 0.6rem; }
     .table-header-cell:first-child { flex: 1; }
-    .table-header-cell:last-child { width: 70px; text-align: center; }
+    .table-header-cell:last-child { width: 80px; text-align: center; }
+
     .activity-list { max-height: 200px; overflow-y: auto; }
     .activity-list::-webkit-scrollbar { width: 4px; }
     .activity-list::-webkit-scrollbar-track { background: transparent; }
     .activity-list::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
-    .activity-row { display: flex; align-items: center; border-bottom: 1px solid #f3f4f6; padding: 0.5rem; transition: background 0.2s; }
+
+    /* ↑ ENLARGED: activity rows */
+    .activity-row { display: flex; align-items: center; border-bottom: 1px solid #f3f4f6; padding: 0.65rem 0.6rem; transition: background 0.2s; }
     .activity-row:hover { background: #f9fafb; }
-    .activity-text { flex: 1; font-size: 0.75rem; padding-right: 0.5rem; }
-    .activity-text input { width: 100%; padding: 0.25rem 0.5rem; border: 1px solid transparent; border-radius: 4px; background: transparent; transition: all 0.2s; }
+    .activity-text { flex: 1; font-size: 0.90rem; padding-right: 0.5rem; }
+    .activity-text input { width: 100%; padding: 0.35rem 0.5rem; border: 1px solid transparent; border-radius: 4px; background: transparent; transition: all 0.2s; font-size: 0.90rem; }
     .activity-text input:focus { outline: none; border-color: var(--royal); background: white; }
     .activity-text.completed input { text-decoration: line-through; color: #9ca3af; }
-    .activity-status { width: 70px; display: flex; justify-content: center; align-items: center; }
-    .toggle-switch { width: 40px; height: 20px; background: #d1d5db; border-radius: 10px; position: relative; cursor: pointer; transition: background 0.3s; }
+    .activity-status { width: 80px; display: flex; justify-content: center; align-items: center; }
+    .toggle-switch { width: 42px; height: 22px; background: #d1d5db; border-radius: 11px; position: relative; cursor: pointer; transition: background 0.3s; }
     .toggle-switch.active { background: var(--purple); }
-    .toggle-switch::after { content: ''; position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s; }
+    .toggle-switch::after { content: ''; position: absolute; width: 17px; height: 17px; background: white; border-radius: 50%; top: 2.5px; left: 2.5px; transition: transform 0.3s; }
     .toggle-switch.active::after { transform: translateX(20px); }
-    .add-activity-btn { padding: 0.5rem; margin: 0.5rem; border: 1px dashed #d1d5db; border-radius: 6px; text-align: center; font-size: 0.75rem; color: #6b7280; cursor: pointer; transition: all 0.2s; }
+
+    /* ↑ ENLARGED: add activity button */
+    .add-activity-btn { padding: 0.65rem; margin: 0.5rem; border: 1px dashed #d1d5db; border-radius: 6px; text-align: center; font-size: 0.88rem; color: #6b7280; cursor: pointer; transition: all 0.2s; }
     .add-activity-btn:hover { border-color: var(--royal); color: var(--royal); background: #f9fafb; }
-    .magic-btn { padding: 0.25rem; background: rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+
+    .magic-btn { padding: 0.3rem; background: rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; transition: background 0.2s; }
     .magic-btn:hover { background: rgba(255,255,255,0.3); }
     .magic-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* ↑ ENLARGED: logout button */
     .logout-btn {
       background: rgba(255,255,255,0.15);
       color: white;
-      padding: 0.45rem 1rem;
+      padding: 0.55rem 1.2rem;
       border-radius: 8px;
-      font-size: 0.8rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
@@ -302,6 +403,11 @@
       border-color: transparent;
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(239,68,68,0.4);
+    }
+
+    /* ↑ ENLARGED: topbar title */
+    header h1 {
+      font-size: 1.35rem !important;  /* was text-xl ≈ 1.25rem */
     }
   </style>
 
@@ -317,10 +423,11 @@
 
 <body class="flex flex-col min-h-screen bg-gray-100 overflow-hidden">
 
+  <!-- ══ HEADER ══ -->
   <header class="text-white flex items-center justify-between px-6 py-3 shadow-lg z-50" style="background: var(--navy)">
     <div class="flex items-center space-x-3">
       <img src="image/hsg1.png" alt="Navy" class="h-10 w-10 bg-white rounded-full p-0.5" />
-      <h1 class="text-xl font-bold">HPN & HSG Navy Logistics</h1>
+      <h1 class="font-bold" style="font-size:1.35rem;">HPN & HSG Navy Logistics</h1>
     </div>
     <button id="logout-btn" class="logout-btn">
       <i class="fas fa-sign-out-alt"></i>
@@ -329,8 +436,9 @@
   </header>
 
   <div class="flex flex-1 overflow-hidden">
-    
-    <aside id="sidebar" class="w-64 flex-shrink-0 flex flex-col no-scrollbar overflow-y-auto">
+
+    <!-- ══ SIDEBAR ══ -->
+    <aside id="sidebar" class="flex-shrink-0 flex flex-col no-scrollbar overflow-y-auto" style="width:19.5rem; min-width:19.5rem;">
 
       <!-- Profile block -->
       <div class="sidebar-profile">
@@ -342,62 +450,102 @@
       </div>
 
       <nav class="flex-1 pb-4">
-        <button class="menu-btn w-full flex items-center gap-3 text-sm active-tab" data-page="dashboard">
+
+        <!-- Dashboard (always visible, not collapsible) -->
+        <button class="menu-btn w-full flex items-center gap-3 active-tab" data-page="dashboard">
           <i class="fas fa-desktop"></i><span>Dashboard</span>
         </button>
 
-        <div class="section-head">Project Monitoring</div>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="HSGProjectsMonitoring.html"><i class="fas fa-chart-line"></i><span>HSG Project Monitoring</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="IAPB_Status.html"><i class="fas fa-tasks"></i><span>Activities Implementation</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="EPA.html"><i class="fas fa-shopping-cart"></i><span>Early Procurement</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="PNJRRS.html"><i class="fas fa-shield-halved"></i><span>PN Joint Readiness</span></button>
+        <!-- ── Project Monitoring ── -->
+        <div class="section-head collapsed" onclick="toggleSection(this)">
+          <span class="section-head-label">Project Monitoring</span>
+          <span class="section-arrow"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-items collapsed">
+          <button class="menu-btn w-full flex items-center gap-3" data-page="HSGProjectsMonitoring.html"><i class="fas fa-chart-line"></i><span>HSG Project Monitoring</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="IAPB_Status.html"><i class="fas fa-tasks"></i><span>Activities Implementation</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="EPA.html"><i class="fas fa-shopping-cart"></i><span>Early Procurement</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="PNJRRS.html"><i class="fas fa-shield-halved"></i><span>PN Joint Readiness</span></button>
+        </div>
 
-        <div class="section-head">Inventory Reports</div>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="Communication_Inventory.html"><i class="fas fa-broadcast-tower"></i><span>Communication Inv.</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="FireArms_Inventory.html"><i class="fas fa-crosshairs"></i><span>FireArms Inventory</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="Vehicle_Inventory.html"><i class="fas fa-car"></i><span>Vehicle Inventory</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="quartermaster-report.html"><i class="fas fa-car"></i><span>Quartermaster Inventory</span></button>
+        <!-- ── Inventory Reports ── -->
+        <div class="section-head collapsed" onclick="toggleSection(this)">
+          <span class="section-head-label">Inventory Reports</span>
+          <span class="section-arrow"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-items collapsed">
+          <button class="menu-btn w-full flex items-center gap-3" data-page="Communication_Inventory.html"><i class="fas fa-broadcast-tower"></i><span>Communication Inv.</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="FireArms_Inventory.html"><i class="fas fa-crosshairs"></i><span>FireArms Inventory</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="Vehicle_Inventory.html"><i class="fas fa-car"></i><span>Vehicle Inventory</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="quartermaster-report.html"><i class="fas fa-car"></i><span>Quartermaster Inventory</span></button>
+        </div>
 
-        <div class="section-head">Utilities &amp; Bills</div>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="Meralco.html"><i class="fas fa-bolt-lightning"></i><span>Meralco Bill Report</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="Maynilad.html"><i class="fas fa-faucet-dotted"></i><span>Maynilad Bill Report</span></button>
+        <!-- ── Utilities & Bills ── -->
+        <div class="section-head collapsed" onclick="toggleSection(this)">
+          <span class="section-head-label">Utilities &amp; Bills</span>
+          <span class="section-arrow"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-items collapsed">
+          <button class="menu-btn w-full flex items-center gap-3" data-page="Meralco.html"><i class="fas fa-bolt-lightning"></i><span>Meralco Bill Report</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="Maynilad.html"><i class="fas fa-faucet-dotted"></i><span>Maynilad Bill Report</span></button>
+        </div>
 
-        <div class="section-head">Reminders</div>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="BranchCompliances.html"><i class="fas fa-bell"></i><span>Branch Reminders</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="ConferenceReminders.html"><i class="fas fa-handshake"></i><span>Conference Reminders</span></button>
+        <!-- ── Reminders ── -->
+        <div class="section-head collapsed" onclick="toggleSection(this)">
+          <span class="section-head-label">Reminders</span>
+          <span class="section-arrow"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-items collapsed">
+          <button class="menu-btn w-full flex items-center gap-3" data-page="BranchCompliances.html"><i class="fas fa-bell"></i><span>Branch Reminders</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="ConferenceReminders.html"><i class="fas fa-handshake"></i><span>Conference Reminders</span></button>
+        </div>
 
-        <div class="section-head">Document Management</div>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="File_Management.html"><i class="fas fa-file-export"></i><span>Transmittal/Disposition</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="N4_Scanned_Documents.html"><i class="fas fa-file-pdf"></i><span>N4 Scanned Documents</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="TNCE_Scanned_Documents.html"><i class="fas fa-file-pdf"></i><span>TNCE Scanned Documents</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="PPBER_Documents.html"><i class="fas fa-file-pdf"></i><span>PBBER Documents</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="Logistics_Policies.html"><i class="fas fa-file-pdf"></i><span>Logistics Policies</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="Billing_Statements.html"><i class="fas fa-file-pdf"></i><span>Billing Statements</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="After_Reports.html"><i class="fas fa-file-pdf"></i><span>AAR Documents</span></button>
-        
-        <div class="section-head">Forms</div>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="UPR_Form.html"><i class="fas fa-file-signature"></i><span>UPR Form</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="RIS_Form.html"><i class="fas fa-file-invoice"></i><span>RIS Form</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="PPMP_Form.html"><i class="fas fa-file-contract"></i><span>PPMP Form</span></button>
-        <button class="menu-btn w-full flex items-center gap-3 text-sm" data-page="DOWNLOAD_CERT">
-          <i class="fas fa-certificate"></i><span>PSDBM Certificates</span>
-        </button>
+        <!-- ── Document Management ── -->
+        <div class="section-head collapsed" onclick="toggleSection(this)">
+          <span class="section-head-label">Document Management</span>
+          <span class="section-arrow"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-items collapsed">
+          <button class="menu-btn w-full flex items-center gap-3" data-page="File_Management.html"><i class="fas fa-file-export"></i><span>Transmittal/Disposition</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="N4_Scanned_Documents.html"><i class="fas fa-file-pdf"></i><span>N4 Scanned Documents</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="TNCE_Scanned_Documents.html"><i class="fas fa-file-pdf"></i><span>TNCE Scanned Documents</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="PPBER_Documents.html"><i class="fas fa-file-pdf"></i><span>PBBER Documents</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="Logistics_Policies.html"><i class="fas fa-file-pdf"></i><span>Logistics Policies</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="Billing_Statements.html"><i class="fas fa-file-pdf"></i><span>Billing Statements</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="After_Reports.html"><i class="fas fa-file-pdf"></i><span>AAR Documents</span></button>
+        </div>
+
+        <!-- ── Forms ── -->
+        <div class="section-head collapsed" onclick="toggleSection(this)">
+          <span class="section-head-label">Forms</span>
+          <span class="section-arrow"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="section-items collapsed">
+          <button class="menu-btn w-full flex items-center gap-3" data-page="UPR_Form.html"><i class="fas fa-file-signature"></i><span>UPR Form</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="RIS_Form.html"><i class="fas fa-file-invoice"></i><span>RIS Form</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="PPMP_Form.html"><i class="fas fa-file-contract"></i><span>PPMP Form</span></button>
+          <button class="menu-btn w-full flex items-center gap-3" data-page="DOWNLOAD_CERT">
+            <i class="fas fa-certificate"></i><span>PSDBM Certificates</span>
+          </button>
+        </div>
+
       </nav>
 
       <div class="sidebar-footer">Powered by HPN &amp; HSG</div>
     </aside>
 
+    <!-- ══ MAIN ══ -->
     <main class="flex-1 main-content-bg relative overflow-y-auto">
       <div id="dashboard-view" class="p-6">
         <div class="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-2xl border border-white mb-6">
-          <h2 class="text-3xl font-black uppercase" style="color: var(--navy)">Logistics Unit Data Center</h2>
-          <p class="text-gray-600 font-medium">Hover over personnel profiles to view real-time compliance sync.</p>
+          <h2 class="font-black uppercase mb-1" style="color: var(--navy); font-size:2.1rem;">Logistics Unit Data Center</h2>
+          <p class="font-medium" style="color:#4b5563; font-size:1.0rem;">Hover over personnel profiles to view real-time compliance sync.</p>
         </div>
 
         <div id="activity-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div class="col-span-full text-center py-8">
             <div class="inline-block w-10 h-10 border-4 border-t-transparent rounded-full animate-spin" style="border-color: var(--royal); border-top-color: transparent;"></div>
-            <p class="mt-3 text-gray-500 text-sm">Loading activities...</p>
+            <p class="mt-3 text-gray-500" style="font-size:0.95rem;">Loading activities...</p>
           </div>
         </div>
       </div>
@@ -410,20 +558,29 @@
             <path d="M50 60 L140 60 C145 60 150 65 150 70 L150 95 L170 80 L170 120 L150 105 L150 130 C150 135 145 140 140 140 L50 140 C45 140 40 135 40 130 L40 70 C40 65 45 60 50 60 Z" fill="white"/>
           </svg>
           <div>
-            <h3 class="font-bold text-sm">Upcoming Conferences</h3>
-            <p class="text-xs opacity-90">Next meetings</p>
+            <h3 class="font-bold" style="font-size:0.95rem;">Upcoming Conferences</h3>
+            <p style="font-size:0.78rem; opacity:0.9;">Next meetings</p>
           </div>
         </div>
         <div id="zoom-body" class="zoom-body">
           <div class="no-conferences">Loading conferences...</div>
         </div>
       </div>
-
-
     </main>
 
     <div id="iframe-view" class="hidden"></div>
   </div>
+
+  <!-- Collapsible sidebar sections -->
+  <script>
+    function toggleSection(header) {
+      const items = header.nextElementSibling;
+      const isCollapsed = items.classList.contains('collapsed');
+
+      header.classList.toggle('collapsed', !isCollapsed);
+      items.classList.toggle('collapsed', !isCollapsed);
+    }
+  </script>
 
   <script type="module">
     import { createClient } from "@supabase/supabase-js";
@@ -432,7 +589,7 @@
     const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
     const sbClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-    
+
     const GOOGLE_API_KEY = 'AIzaSyAK0To2SHndohnCSzMSKjYLeBWjICNHue4';
 
     document.getElementById('logout-btn').addEventListener('click', () => {
@@ -452,7 +609,7 @@
 
         if (page === 'DOWNLOAD_CERT') {
             const link = document.createElement('a');
-            link.href = 'files/Certificate.docx'; 
+            link.href = 'files/Certificate.docx';
             link.download = 'Certificate.docx';
             document.body.appendChild(link);
             link.click();
@@ -501,16 +658,16 @@
                     </td>
                 </tr>
             `).join('');
-        } catch (e) { 
+        } catch (e) {
             console.error(e);
-            tbody.innerHTML = "<tr><td colspan='2' class='text-red-500'>Connection Error</td></tr>"; 
+            tbody.innerHTML = "<tr><td colspan='2' class='text-red-500'>Connection Error</td></tr>";
         }
     }
 
     const quarters = [
-        { id: 'q1', title: '1ST QTR ACTIVITIES', dbValue: 'First Quarter', theme: 'quarter-1', activities: [] },
+        { id: 'q1', title: '1ST QTR ACTIVITIES', dbValue: 'First Quarter',  theme: 'quarter-1', activities: [] },
         { id: 'q2', title: '2ND QTR ACTIVITIES', dbValue: 'Second Quarter', theme: 'quarter-2', activities: [] },
-        { id: 'q3', title: '3RD QTR ACTIVITIES', dbValue: 'Third Quarter', theme: 'quarter-3', activities: [] },
+        { id: 'q3', title: '3RD QTR ACTIVITIES', dbValue: 'Third Quarter',  theme: 'quarter-3', activities: [] },
         { id: 'q4', title: '4TH QTR ACTIVITIES', dbValue: 'Fourth Quarter', theme: 'quarter-4', activities: [] }
     ];
 
@@ -533,7 +690,7 @@
             renderAllQuarters();
         } catch (err) {
             console.error("Error loading data:", err);
-            document.getElementById('activity-grid').innerHTML = `<div class="col-span-full text-center text-red-500 text-sm">Error loading activities.</div>`;
+            document.getElementById('activity-grid').innerHTML = `<div class="col-span-full text-center text-red-500" style="font-size:0.95rem;">Error loading activities.</div>`;
         }
     }
 
@@ -627,7 +784,7 @@
         if (!listContainer) return;
         listContainer.innerHTML = '';
         if (quarter.activities.length === 0) {
-            listContainer.innerHTML = `<div class="p-6 text-center text-gray-400 text-xs italic">No activities yet.<br/>Add one or use AI!</div>`;
+            listContainer.innerHTML = `<div class="p-6 text-center text-gray-400 italic" style="font-size:0.82rem;">No activities yet.<br/>Add one or use AI!</div>`;
             return;
         }
         quarter.activities.forEach(activity => {
@@ -684,5 +841,3 @@
   </script>
 </body>
 </html>
-
-
