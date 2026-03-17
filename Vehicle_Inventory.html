@@ -19,6 +19,12 @@
             --text-main: #1e293b;
             --text-muted: #475569;
             --sidebar-w: 280px;
+            --plate-red-bg:    #fee2e2;
+            --plate-red-text:  #991b1b;
+            --plate-red-border:#fca5a5;
+            --plate-black-bg:  #1e293b;
+            --plate-black-text:#f8fafc;
+            --plate-black-border:#475569;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -104,7 +110,7 @@
         /* --- Stats Layout --- */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 2rem;
             margin-bottom: 3rem;
         }
@@ -119,6 +125,20 @@
             align-items: center;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
+
+        /* Red plate stat card */
+        .stat-card.red-plate-card {
+            background: #fff1f2;
+            border-color: var(--plate-red-border);
+        }
+        .stat-card.red-plate-card .stat-value { color: var(--plate-red-text); }
+
+        /* Black plate stat card */
+        .stat-card.black-plate-card {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        .stat-card.black-plate-card .stat-value { color: var(--plate-black-bg); }
 
         .stat-label { font-size: 1rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .stat-value { font-size: 3rem; font-weight: 800; color: var(--navy); }
@@ -148,6 +168,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         /* --- Form --- */
@@ -166,6 +188,73 @@
         }
 
         .field:focus { border-color: var(--royal); outline: none; }
+
+        /* --- Plate Type Toggle --- */
+        .plate-type-group { margin-bottom: 1.5rem; }
+        .plate-type-group label { display: block; font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
+
+        .plate-toggle {
+            display: flex;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .plate-toggle input[type="radio"] { display: none; }
+
+        .plate-toggle label {
+            flex: 1;
+            padding: 0.9rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.2s;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+        }
+
+        /* Red plate option */
+        #plate_red + label {
+            color: var(--plate-red-text);
+            background: #fff1f2;
+        }
+        #plate_red:checked + label {
+            background: var(--plate-red-text);
+            color: white;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Black plate option */
+        #plate_black + label {
+            color: #334155;
+            background: #e2e8f0;
+            border-left: 2px solid var(--border-color);
+        }
+        #plate_black:checked + label {
+            background: var(--plate-black-bg);
+            color: white;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Plate number preview inside form */
+        .plate-preview {
+            margin-top: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .plate-preview.red  { background: var(--plate-red-bg);   color: var(--plate-red-text);  border: 1px solid var(--plate-red-border); }
+        .plate-preview.black { background: var(--plate-black-bg); color: var(--plate-black-text); border: 1px solid var(--plate-black-border); }
 
         .btn-submit {
             width: 100%;
@@ -195,10 +284,7 @@
             transition: all 0.2s;
         }
 
-        .btn-edit:hover {
-            background: var(--royal);
-            transform: translateY(-2px);
-        }
+        .btn-edit:hover { background: var(--royal); transform: translateY(-2px); }
 
         .btn-delete {
             background: #ef4444;
@@ -212,37 +298,54 @@
             margin-left: 0.5rem;
             transition: all 0.2s;
         }
-
-        .btn-delete:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-        }
+        .btn-delete:hover { background: #dc2626; transform: translateY(-2px); }
 
         .btn-remove-duplicates {
             background: var(--royal);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 10px;
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 0.95rem;
-            margin-left: 1rem;
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
             transition: all 0.2s;
+            white-space: nowrap;
         }
-
-        .btn-remove-duplicates:hover {
-            background: var(--navy);
-        }
+        .btn-remove-duplicates:hover { background: var(--navy); }
 
         /* --- Table --- */
         .search-input {
-            width: 300px;
+            width: 220px;
             padding: 0.6rem 1rem;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
+
+        /* Plate filter buttons */
+        .plate-filter-btns {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .filter-btn.all   { background:#e2e8f0; color:#334155; border-color:#cbd5e1; }
+        .filter-btn.red   { background:var(--plate-red-bg); color:var(--plate-red-text); border-color:var(--plate-red-border); }
+        .filter-btn.black { background:var(--plate-black-bg); color:var(--plate-black-text); border-color:var(--plate-black-border); }
+        .filter-btn.active, .filter-btn:hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        .filter-btn.all.active   { background: var(--navy); color: white; border-color: var(--navy); }
+        .filter-btn.red.active   { background: var(--plate-red-text); color: white; }
+        .filter-btn.black.active { box-shadow: 0 2px 8px rgba(0,0,0,0.35); }
 
         .table-wrap { width: 100%; overflow-x: auto; padding: 1.5rem; }
         table { width: 100%; border-collapse: collapse; }
@@ -262,11 +365,69 @@
             font-size: 1rem; 
             vertical-align: middle; 
         }
-        
         tr:hover td { background-color: #fdfdfd; }
-        
         .office-cell { font-weight: 800; color: var(--navy); }
-        .plate-cell { font-family: 'Courier New', Courier, monospace; font-weight: 700; color: #1e293b; }
+
+        /* ━━━ PLATE NUMBER BADGES ━━━━━━━━━━━━━━━━━━ */
+        .plate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            border: 2px solid;
+            white-space: nowrap;
+        }
+
+        .plate-badge.red {
+            background: var(--plate-red-bg);
+            color: var(--plate-red-text);
+            border-color: var(--plate-red-border);
+        }
+
+        .plate-badge.black {
+            background: var(--plate-black-bg);
+            color: var(--plate-black-text);
+            border-color: var(--plate-black-border);
+        }
+
+        .plate-badge.unknown {
+            background: #f8fafc;
+            color: #475569;
+            border-color: #cbd5e1;
+            font-style: italic;
+        }
+
+        .plate-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .plate-badge.red   .plate-dot { background: var(--plate-red-text); }
+        .plate-badge.black .plate-dot { background: #94a3b8; }
+
+        /* Legend strip */
+        .plate-legend {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            padding: 10px 16px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.88rem;
+            font-weight: 600;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         .office-group-row {
             background: #e2e8f0 !important;
@@ -279,9 +440,12 @@
 
         /* --- Print --- */
         @media print {
-            .sidebar, .stats-grid, .card:first-child, .btn-remove-duplicates, .search-input, .btn-edit, .badge-print-hide { display: none !important; }
+            .sidebar, .stats-grid, .card:first-child, .btn-remove-duplicates,
+            .search-input, .btn-edit, .badge-print-hide,
+            .plate-filter-btns, .plate-legend { display: none !important; }
             .content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
             .main-grid { grid-template-columns: 1fr !important; }
+            .plate-badge { border: 1.5px solid !important; }
         }
     </style>
 </head>
@@ -298,6 +462,19 @@
         <div class="nav-link" onclick="downloadTemplate()"><i class="fas fa-download"></i> Download Template</div>
         <div class="nav-link" onclick="document.getElementById('excelUpload').click()"><i class="fas fa-upload"></i> Import Excel</div>
         <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
+
+        <!-- Sidebar legend -->
+        <div style="margin-top:auto; padding: 1rem; background: rgba(255,255,255,0.08); border-radius:12px; font-size:0.88rem;">
+            <div style="color:rgba(255,255,255,0.6); font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; font-size:0.72rem;">Plate Legend</div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <span style="display:inline-block; width:28px; height:18px; background:#fee2e2; border:2px solid #fca5a5; border-radius:4px;"></span>
+                <span style="color:rgba(255,255,255,0.85); font-weight:600;">Red Plate — PN Transfer</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="display:inline-block; width:28px; height:18px; background:#1e293b; border:2px solid #475569; border-radius:4px;"></span>
+                <span style="color:rgba(255,255,255,0.85); font-weight:600;">Black Plate — Civilian</span>
+            </div>
+        </div>
     </nav>
 
     <main class="content">
@@ -312,16 +489,33 @@
                 <i class="fas fa-truck-pickup fa-2x" style="color: var(--border-color)"></i>
             </div>
             <div class="stat-card">
-                <div><div class="stat-label">Offices Units</div><div class="stat-value" id="statOffices">0</div></div>
+                <div><div class="stat-label">Offices / Units</div><div class="stat-value" id="statOffices">0</div></div>
                 <i class="fas fa-building fa-2x" style="color: var(--border-color)"></i>
             </div>
+            <div class="stat-card red-plate-card">
+                <div>
+                    <div class="stat-label" style="color:#991b1b;">🔴 Red Plates (PN)</div>
+                    <div class="stat-value" id="statRedPlates">0</div>
+                    <div style="font-size:0.78rem; color:#b91c1c; margin-top:4px; font-weight:600;">Transferred to Philippine Navy</div>
+                </div>
+                <i class="fas fa-id-card fa-2x" style="color:#fca5a5"></i>
+            </div>
+            <div class="stat-card black-plate-card">
+                <div>
+                    <div class="stat-label" style="color:#334155;">⚫ Black Plates</div>
+                    <div class="stat-value" id="statBlackPlates">0</div>
+                    <div style="font-size:0.78rem; color:#475569; margin-top:4px; font-weight:600;">Civilian / Not yet transferred</div>
+                </div>
+                <i class="fas fa-car fa-2x" style="color:#94a3b8"></i>
+            </div>
             <div class="stat-card badge-print-hide" style="background: var(--royal); color: white; cursor: pointer;" onclick="window.print()">
-                <div><div class="stat-label" style="color: rgba(255,255,255,0.8)">Reports</div><div class="stat-value" style="color: white; font-size: 1.5rem;">GENERATE PDF</div></div>
+                <div><div class="stat-label" style="color:rgba(255,255,255,0.8)">Reports</div><div class="stat-value" style="color:white;font-size:1.5rem;">GENERATE PDF</div></div>
                 <i class="fas fa-file-pdf fa-2x"></i>
             </div>
         </section>
 
         <div class="main-grid">
+            <!-- FORM CARD -->
             <div class="card">
                 <div class="card-header">Register New Asset</div>
                 <div class="form-container">
@@ -346,7 +540,22 @@
                         </select>
                     </div>
                     <div class="group"><label>Vehicle Model / Type</label><input type="text" id="vehicle_type" class="field" placeholder="e.g., M35 Truck"></div>
-                    <div class="group"><label>Plate Number</label><input type="text" id="plate_number" class="field" placeholder="SJN-123"></div>
+                    
+                    <!-- Plate Type Toggle -->
+                    <div class="plate-type-group">
+                        <label>Plate Type</label>
+                        <div class="plate-toggle">
+                            <input type="radio" name="plate_type" id="plate_red" value="red" checked onchange="updatePlatePreview()">
+                            <label for="plate_red"><span style="width:10px;height:10px;border-radius:50%;background:#991b1b;display:inline-block;"></span> 🔴 Red Plate (PN Transfer)</label>
+                            <input type="radio" name="plate_type" id="plate_black" value="black" onchange="updatePlatePreview()">
+                            <label for="plate_black"><span style="width:10px;height:10px;border-radius:50%;background:#f8fafc;border:1px solid #94a3b8;display:inline-block;"></span> ⚫ Black Plate (Civilian)</label>
+                        </div>
+                        <div id="plateTypeHint" class="plate-preview red" style="margin-top:8px;">
+                            <i class="fas fa-circle-info"></i> Transferred to Philippine Navy
+                        </div>
+                    </div>
+
+                    <div class="group"><label>Plate Number</label><input type="text" id="plate_number" class="field" placeholder="SJN-123" oninput="updatePlatePreview()"></div>
                     <div style="display: flex; gap: 15px;">
                         <div class="group" style="flex:1"><label>Engine No.</label><input type="text" id="engine_number" class="field"></div>
                         <div class="group" style="flex:1"><label>Chassis No.</label><input type="text" id="chassis_number" class="field"></div>
@@ -359,28 +568,54 @@
                 </div>
             </div>
 
+            <!-- TABLE CARD -->
             <div class="card">
                 <div class="card-header">
-                    Master Fleet Record
-                    <div>
-                        <input type="text" id="searchInput" class="search-input" placeholder="Quick search records..." onkeyup="filterTable()">
-                        <button class="btn-remove-duplicates" onclick="removeDuplicates()"><i class="fas fa-broom"></i> Remove Duplicates</button>
-                        <button class="btn-remove-duplicates" style="background: #ef4444;" onclick="deleteSelected()"><i class="fas fa-trash"></i> Delete Selected</button>
+                    <span>Master Fleet Record</span>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Quick search..." onkeyup="filterTable()">
+                        <!-- Plate filter buttons -->
+                        <div class="plate-filter-btns">
+                            <button class="filter-btn all active" onclick="setPlateFilter('all', this)">All</button>
+                            <button class="filter-btn red"   onclick="setPlateFilter('red', this)">🔴 Red</button>
+                            <button class="filter-btn black" onclick="setPlateFilter('black', this)">⚫ Black</button>
+                        </div>
+                        <button class="btn-remove-duplicates" onclick="removeDuplicates()"><i class="fas fa-broom"></i> Dupes</button>
+                        <button class="btn-remove-duplicates" style="background:#ef4444;" onclick="deleteSelected()"><i class="fas fa-trash"></i> Del</button>
                     </div>
                 </div>
                 <div class="table-wrap">
                     <table id="mainTable">
                         <thead>
                             <tr>
-                                <th class="badge-print-hide" style="width: 50px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                                <th style="width: 50px;">#</th>
-                                <th>Office</th><th>Vehicle Model</th><th>Plate ID</th>
-                                <th>Engine No.</th><th>Chassis No.</th><th>Remarks</th>
-                                <th>Reg. Date</th><th class="badge-print-hide" style="width: 120px;">Actions</th>
+                                <th class="badge-print-hide" style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                <th style="width:40px;">#</th>
+                                <th>Office</th>
+                                <th>Vehicle Model</th>
+                                <th>Plate Number</th>
+                                <th>Engine No.</th>
+                                <th>Chassis No.</th>
+                                <th>Remarks</th>
+                                <th>Reg. Date</th>
+                                <th class="badge-print-hide" style="width:100px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="vehicleTable"></tbody>
                     </table>
+                </div>
+                <!-- Legend strip at bottom of table -->
+                <div class="plate-legend badge-print-hide">
+                    <span style="font-weight:700; color:var(--text-muted);">PLATE LEGEND:</span>
+                    <div class="legend-item">
+                        <span class="plate-badge red" style="font-size:0.78rem; padding:3px 10px;"><span class="plate-dot"></span>SJN-123</span>
+                        <span style="color:var(--plate-red-text); font-weight:700;">Red Plate</span>
+                        <span style="color:var(--text-muted);">— Transferred to Philippine Navy</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="plate-badge black" style="font-size:0.78rem; padding:3px 10px;"><span class="plate-dot"></span>ABC-456</span>
+                        <span style="color:#334155; font-weight:700;">Black Plate</span>
+                        <span style="color:var(--text-muted);">— Civilian / Not yet transferred</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -393,114 +628,242 @@
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
         const db = window.supabase.createClient(SB_URL, SB_KEY);
 
-        async function refreshData() {
-            const { data, error } = await db.from('vehicles').select('*').order('office', { ascending: true }).order('vehicle_type', { ascending: true });
-            if (error) return console.error(error);
+        let allData = [];
+        let activePlateFilter = 'all';
+
+        /* ━━━ PLATE PREVIEW IN FORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function updatePlatePreview() {
+            const type = document.querySelector('input[name="plate_type"]:checked').value;
+            const hint = document.getElementById('plateTypeHint');
+            hint.className = 'plate-preview ' + type;
+            if (type === 'red') {
+                hint.innerHTML = '<i class="fas fa-circle-info"></i> Transferred to Philippine Navy — Red Government Plate';
+            } else {
+                hint.innerHTML = '<i class="fas fa-circle-info"></i> Civilian vehicle — Not yet transferred to PN';
+            }
+        }
+
+        /* ━━━ PLATE FILTER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function setPlateFilter(type, btn) {
+            activePlateFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderTable(allData);
+        }
+
+        /* ━━━ RENDER TABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function renderTable(data) {
+            // Apply plate filter
+            let filtered = data;
+            if (activePlateFilter !== 'all') {
+                filtered = data.filter(v => (v.plate_type || 'black') === activePlateFilter);
+            }
+
             const tbody = document.getElementById("vehicleTable");
             tbody.innerHTML = "";
             let currentOffice = "";
             let counter = 1;
-            data.forEach((v) => {
+
+            filtered.forEach((v) => {
                 if (v.office !== currentOffice) {
                     currentOffice = v.office;
                     const groupRow = tbody.insertRow();
                     groupRow.className = "office-group-row";
-                    groupRow.innerHTML = `<td colspan="10" style="padding: 10px 20px;">OFFICE: ${currentOffice}</td>`;
+                    groupRow.innerHTML = `<td colspan="10" style="padding:10px 20px;">OFFICE: ${currentOffice}</td>`;
                 }
+
+                const plateType  = v.plate_type || 'black';
+                const plateClass = plateType === 'red' ? 'red' : 'black';
+                const plateDot   = plateType === 'red'
+                    ? '<span class="plate-dot"></span>'
+                    : '<span class="plate-dot"></span>';
+                const plateHtml = v.plate_number
+                    ? `<span class="plate-badge ${plateClass}">${plateDot}${v.plate_number}</span>`
+                    : `<span class="plate-badge unknown">—</span>`;
+
                 const row = tbody.insertRow();
+                row.dataset.plateType = plateType;
                 row.innerHTML = `
                     <td class="badge-print-hide"><input type="checkbox" class="row-checkbox" data-id="${v.id}"></td>
-                    <td style="font-weight: 700; color: #94a3b8;">${counter++}</td>
+                    <td style="font-weight:700; color:#94a3b8;">${counter++}</td>
                     <td class="office-cell">${v.office || ''}</td>
                     <td>${v.vehicle_type || ''}</td>
-                    <td class="plate-cell">${v.plate_number || ''}</td>
-                    <td style="font-size: 0.95rem; color: #64748b;">${v.engine_number || '---'}</td>
-                    <td style="font-size: 0.95rem; color: #64748b;">${v.chassis_number || '---'}</td>
-                    <td style="font-size: 0.95rem; color: #64748b;">${v.remarks || ''}</td>
-                    <td style="font-size: 0.95rem; color: #64748b;">${v.date_of_registration || '---'}</td>
+                    <td>${plateHtml}</td>
+                    <td style="font-size:0.95rem; color:#64748b;">${v.engine_number  || '---'}</td>
+                    <td style="font-size:0.95rem; color:#64748b;">${v.chassis_number || '---'}</td>
+                    <td style="font-size:0.95rem; color:#64748b;">${v.remarks        || ''}</td>
+                    <td style="font-size:0.95rem; color:#64748b;">${v.date_of_registration || '---'}</td>
                     <td class="badge-print-hide"><button class="btn-edit" onclick="editRecord(${v.id})"><i class="fas fa-edit"></i> Edit</button></td>
                 `;
             });
-            document.getElementById('statTotal').innerText = data.length;
-            document.getElementById('statOffices').innerText = [...new Set(data.map(v => v.office))].length;
+
+            // Update counts
+            const total     = data.length;
+            const redCount  = data.filter(v => (v.plate_type || 'black') === 'red').length;
+            const blackCount= data.filter(v => (v.plate_type || 'black') === 'black').length;
+            document.getElementById('statTotal').innerText        = total;
+            document.getElementById('statOffices').innerText      = [...new Set(data.map(v => v.office))].length;
+            document.getElementById('statRedPlates').innerText    = redCount;
+            document.getElementById('statBlackPlates').innerText  = blackCount;
         }
 
+        /* ━━━ REFRESH FROM DB ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        async function refreshData() {
+            const { data, error } = await db.from('vehicles').select('*')
+                .order('office',       { ascending: true })
+                .order('vehicle_type', { ascending: true });
+            if (error) return console.error(error);
+            allData = data;
+            renderTable(allData);
+        }
+
+        /* ━━━ SEARCH FILTER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         function filterTable() {
             const filter = document.getElementById('searchInput').value.toUpperCase();
             const rows = document.getElementById('vehicleTable').getElementsByTagName('tr');
             for (let i = 0; i < rows.length; i++) {
-                if(rows[i].classList.contains('office-group-row')) { rows[i].style.display = filter === "" ? "" : "none"; continue; }
-                const text = rows[i].textContent.toUpperCase();
-                rows[i].style.display = text.indexOf(filter) > -1 ? "" : "none";
+                if (rows[i].classList.contains('office-group-row')) {
+                    rows[i].style.display = filter === "" ? "" : "none";
+                    continue;
+                }
+                rows[i].style.display = rows[i].textContent.toUpperCase().includes(filter) ? "" : "none";
             }
         }
 
-        async function addData() {
-            const payload = { office: document.getElementById('office').value, vehicle_type: document.getElementById('vehicle_type').value, plate_number: document.getElementById('plate_number').value, engine_number: document.getElementById('engine_number').value, chassis_number: document.getElementById('chassis_number').value, remarks: document.getElementById('remarks').value, date_of_registration: document.getElementById('date_of_registration').value || null };
-            const { error } = await db.from('vehicles').insert([payload]);
-            if(!error) { clearForm(); refreshData(); }
+        /* ━━━ GET PLATE TYPE FROM FORM ━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function getSelectedPlateType() {
+            return document.querySelector('input[name="plate_type"]:checked').value;
         }
 
+        function setPlateTypeInForm(type) {
+            const radio = document.querySelector(`input[name="plate_type"][value="${type}"]`);
+            if (radio) { radio.checked = true; updatePlatePreview(); }
+        }
+
+        /* ━━━ ADD RECORD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        async function addData() {
+            const payload = {
+                office:               document.getElementById('office').value,
+                vehicle_type:         document.getElementById('vehicle_type').value,
+                plate_number:         document.getElementById('plate_number').value,
+                plate_type:           getSelectedPlateType(),
+                engine_number:        document.getElementById('engine_number').value,
+                chassis_number:       document.getElementById('chassis_number').value,
+                remarks:              document.getElementById('remarks').value,
+                date_of_registration: document.getElementById('date_of_registration').value || null
+            };
+            const { error } = await db.from('vehicles').insert([payload]);
+            if (!error) { clearForm(); refreshData(); }
+            else console.error(error);
+        }
+
+        /* ━━━ EDIT RECORD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         async function editRecord(id) {
             const { data, error } = await db.from('vehicles').select('*').eq('id', id).single();
             if (error) return;
-            document.getElementById('edit_id').value = data.id;
-            document.getElementById('office').value = data.office || '';
-            document.getElementById('vehicle_type').value = data.vehicle_type || '';
-            document.getElementById('plate_number').value = data.plate_number || '';
-            document.getElementById('engine_number').value = data.engine_number || '';
-            document.getElementById('chassis_number').value = data.chassis_number || '';
-            document.getElementById('remarks').value = data.remarks || '';
+            document.getElementById('edit_id').value              = data.id;
+            document.getElementById('office').value               = data.office || '';
+            document.getElementById('vehicle_type').value         = data.vehicle_type || '';
+            document.getElementById('plate_number').value         = data.plate_number || '';
+            document.getElementById('engine_number').value        = data.engine_number || '';
+            document.getElementById('chassis_number').value       = data.chassis_number || '';
+            document.getElementById('remarks').value              = data.remarks || '';
             document.getElementById('date_of_registration').value = data.date_of_registration || '';
+            setPlateTypeInForm(data.plate_type || 'black');
             document.getElementById('submitBtn').style.display = 'none';
             document.getElementById('updateBtn').style.display = 'block';
             document.getElementById('cancelBtn').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        /* ━━━ UPDATE RECORD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         async function updateData() {
             const id = document.getElementById('edit_id').value;
-            const payload = { office: document.getElementById('office').value, vehicle_type: document.getElementById('vehicle_type').value, plate_number: document.getElementById('plate_number').value, engine_number: document.getElementById('engine_number').value, chassis_number: document.getElementById('chassis_number').value, remarks: document.getElementById('remarks').value, date_of_registration: document.getElementById('date_of_registration').value || null };
+            const payload = {
+                office:               document.getElementById('office').value,
+                vehicle_type:         document.getElementById('vehicle_type').value,
+                plate_number:         document.getElementById('plate_number').value,
+                plate_type:           getSelectedPlateType(),
+                engine_number:        document.getElementById('engine_number').value,
+                chassis_number:       document.getElementById('chassis_number').value,
+                remarks:              document.getElementById('remarks').value,
+                date_of_registration: document.getElementById('date_of_registration').value || null
+            };
             const { error } = await db.from('vehicles').update(payload).eq('id', id);
-            if(!error) { cancelEdit(); refreshData(); }
+            if (!error) { cancelEdit(); refreshData(); }
+            else console.error(error);
         }
 
-        function toggleSelectAll() { const checked = document.getElementById('selectAll').checked; document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked); }
+        /* ━━━ UTILITIES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function toggleSelectAll() {
+            const checked = document.getElementById('selectAll').checked;
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked);
+        }
 
         async function deleteSelected() {
             const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.id));
-            if (ids.length === 0) return alert('Select records first');
-            if (confirm(`Delete ${ids.length} records?`)) { await db.from('vehicles').delete().in('id', ids); refreshData(); }
+            if (ids.length === 0) return alert('Select records first.');
+            if (confirm(`Delete ${ids.length} record(s)?`)) {
+                await db.from('vehicles').delete().in('id', ids);
+                refreshData();
+            }
         }
 
         async function removeDuplicates() {
             const { data } = await db.from('vehicles').select('*').order('id', { ascending: true });
             const seen = new Set(); const dups = [];
-            data.forEach(v => { const key = `${v.plate_number}`.toLowerCase().trim(); if (seen.has(key)) dups.push(v.id); else seen.add(key); });
-            if (dups.length > 0 && confirm(`Delete ${dups.length} duplicates?`)) { await db.from('vehicles').delete().in('id', dups); refreshData(); }
-            else { alert('No duplicates found'); }
+            data.forEach(v => {
+                const key = `${v.plate_number}`.toLowerCase().trim();
+                if (seen.has(key)) dups.push(v.id); else seen.add(key);
+            });
+            if (dups.length > 0 && confirm(`Delete ${dups.length} duplicate(s)?`)) {
+                await db.from('vehicles').delete().in('id', dups); refreshData();
+            } else if (dups.length === 0) { alert('No duplicates found.'); }
         }
 
-        function cancelEdit() { clearForm(); document.getElementById('submitBtn').style.display = 'block'; document.getElementById('updateBtn').style.display = 'none'; document.getElementById('cancelBtn').style.display = 'none'; }
-        function clearForm() { ['vehicle_type', 'plate_number', 'engine_number', 'chassis_number', 'remarks', 'date_of_registration'].forEach(id => { document.getElementById(id).value = ""; }); }
+        function cancelEdit() {
+            clearForm();
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('updateBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        function clearForm() {
+            ['vehicle_type','plate_number','engine_number','chassis_number','remarks','date_of_registration']
+                .forEach(id => { document.getElementById(id).value = ""; });
+            setPlateTypeInForm('red');
+        }
 
         function downloadTemplate() {
-            const template = [['Office', 'Vehicle Type', 'Plate Number', 'Engine Number', 'Chassis Number', 'Remarks']];
-            const ws = XLSX.utils.aoa_to_sheet(template); const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Vehicles'); XLSX.writeFile(wb, 'PN_Fleet_Template.xlsx');
+            const template = [['Office','Vehicle Type','Plate Number','Plate Type (red/black)','Engine Number','Chassis Number','Remarks']];
+            const ws = XLSX.utils.aoa_to_sheet(template);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Vehicles');
+            XLSX.writeFile(wb, 'PN_Fleet_Template.xlsx');
         }
 
         async function importExcel(event) {
-            const file = event.target.files[0]; const reader = new FileReader();
+            const file = event.target.files[0];
+            const reader = new FileReader();
             reader.onload = async function(e) {
                 const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                 const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                const vehicles = rows.map(r => ({ office: (r['Office'] || '').toString().toUpperCase(), vehicle_type: (r['Vehicle Type'] || r['Vehicle Model'] || '').toString(), plate_number: (r['Plate Number'] || r['Plate ID'] || '').toString(), engine_number: (r['Engine Number'] || '').toString(), chassis_number: (r['Chassis Number'] || '').toString(), remarks: (r['Remarks'] || '').toString() }));
-                await db.from('vehicles').insert(vehicles); refreshData();
+                const vehicles = rows.map(r => ({
+                    office:         (r['Office'] || '').toString().toUpperCase(),
+                    vehicle_type:   (r['Vehicle Type'] || r['Vehicle Model'] || '').toString(),
+                    plate_number:   (r['Plate Number'] || r['Plate ID'] || '').toString(),
+                    plate_type:     ((r['Plate Type (red/black)'] || r['Plate Type'] || 'black')).toString().toLowerCase().trim(),
+                    engine_number:  (r['Engine Number'] || '').toString(),
+                    chassis_number: (r['Chassis Number'] || '').toString(),
+                    remarks:        (r['Remarks'] || '').toString()
+                }));
+                await db.from('vehicles').insert(vehicles);
+                refreshData();
             };
             reader.readAsArrayBuffer(file);
         }
 
+        // Init
         refreshData();
     </script>
 </body>
