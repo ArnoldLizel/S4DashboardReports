@@ -1,303 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPA Procurement | Wide Project View</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --brand-navy: #0b2b74;
-            --brand-gold: #570488;
-            --slate-50: #f8fafc;
-            --slate-200: #e2e8f0;
-            --slate-700: #334155;
-            --glass: rgba(255, 255, 255, 0.97);
-            --fs-base: 1rem;
-            --fs-table: 0.95rem;
-            --fs-header: 0.85rem;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPA Procurement | Clay Dashboard</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --bg:#dde8f8;
+      --c1:#5b7fff;--c1b:#3a5dd4;--c1sh:rgba(91,127,255,.36);
+      --c2:#34c97e;--c2b:#1fa85e;--c2sh:rgba(52,201,126,.36);
+      --c3:#ff9f43;--c3b:#d97f20;--c3sh:rgba(255,159,67,.36);
+      --c4:#f0506e;--c4b:#c82d4a;--c4sh:rgba(240,80,110,.36);
+      --purple:#8b6fff;--purple-b:#6a4fd4;--purple-sh:rgba(139,111,255,.36);
+      --text:#1e2340;--text2:#5a5f82;--muted:#9098c0;
+      --white:#ffffff;--surface:#f0f4ff;
+      --r-xl:26px;--r-lg:18px;--r-md:12px;--r-pill:50px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Nunito',sans-serif;min-height:100vh;
+      background:var(--bg);
+      background-image:
+        radial-gradient(ellipse at 10% 15%,rgba(91,127,255,.16) 0%,transparent 50%),
+        radial-gradient(ellipse at 90% 85%,rgba(52,201,126,.12) 0%,transparent 50%),
+        radial-gradient(ellipse at 75% 5%,rgba(139,111,255,.09) 0%,transparent 40%);
+      padding:28px 24px 60px;color:var(--text);
+    }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* ── Main container ── */
+    .main-container{
+      max-width:98%;margin:0 auto;
+      background:linear-gradient(155deg,var(--white),#f8f6ff);
+      border-radius:var(--r-xl);border:3px solid rgba(255,255,255,.95);
+      box-shadow:0 12px 0 0 rgba(91,127,255,.14),0 22px 56px rgba(91,127,255,.12),inset 0 2px 8px rgba(255,255,255,1);
+      padding:2.5rem;
+      animation:popIn .55s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes popIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-image: url('');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            min-height: 100vh;
-            padding: 2rem;
-            color: var(--slate-700);
-            font-size: var(--fs-base);
-        }
+    /* ── Header ── */
+    .header-flex{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;}
+    h1{font-family:'Sora',sans-serif;font-size:1.85rem;font-weight:800;letter-spacing:-.03em;color:var(--text);}
 
-        .main-container {
-            max-width: 98%;
-            margin: 0 auto;
-            background: var(--glass);
-            border-radius: 16px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            padding: 2.5rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid white;
-        }
+    .year-badge{
+      background:linear-gradient(145deg,var(--purple),var(--purple-b));color:#fff;
+      padding:10px 22px;border-radius:var(--r-lg);font-family:'Sora',sans-serif;font-weight:800;font-size:1.05rem;
+      border:3px solid rgba(255,255,255,.4);
+      box-shadow:0 7px 0 0 rgba(106,79,212,.4),0 12px 24px var(--purple-sh),inset 0 2px 5px rgba(255,255,255,.28);
+      transition:all .28s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .year-badge:hover{transform:translateY(-4px);box-shadow:0 11px 0 0 rgba(106,79,212,.4),0 18px 34px var(--purple-sh);}
 
-        .header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
+    /* ── Table container ── */
+    .table-responsive{
+      border-radius:var(--r-lg);overflow:hidden;
+      border:2px solid rgba(91,127,255,.12);
+      box-shadow:0 8px 0 0 rgba(91,127,255,.10),0 14px 36px rgba(91,127,255,.08);
+      overflow-x:auto;
+    }
 
-        h1 { 
-            color: var(--brand-navy); 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            font-size: 1.8rem;
-            letter-spacing: -0.02em;
-        }
+    .table{width:100%;border-collapse:collapse;table-layout:fixed;}
+    .table thead th{
+      background:linear-gradient(145deg,#4a6de8,#3a55c8);
+      color:rgba(255,255,255,.92);padding:1.1rem .75rem;
+      font-family:'Nunito',sans-serif;font-weight:800;text-transform:uppercase;
+      font-size:.72rem;letter-spacing:.10em;border:1px solid rgba(58,85,200,.6);text-align:center;
+    }
 
-        .table-responsive {
-            overflow-x: auto;
-            border-radius: 12px;
-            border: 1px solid var(--slate-200);
-            background: white;
-        }
+    /* Sub-header rows */
+    .sub-header-row td{
+      background:linear-gradient(145deg,#eef3ff,#e4ecff)!important;
+      color:var(--c1)!important;font-weight:900;font-size:1rem;
+      padding:14px 1.25rem;
+      border-left:5px solid var(--c1);
+      font-family:'Sora',sans-serif;letter-spacing:.02em;
+    }
 
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed; /* Ensures specified widths are strictly followed */
-        }
+    .table tbody td{
+      padding:.75rem;border:1px solid rgba(91,127,255,.09);
+      vertical-align:top;font-size:.92rem;font-weight:600;color:var(--text);
+    }
+    tbody tr{transition:background .15s;}
+    tbody tr:not(.sub-header-row):hover{background:rgba(91,127,255,.04);}
 
-        .table thead th {
-            background-color: var(--brand-navy);
-            color: white;
-            padding: 1.2rem 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: var(--fs-header);
-            border: 1px solid #062250;
-            text-align: center;
-        }
+    /* Column widths */
+    .col-nr{width:50px;text-align:center;font-weight:800;color:var(--purple);}
+    .col-title{width:500px;}.col-abc{width:130px;}.col-date{width:132px;}.col-remarks{width:280px;}.col-action{width:68px;text-align:center;}
 
-        .sub-header-row td {
-            background: #f1f5f9 !important;
-            color: var(--brand-navy);
-            font-weight: 800;
-            font-size: 1.1rem;
-            padding: 15px 1.5rem;
-            border-left: 6px solid var(--brand-gold);
-        }
+    /* Form controls */
+    .form-control{
+      width:100%;padding:9px 11px;border:2px solid transparent;border-radius:var(--r-md);
+      background:linear-gradient(145deg,var(--surface),#eef2ff);
+      font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;color:var(--text);
+      transition:.2s;line-height:1.4;overflow:hidden;
+      box-shadow:inset 0 2px 4px rgba(91,127,255,.06);
+    }
+    .form-control:focus{
+      background:var(--white);border-color:var(--c1);outline:none;
+      box-shadow:0 0 0 3px rgba(91,127,255,.14),inset 0 1px 3px rgba(91,127,255,.05);
+      transform:scale(1.01);
+    }
+    textarea.form-control{min-height:44px;resize:none;display:block;}
 
-        .table tbody td {
-            padding: 0.75rem;
-            border: 1px solid var(--slate-200);
-            vertical-align: top;
-            font-size: var(--fs-table);
-        }
+    /* ── Button group ── */
+    .btn-group{display:flex;gap:14px;margin-top:2rem;flex-wrap:wrap;}
+    .btn{
+      padding:13px 26px;border-radius:var(--r-pill);
+      font-family:'Nunito',sans-serif;font-weight:800;font-size:.92rem;cursor:pointer;border:none;
+      display:inline-flex;align-items:center;gap:9px;
+      transition:all .22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn:hover{transform:translateY(-4px) scale(1.04);}
+    .btn:active{transform:translateY(2px) scale(.97);}
+    .btn-success{
+      background:linear-gradient(145deg,#6b90ff,var(--c1b));color:white;
+      box-shadow:0 7px 0 0 rgba(58,93,212,.45),0 12px 26px var(--c1sh),inset 0 2px 5px rgba(255,255,255,.25);
+    }
+    .btn-success:hover{box-shadow:0 11px 0 0 rgba(58,93,212,.45),0 18px 36px var(--c1sh);}
+    .btn-primary{
+      background:linear-gradient(145deg,#2e3d6e,#1a2545);color:white;
+      box-shadow:0 7px 0 0 rgba(20,30,60,.45),0 12px 26px rgba(30,36,64,.3),inset 0 2px 5px rgba(255,255,255,.15);
+    }
+    .btn-primary:hover{box-shadow:0 11px 0 0 rgba(20,30,60,.45),0 18px 36px rgba(30,36,64,.35);}
+    .btn-danger{
+      background:linear-gradient(145deg,#38a8e8,#0e78c0);color:white;
+      box-shadow:0 7px 0 0 rgba(10,90,160,.4),0 12px 26px rgba(10,100,170,.25),inset 0 2px 5px rgba(255,255,255,.20);
+    }
+    .btn-danger:hover{box-shadow:0 11px 0 0 rgba(10,90,160,.4),0 18px 36px rgba(10,100,170,.3);}
 
-        /* --- UPDATED COLUMN WIDTHS --- */
-        .col-nr { width: 50px; text-align: center; font-weight: 800; color: var(--brand-gold); }
-        .col-title { width: 550px; } /* MUCH LONGER */
-        .col-abc { width: 140px; }
-        .col-date { width: 145px; }
-        .col-remarks { width: 300px; } /* SHORTER */
-        .col-action { width: 70px; text-align: center; }
-
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid transparent;
-            border-radius: 6px;
-            background: #f1f5f9;
-            font-family: inherit;
-            font-size: var(--fs-table);
-            transition: 0.2s;
-            line-height: 1.4;
-            overflow: hidden;
-        }
-
-        .form-control:focus {
-            background: white;
-            border-color: var(--brand-gold);
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(87, 4, 136, 0.1);
-        }
-
-        textarea.form-control { 
-            min-height: 45px; 
-            resize: none; 
-            display: block;
-        }
-
-        .btn-group { display: flex; gap: 15px; margin-top: 2rem; }
-        .btn {
-            padding: 14px 28px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: 0.3s;
-        }
-        .btn-success { background: #0a32e7; color: white; }
-        .btn-primary { background: var(--brand-navy); color: white; }
-        .btn-danger { background: #016aa7; color: #e6e0e0; border: 1px solid #064a75; }
-        
-        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
-
-        .delete-btn { 
-            color: #fd4747; 
-            background: #fff1f2; 
-            border: 1px solid #ffe4e6; 
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer; 
-        }
-    </style>
+    /* Delete button */
+    .delete-btn{
+      background:linear-gradient(145deg,#fff5f7,#ffe8ee);color:var(--c4);
+      border:2px solid rgba(240,80,110,.2);border-radius:50%;
+      width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:.85rem;
+      box-shadow:0 3px 0 0 rgba(200,45,74,.15),0 5px 12px rgba(200,45,74,.10),inset 0 1px 3px rgba(255,255,255,.9);
+      transition:all .22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .delete-btn:hover{transform:translateY(-3px) scale(1.12);background:linear-gradient(145deg,#ffe0e8,#ffd0da);box-shadow:0 6px 0 0 rgba(200,45,74,.2),0 10px 20px rgba(200,45,74,.15);}
+  </style>
 </head>
 <body>
-
 <div class="main-container">
-    <div class="header-flex">
-        <h1>EPA Procurement Dashboard</h1>
-        <div id="yearBox" style="background: var(--brand-gold); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 1.1rem;">
-            FY <span id="currentYearDisplay">----</span>
-        </div>
-    </div>
+  <div class="header-flex">
+    <h1>EPA Procurement Dashboard</h1>
+    <div class="year-badge">FY <span id="currentYearDisplay">----</span></div>
+  </div>
 
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="col-nr">Nr</th>
-                    <th class="col-title">Item Title / Project Name</th>
-                    <th class="col-abc">ABC (₱)</th>
-                    <th class="col-date">Pre-Proc</th>
-                    <th class="col-date">Pre-Bid</th>
-                    <th class="col-date">SOBE</th>
-                    <th class="col-date">PQ</th>
-                    <th class="col-date">NOA</th>
-                    <th class="col-date">NTP</th>
-                    <th class="col-remarks">Remarks</th>
-                    <th class="col-action">Action</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="col-nr">Nr</th>
+          <th class="col-title">Item Title / Project Name</th>
+          <th class="col-abc">ABC (₱)</th>
+          <th class="col-date">Pre-Proc</th>
+          <th class="col-date">Pre-Bid</th>
+          <th class="col-date">SOBE</th>
+          <th class="col-date">PQ</th>
+          <th class="col-date">NOA</th>
+          <th class="col-date">NTP</th>
+          <th class="col-remarks">Remarks</th>
+          <th class="col-action">Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
 
-    <div class="btn-group">
-        <button class="btn btn-success" id="addBtn"><i class="fas fa-plus-circle"></i> Add New Item</button>
-        <button class="btn btn-primary" id="saveBtn"><i class="fas fa-cloud-upload-alt"></i> Save All Changes</button>
-        <button class="btn btn-danger" id="clearBtn"><i class="fas fa-redo"></i> Reset Year</button>
-    </div>
+  <div class="btn-group">
+    <button class="btn btn-success" id="addBtn"><i class="fas fa-plus-circle"></i> Add New Item</button>
+    <button class="btn btn-primary" id="saveBtn"><i class="fas fa-cloud-upload-alt"></i> Save All Changes</button>
+    <button class="btn btn-danger" id="clearBtn"><i class="fas fa-redo"></i> Reset Year</button>
+  </div>
 </div>
 
 <script>
-(() => {
-    const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-    const TABLE = "epa_procurement";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+(()=>{
+  const SUPABASE_URL="https://jdzfxfriydakuqegtahq.supabase.co";
+  const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+  const TABLE="epa_procurement";
+  const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  let items=[{text:"Goods and Services",colspan:true}];
+  let currentYear=new Date().getFullYear().toString();
 
-    let items = [{ text: "Goods and Services", colspan: true }];
-    let currentYear = new Date().getFullYear().toString();
+  const autoExpand=el=>{el.style.height='auto';el.style.height=el.scrollHeight+'px';};
 
-    const autoExpand = (el) => {
-        el.style.height = 'auto';
-        el.style.height = el.scrollHeight + 'px';
-    };
-
-    const render = () => {
-        const tbody = document.getElementById("tableBody");
-        document.getElementById("currentYearDisplay").innerText = currentYear;
-        tbody.innerHTML = "";
-
-        items.forEach((item, idx) => {
-            const tr = document.createElement("tr");
-            if (item.colspan) {
-                tr.className = "sub-header-row";
-                tr.innerHTML = `<td colspan="11"><i class="fas fa-folder-open"></i> &nbsp; ${item.text}</td>`;
-            } else {
-                tr.innerHTML = `
-                    <td class="col-nr">${idx}</td>
-                    <td class="col-title"><textarea class="form-control" data-field="title" data-idx="${idx}">${item.title || ""}</textarea></td>
-                    <td class="col-abc"><input type="number" class="form-control" style="font-weight:700" data-field="abc" data-idx="${idx}" value="${item.abc || ""}"></td>
-                    <td class="col-date"><input type="date" class="form-control" data-field="preProc" data-idx="${idx}" value="${item.preProc || ""}"></td>
-                    <td class="col-date"><input type="date" class="form-control" data-field="preBid" data-idx="${idx}" value="${item.preBid || ""}"></td>
-                    <td class="col-date"><input type="date" class="form-control" data-field="sobe" data-idx="${idx}" value="${item.sobe || ""}"></td>
-                    <td class="col-date"><input type="date" class="form-control" data-field="pq" data-idx="${idx}" value="${item.pq || ""}"></td>
-                    <td class="col-date"><input type="date" class="form-control" data-field="noa" data-idx="${idx}" value="${item.noa || ""}"></td>
-                    <td class="col-date"><input type="date" class="form-control" data-field="ntp" data-idx="${idx}" value="${item.ntp || ""}"></td>
-                    <td class="col-remarks"><textarea class="form-control" data-field="remarks" data-idx="${idx}">${item.remarks || ""}</textarea></td>
-                    <td class="col-action"><button class="delete-btn" data-del-idx="${idx}"><i class="fas fa-trash-alt"></i></button></td>
-                `;
-            }
-            tbody.appendChild(tr);
-        });
-        document.querySelectorAll('textarea.form-control').forEach(autoExpand);
-    };
-
-    document.getElementById("tableBody").addEventListener("input", (e) => {
-        const { field, idx } = e.target.dataset;
-        if (field && idx) items[idx][field] = e.target.value;
-        if (e.target.tagName === 'TEXTAREA') autoExpand(e.target);
+  const render=()=>{
+    const tbody=document.getElementById("tableBody");
+    document.getElementById("currentYearDisplay").innerText=currentYear;
+    tbody.innerHTML="";
+    items.forEach((item,idx)=>{
+      const tr=document.createElement("tr");
+      if(item.colspan){
+        tr.className="sub-header-row";
+        tr.innerHTML=`<td colspan="11"><i class="fas fa-folder-open"></i> &nbsp; ${item.text}</td>`;
+      }else{
+        tr.innerHTML=`
+          <td class="col-nr">${idx}</td>
+          <td class="col-title"><textarea class="form-control" data-field="title" data-idx="${idx}">${item.title||""}</textarea></td>
+          <td class="col-abc"><input type="number" class="form-control" style="font-weight:800;" data-field="abc" data-idx="${idx}" value="${item.abc||""}"></td>
+          <td class="col-date"><input type="date" class="form-control" data-field="preProc" data-idx="${idx}" value="${item.preProc||""}"></td>
+          <td class="col-date"><input type="date" class="form-control" data-field="preBid" data-idx="${idx}" value="${item.preBid||""}"></td>
+          <td class="col-date"><input type="date" class="form-control" data-field="sobe" data-idx="${idx}" value="${item.sobe||""}"></td>
+          <td class="col-date"><input type="date" class="form-control" data-field="pq" data-idx="${idx}" value="${item.pq||""}"></td>
+          <td class="col-date"><input type="date" class="form-control" data-field="noa" data-idx="${idx}" value="${item.noa||""}"></td>
+          <td class="col-date"><input type="date" class="form-control" data-field="ntp" data-idx="${idx}" value="${item.ntp||""}"></td>
+          <td class="col-remarks"><textarea class="form-control" data-field="remarks" data-idx="${idx}">${item.remarks||""}</textarea></td>
+          <td class="col-action" style="text-align:center;"><button class="delete-btn" data-del-idx="${idx}"><i class="fas fa-trash-alt"></i></button></td>`;
+      }
+      tbody.appendChild(tr);
     });
+    document.querySelectorAll('textarea.form-control').forEach(autoExpand);
+  };
 
-    document.getElementById("tableBody").addEventListener("click", async (e) => {
-        const delBtn = e.target.closest('.delete-btn');
-        if (delBtn) {
-            const idx = delBtn.dataset.delIdx;
-            if (!confirm("Delete this project?")) return;
-            const item = items[idx];
-            if (item.id) await supabase.from(TABLE).delete().eq("id", item.id);
-            items.splice(idx, 1);
-            render();
-        }
-    });
+  document.getElementById("tableBody").addEventListener("input",e=>{
+    const{field,idx}=e.target.dataset;
+    if(field&&idx)items[idx][field]=e.target.value;
+    if(e.target.tagName==='TEXTAREA')autoExpand(e.target);
+  });
 
-    async function loadData() {
-        const { data } = await supabase.from(TABLE).select("*").eq("year", currentYear).order("item_number");
-        if (data && data.length > 0) {
-            items = [{ text: "Goods and Services", colspan: true }, ...data.map(d => ({
-                id: d.id, title: d.title, abc: d.abc, preProc: d.pre_proc, 
-                preBid: d.pre_bid, sobe: d.sobe, pq: d.pq, noa: d.noa, ntp: d.ntp, remarks: d.remarks
-            }))];
-        } else {
-            items = [{ text: "Goods and Services", colspan: true }];
-        }
-        render();
+  document.getElementById("tableBody").addEventListener("click",async e=>{
+    const delBtn=e.target.closest('.delete-btn');
+    if(delBtn){
+      const idx=delBtn.dataset.delIdx;
+      if(!confirm("Delete this project?"))return;
+      const item=items[idx];
+      if(item.id)await supabase.from(TABLE).delete().eq("id",item.id);
+      items.splice(idx,1);render();
     }
+  });
 
-    document.getElementById("saveBtn").onclick = async () => {
-        const rows = items.filter(i => !i.colspan).map((it, i) => ({
-            item_number: i, title: it.title, abc: it.abc ? parseFloat(it.abc) : null,
-            pre_proc: it.preProc, pre_bid: it.preBid, sobe: it.sobe, pq: it.pq, 
-            noa: it.noa, ntp: it.ntp, remarks: it.remarks, year: parseInt(currentYear), is_header: false
-        }));
-        const { error } = await supabase.from(TABLE).upsert(rows, { onConflict: 'item_number, year' });
-        if (error) alert("Error: " + error.message);
-        else alert("Data synchronized for " + currentYear);
-        loadData();
-    };
+  async function loadData(){
+    const{data}=await supabase.from(TABLE).select("*").eq("year",currentYear).order("item_number");
+    if(data&&data.length>0){
+      items=[{text:"Goods and Services",colspan:true},...data.map(d=>({id:d.id,title:d.title,abc:d.abc,preProc:d.pre_proc,preBid:d.pre_bid,sobe:d.sobe,pq:d.pq,noa:d.noa,ntp:d.ntp,remarks:d.remarks}))];
+    }else{items=[{text:"Goods and Services",colspan:true}];}
+    render();
+  }
 
-    document.getElementById("addBtn").onclick = () => {
-        items.push({ title: "", abc: "", preProc: "", preBid: "", sobe: "", pq: "", noa: "", ntp: "", remarks: "" });
-        render();
-    };
-
+  document.getElementById("saveBtn").onclick=async()=>{
+    const rows=items.filter(i=>!i.colspan).map((it,i)=>({item_number:i,title:it.title,abc:it.abc?parseFloat(it.abc):null,pre_proc:it.preProc,pre_bid:it.preBid,sobe:it.sobe,pq:it.pq,noa:it.noa,ntp:it.ntp,remarks:it.remarks,year:parseInt(currentYear),is_header:false}));
+    const{error}=await supabase.from(TABLE).upsert(rows,{onConflict:'item_number, year'});
+    if(error)alert("Error: "+error.message);
+    else alert("Data synchronized for "+currentYear);
     loadData();
+  };
+
+  document.getElementById("addBtn").onclick=()=>{items.push({title:"",abc:"",preProc:"",preBid:"",sobe:"",pq:"",noa:"",ntp:"",remarks:""});render();};
+
+  loadData();
 })();
 </script>
 </body>
 </html>
-
