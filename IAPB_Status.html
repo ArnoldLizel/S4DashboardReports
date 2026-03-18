@@ -1,353 +1,343 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MonitorPro Enterprise | Quarterly Tracker</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MonitorPro Enterprise | Quarterly Tracker — Clay</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg:#dde8f8;
+      --c1:#5b7fff;--c1b:#3a5dd4;--c1sh:rgba(91,127,255,.36);
+      --c2:#34c97e;--c2b:#1fa85e;--c2sh:rgba(52,201,126,.36);
+      --c3:#ff9f43;--c3b:#d97f20;--c3sh:rgba(255,159,67,.36);
+      --c4:#f0506e;--c4b:#c82d4a;--c4sh:rgba(240,80,110,.36);
+      --text:#1e2340;--text2:#5a5f82;--muted:#9098c0;
+      --white:#ffffff;--surface:#f0f4ff;
+      --r-xl:26px;--r-lg:18px;--r-md:12px;--r-pill:50px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Nunito',sans-serif;background:var(--bg);
+      background-image:
+        radial-gradient(ellipse at 10% 15%,rgba(91,127,255,.16) 0%,transparent 50%),
+        radial-gradient(ellipse at 90% 85%,rgba(52,201,126,.12) 0%,transparent 50%),
+        radial-gradient(ellipse at 70% 5%,rgba(255,159,67,.09) 0%,transparent 40%);
+      color:var(--text);padding-bottom:5rem;font-size:1rem;
+    }
 
-    <style>
-        :root {
-            --navy: #2D3580;
-            --royal: #2b4acb;
-            --purple: #6248C8;
-            --indigo: #2b4acb;
-            --indigo-light: #d4d9f5;
-            --slate-50: #f8fafc;
-            --slate-100: #f1f5f9;
-            --slate-200: #e2e8f0;
-            --slate-600: #475569;
-            --slate-800: #1e293b;
-            --rose: #e11d48;
-        }
+    /* ── Nav Header ── */
+    .nav-header{
+      background:linear-gradient(145deg,#6b90ff,#4a6de8,#3a55c8);
+      padding:1rem 2.5rem;display:flex;justify-content:space-between;align-items:center;
+      position:sticky;top:0;z-index:1000;
+      box-shadow:0 8px 0 0 rgba(58,93,212,.35),0 14px 36px rgba(91,127,255,.25);
+      overflow:hidden;
+    }
+    .nav-header::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.20),transparent);pointer-events:none;}
+    .brand-box{display:flex;align-items:center;gap:12px;position:relative;z-index:1;}
+    .brand-title{font-family:'Sora',sans-serif;font-weight:800;font-size:1.25rem;letter-spacing:-.02em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.15);}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Nav buttons */
+    .nav-btn{
+      padding:.6rem 1.3rem;border-radius:var(--r-pill);font-family:'Nunito',sans-serif;
+      font-weight:800;font-size:.84rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+      transition:all .22s cubic-bezier(0.34,1.56,0.64,1);border:none;position:relative;z-index:1;
+    }
+    .nav-btn:hover{transform:translateY(-3px) scale(1.05);}
+    .nav-btn:active{transform:translateY(2px) scale(.97);}
+    .nav-btn-outline{
+      background:rgba(255,255,255,.18);color:#fff;border:2px solid rgba(255,255,255,.35);
+      box-shadow:0 4px 0 0 rgba(0,0,0,.12),0 6px 14px rgba(0,0,0,.10),inset 0 1px 4px rgba(255,255,255,.25);
+    }
+    .nav-btn-primary{
+      background:linear-gradient(145deg,#fff,#f0f4ff);color:var(--c1b);
+      box-shadow:0 5px 0 0 rgba(58,93,212,.3),0 8px 18px rgba(91,127,255,.2),inset 0 1px 4px rgba(255,255,255,.9);
+    }
+    .nav-btn-primary:hover{box-shadow:0 8px 0 0 rgba(58,93,212,.3),0 14px 26px rgba(91,127,255,.25);}
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--slate-50);
-            color: var(--slate-800);
-            padding-bottom: 5rem;
-            font-size: 1.1rem;
-        }
+    /* ── Filter Bar ── */
+    .filter-bar{
+      background:linear-gradient(145deg,var(--white),var(--surface));
+      padding:.875rem 2.5rem;display:flex;gap:10px;align-items:center;
+      position:sticky;top:60px;z-index:999;
+      border-bottom:none;
+      box-shadow:0 6px 0 0 rgba(91,127,255,.10),0 10px 24px rgba(91,127,255,.08);
+    }
+    .filter-label{font-weight:800;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-right:12px;}
+    .btn-filter{
+      padding:.55rem 1.1rem;border-radius:var(--r-pill);
+      background:linear-gradient(145deg,var(--white),var(--surface));color:var(--text2);
+      border:2px solid rgba(91,127,255,.18);font-family:'Nunito',sans-serif;font-weight:800;font-size:.82rem;cursor:pointer;
+      box-shadow:0 4px 0 0 rgba(91,127,255,.10),0 6px 14px rgba(91,127,255,.08),inset 0 1px 3px rgba(255,255,255,.9);
+      transition:all .22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-filter:hover{transform:translateY(-3px) scale(1.04);border-color:rgba(91,127,255,.35);}
+    .btn-filter:active{transform:translateY(2px) scale(.97);}
+    .btn-filter.active{
+      background:linear-gradient(145deg,#6b90ff,var(--c1b));color:#fff;border-color:transparent;
+      box-shadow:0 5px 0 0 rgba(58,93,212,.4),0 8px 18px var(--c1sh),inset 0 2px 5px rgba(255,255,255,.25);
+    }
 
-        /* --- HEADER --- */
-        .nav-header {
-            background: var(--navy);
-            color: white;
-            padding: 1rem 2.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+    /* ── Filter Q colors ── */
+    .btn-filter[data-filter="First Quarter"].active{background:linear-gradient(145deg,#6b90ff,var(--c1b));box-shadow:0 5px 0 0 var(--c1b),0 8px 18px var(--c1sh);}
+    .btn-filter[data-filter="Second Quarter"].active{background:linear-gradient(145deg,#44d98e,var(--c2b));box-shadow:0 5px 0 0 var(--c2b),0 8px 18px var(--c2sh);}
+    .btn-filter[data-filter="Third Quarter"].active{background:linear-gradient(145deg,#ffb55a,var(--c3b));box-shadow:0 5px 0 0 var(--c3b),0 8px 18px var(--c3sh);}
+    .btn-filter[data-filter="Fourth Quarter"].active{background:linear-gradient(145deg,#ff7088,var(--c4b));box-shadow:0 5px 0 0 var(--c4b),0 8px 18px var(--c4sh);}
 
-        .brand-box { display: flex; align-items: center; gap: 12px; }
-        .brand-title { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; }
+    /* ── Container ── */
+    .container{max-width:98%;margin:1.75rem auto;padding:0 1.25rem;}
 
-        /* --- QUARTER FILTER BAR --- */
-        .filter-bar {
-            background: white;
-            padding: 1rem 2.5rem;
-            border-bottom: 1px solid var(--slate-200);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            position: sticky;
-            top: 60px;
-            z-index: 999;
-        }
+    /* ── Data card ── */
+    .data-card{
+      background:linear-gradient(155deg,var(--white),#f8f6ff);
+      border-radius:var(--r-xl);border:3px solid rgba(255,255,255,.95);overflow:hidden;
+      box-shadow:0 12px 0 0 rgba(91,127,255,.14),0 22px 56px rgba(91,127,255,.12),inset 0 2px 8px rgba(255,255,255,1);
+      animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes popIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 
-        .filter-label { font-weight: 700; font-size: 0.9rem; color: var(--slate-600); text-transform: uppercase; margin-right: 15px; }
+    /* ── Toolbar ── */
+    .table-toolbar{
+      padding:1.25rem 1.75rem;
+      background:linear-gradient(145deg,var(--white),var(--surface));
+      border-bottom:2px solid rgba(91,127,255,.08);
+      display:flex;justify-content:space-between;align-items:center;gap:16px;
+    }
+    .search-input{
+      width:400px;padding:12px 18px;border-radius:var(--r-pill);
+      border:2px solid rgba(91,127,255,.18);
+      background:linear-gradient(145deg,var(--surface),#eef2ff);
+      font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:600;color:var(--text);
+      outline:none;box-shadow:inset 0 2px 5px rgba(91,127,255,.07),0 3px 0 0 rgba(91,127,255,.10);
+      transition:all .2s;
+    }
+    .search-input:focus{border-color:var(--c1);box-shadow:0 0 0 4px rgba(91,127,255,.12),inset 0 2px 5px rgba(91,127,255,.05),0 4px 0 0 rgba(91,127,255,.12);transform:translateY(-1px);}
+    .search-input::placeholder{color:var(--muted);}
 
-        .btn-filter {
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            border: 1px solid var(--slate-200);
-            background: white;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+    .record-count{
+      font-family:'Nunito',sans-serif;font-weight:800;color:var(--c1);
+      background:linear-gradient(145deg,var(--surface),#e8eeff);
+      padding:7px 18px;border-radius:var(--r-pill);
+      border:2px solid rgba(91,127,255,.18);
+      box-shadow:0 4px 0 0 rgba(91,127,255,.12),0 6px 14px rgba(91,127,255,.09),inset 0 1px 3px rgba(255,255,255,.9);
+      font-size:.84rem;
+    }
 
-        .btn-filter:hover { background: var(--slate-100); }
-        .btn-filter.active { background: var(--royal); color: white; border-color: var(--royal); }
+    /* Toolbar action buttons */
+    .tbtn{
+      padding:.62rem 1.15rem;border-radius:var(--r-pill);font-family:'Nunito',sans-serif;
+      font-weight:800;font-size:.80rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+      transition:all .22s cubic-bezier(0.34,1.56,0.64,1);border:none;
+    }
+    .tbtn:hover{transform:translateY(-3px) scale(1.04);}
+    .tbtn:active{transform:translateY(2px) scale(.97);}
+    .tbtn-outline{
+      background:linear-gradient(145deg,var(--white),var(--surface));color:var(--text2);
+      border:2px solid rgba(91,127,255,.18);
+      box-shadow:0 4px 0 0 rgba(91,127,255,.10),0 6px 14px rgba(91,127,255,.08),inset 0 1px 3px rgba(255,255,255,.9);
+    }
 
-        /* --- LAYOUT --- */
-        .container { max-width: 98%; margin: 2rem auto; padding: 0 1rem; }
+    /* ── Table ── */
+    table{width:100%;border-collapse:collapse;}
+    thead th{
+      background:linear-gradient(145deg,#4a6de8,#3a55c8);
+      color:rgba(255,255,255,.92);padding:1.1rem .875rem;
+      font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;text-align:left;
+    }
+    thead th:first-child{border-radius:0;}
 
-        .data-card {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid var(--slate-200);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
+    .col-ref{width:60px;text-align:center;}
+    .col-act{width:20%;}.col-sub{width:18%;}.col-time{width:260px;}.col-qtr{width:200px;}.col-remarks{min-width:440px;}.col-del{width:70px;text-align:center;}
 
-        .table-toolbar {
-            padding: 1.5rem 2rem;
-            background: white;
-            border-bottom: 1px solid var(--slate-200);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    td{padding:.875rem;border-bottom:1px solid rgba(91,127,255,.07);vertical-align:top;color:var(--text);}
+    tbody tr{transition:background .15s;}
+    tbody tr:hover{background:rgba(91,127,255,.04);}
+    tbody tr:last-child td{border-bottom:none;}
+    td.col-ref{font-weight:800;color:var(--muted);text-align:center;}
 
-        .search-input {
-            width: 400px;
-            padding: 12px 15px;
-            border: 1px solid var(--slate-200);
-            border-radius: 10px;
-            background: var(--slate-50);
-            font-size: 1rem;
-        }
+    /* Textareas & selects */
+    textarea,select{
+      width:100%;border:2px solid transparent;border-radius:var(--r-md);
+      padding:10px 12px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:600;
+      background:linear-gradient(145deg,var(--surface),#eef2ff);
+      color:var(--text);transition:.2s;resize:none;overflow:hidden;
+      box-shadow:inset 0 2px 4px rgba(91,127,255,.06);
+    }
+    textarea:focus,select:focus{
+      background:var(--white);border-color:var(--c1);outline:none;
+      box-shadow:0 0 0 3px rgba(91,127,255,.12),inset 0 1px 3px rgba(91,127,255,.05);
+      transform:scale(1.01);
+    }
 
-        /* --- TABLE --- */
-        table { width: 100%; border-collapse: collapse; }
-        thead th {
-            background: var(--navy);
-            color: white;
-            padding: 1.2rem 1rem;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            text-align: left;
-        }
+    /* Month grid */
+    .month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+    .month-item{
+      font-size:.75rem;padding:7px 4px;text-align:center;font-weight:800;cursor:pointer;
+      border-radius:var(--r-md);
+      background:linear-gradient(145deg,var(--surface),#eef2ff);
+      border:2px solid rgba(91,127,255,.15);color:var(--text2);
+      box-shadow:0 3px 0 0 rgba(91,127,255,.10),0 4px 10px rgba(91,127,255,.08),inset 0 1px 3px rgba(255,255,255,.9);
+      transition:all .2s cubic-bezier(0.34,1.56,0.64,1);user-select:none;
+    }
+    .month-item:hover{transform:scale(1.06);border-color:rgba(91,127,255,.35);}
+    .month-item.active{
+      background:linear-gradient(145deg,#6b90ff,var(--c1b));color:#fff;border-color:transparent;
+      box-shadow:0 4px 0 0 rgba(58,93,212,.35),0 6px 14px var(--c1sh);
+    }
 
-        .col-ref { width: 60px; text-align: center; } 
-        .col-act { width: 20%; }
-        .col-sub { width: 18%; }
-        .col-time { width: 250px; }
-        .col-qtr { width: 200px; }
-        .col-remarks { min-width: 450px; }
-        .col-del { width: 70px; text-align: center; }
+    /* Delete button */
+    .btn-del{
+      background:linear-gradient(145deg,#fff5f7,#ffe8ee);color:var(--c4);
+      border:2px solid rgba(240,80,110,.2);border-radius:50%;
+      width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:.85rem;
+      box-shadow:0 3px 0 0 rgba(200,45,74,.15),0 5px 12px rgba(200,45,74,.10),inset 0 1px 3px rgba(255,255,255,.9);
+      transition:all .22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-del:hover{transform:translateY(-3px) scale(1.12);background:linear-gradient(145deg,#ffe0e8,#ffd0da);box-shadow:0 6px 0 0 rgba(200,45,74,.2),0 10px 20px rgba(200,45,74,.15);}
+    .btn-del:active{transform:translateY(2px) scale(.95);}
 
-        td { padding: 1rem; border-bottom: 1px solid var(--slate-100); vertical-align: top; }
-
-        textarea, select {
-            width: 100%; border: 1px solid transparent; border-radius: 8px;
-            padding: 12px; font-family: inherit; font-size: 1.05rem; 
-            background: var(--slate-50);
-            transition: 0.2s;
-        }
-        textarea:focus { background: white; border-color: var(--royal); outline: none; box-shadow: 0 0 0 3px rgba(43, 74, 203, 0.1); }
-
-        /* --- BUTTONS --- */
-        .btn { padding: 0.8rem 1.6rem; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; }
-        .btn-primary { background: var(--royal); color: white; border: none; }
-        .btn-outline { background: transparent; border: 2px solid var(--slate-200); color: var(--slate-800); }
-
-        .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .month-item { font-size: 0.85rem; padding: 8px 4px; text-align: center; background: var(--slate-200); border-radius: 6px; font-weight: 700; cursor: pointer; }
-        .month-item.active { background: var(--royal); color: white; }
-
-        @media print { .nav-header, .filter-bar, .btn, .col-del, .table-toolbar { display: none !important; } }
-    </style>
+    @media print{.nav-header,.filter-bar,.tbtn,.nav-btn,.btn-del,.table-toolbar{display:none!important;}}
+  </style>
 </head>
 <body>
 
 <nav class="nav-header">
-    <div class="brand-box">
-        <div class="brand-title"><i class="fas fa-layer-group"></i> MonitorPro Enterprise</div>
-    </div>
-    <div style="display:flex; gap:12px;">
-        <button id="printBtn" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3)">Export PDF</button>
-        <button id="updateBtn" class="btn btn-primary">Save Changes</button>
-    </div>
+  <div class="brand-box">
+    <div class="brand-title"><i class="fas fa-layer-group"></i> MonitorPro Enterprise</div>
+  </div>
+  <div style="display:flex;gap:12px;position:relative;z-index:1;">
+    <button id="printBtn" class="nav-btn nav-btn-outline"><i class="fas fa-file-pdf"></i> Export PDF</button>
+    <button id="updateBtn" class="nav-btn nav-btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+  </div>
 </nav>
 
 <div class="filter-bar">
-    <span class="filter-label">Display View:</span>
-    <button class="btn-filter active" data-filter="All">All Activities</button>
-    <button class="btn-filter" data-filter="First Quarter">1st Quarter</button>
-    <button class="btn-filter" data-filter="Second Quarter">2nd Quarter</button>
-    <button class="btn-filter" data-filter="Third Quarter">3rd Quarter</button>
-    <button class="btn-filter" data-filter="Fourth Quarter">4th Quarter</button>
+  <span class="filter-label">Display View:</span>
+  <button class="btn-filter active" data-filter="All">All Activities</button>
+  <button class="btn-filter" data-filter="First Quarter">1st Quarter</button>
+  <button class="btn-filter" data-filter="Second Quarter">2nd Quarter</button>
+  <button class="btn-filter" data-filter="Third Quarter">3rd Quarter</button>
+  <button class="btn-filter" data-filter="Fourth Quarter">4th Quarter</button>
 </div>
 
 <div class="container">
-    <div class="data-card">
-        <div class="table-toolbar">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search entries by title or remarks...">
-            <div style="display:flex; gap:15px; align-items:center;">
-                <div id="recordCount" style="font-weight: 800; color: var(--royal); background: var(--indigo-light); padding: 8px 18px; border-radius: 50px;">0 Activities</div>
-                <button id="addRowBtn" class="btn btn-outline" title="Add New Row"><i class="fas fa-plus"></i> Add Row</button>
-            </div>
-        </div>
-
-        <div style="overflow-x: auto;">
-            <table id="mainTable">
-                <thead>
-                    <tr>
-                        <th class="col-ref">Ref</th>
-                        <th class="col-act">Activity</th>
-                        <th class="col-sub">Sub-Activity</th>
-                        <th class="col-time">Timeline</th>
-                        <th class="col-qtr">Quarter</th>
-                        <th class="col-remarks">Remarks & Updates</th>
-                        <th class="col-del">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
+  <div class="data-card">
+    <div class="table-toolbar">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍  Search entries by title or remarks…">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div id="recordCount" class="record-count">0 Activities</div>
+        <button id="addRowBtn" class="tbtn tbtn-outline"><i class="fas fa-plus"></i> Add Row</button>
+      </div>
     </div>
+    <div style="overflow-x:auto;">
+      <table id="mainTable">
+        <thead>
+          <tr>
+            <th class="col-ref">Ref</th>
+            <th class="col-act">Activity</th>
+            <th class="col-sub">Sub-Activity</th>
+            <th class="col-time">Timeline</th>
+            <th class="col-qtr">Quarter</th>
+            <th class="col-remarks">Remarks &amp; Updates</th>
+            <th class="col-del">Del</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <script>
-    const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SUPABASE_URL="https://jdzfxfriydakuqegtahq.supabase.co";
+  const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+  const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const tableBody=document.getElementById("tableBody");
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  let activityData=[],currentFilter="All",searchTerm="";
 
-    const tableBody = document.getElementById("tableBody");
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    let activityData = [];
-    let currentFilter = "All";
-    let searchTerm = "";
+  async function fetchData(){
+    const{data}=await supabaseClient.from("iapb").select("*").order("id",{ascending:true});
+    activityData=data||[];filterAndRefresh();
+  }
 
-    async function fetchData() {
-        const { data } = await supabaseClient.from("iapb").select("*").order("id", {ascending: true});
-        activityData = data || [];
-        filterAndRefresh();
-    }
+  function filterAndRefresh(){
+    let filtered=activityData;
+    if(currentFilter!=="All")filtered=filtered.filter(i=>i.quarter_implementation===currentFilter);
+    if(searchTerm){const term=searchTerm.toLowerCase();filtered=filtered.filter(i=>(i.activity_title||"").toLowerCase().includes(term)||(i.remarks||"").toLowerCase().includes(term)||(i.sub_activity_title||"").toLowerCase().includes(term));}
+    refreshView(filtered);
+  }
 
-    function filterAndRefresh() {
-        let filtered = activityData;
-        if (currentFilter !== "All") {
-            filtered = filtered.filter(item => item.quarter_implementation === currentFilter);
-        }
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(item => 
-                (item.activity_title || "").toLowerCase().includes(term) ||
-                (item.remarks || "").toLowerCase().includes(term) ||
-                (item.sub_activity_title || "").toLowerCase().includes(term)
-            );
-        }
-        refreshView(filtered);
-    }
-
-    function refreshView(data) {
-        tableBody.innerHTML = "";
-        data.forEach((item, index) => {
-            const selectedMonths = (item.date_of_implementation || "").split(", ");
-            const monthsHtml = months.map(m => `
-                <label class="month-item ${selectedMonths.includes(m) ? 'active' : ''}">
-                    <input type="checkbox" value="${m}" ${selectedMonths.includes(m) ? "checked" : ""} style="display:none;">${m}
-                </label>
-            `).join("");
-
-            const row = document.createElement("tr");
-            row.dataset.id = item.id || "";
-            row.innerHTML = `
-                <td class="col-ref"><b>${index + 1}</b></td>
-                <td class="col-act"><textarea oninput="autoResize(this)">${item.activity_title || ""}</textarea></td>
-                <td class="col-sub"><textarea oninput="autoResize(this)">${item.sub_activity_title || ""}</textarea></td>
-                <td class="col-time"><div class="month-grid">${monthsHtml}</div></td>
-                <td class="col-qtr">
-                    <select class="qtr-select">
-                        <option value="">Select Quarter</option>
-                        <option ${item.quarter_implementation === "First Quarter" ? "selected" : ""}>First Quarter</option>
-                        <option ${item.quarter_implementation === "Second Quarter" ? "selected" : ""}>Second Quarter</option>
-                        <option ${item.quarter_implementation === "Third Quarter" ? "selected" : ""}>Third Quarter</option>
-                        <option ${item.quarter_implementation === "Fourth Quarter" ? "selected" : ""}>Fourth Quarter</option>
-                    </select>
-                </td>
-                <td class="col-remarks"><textarea oninput="autoResize(this)">${item.remarks || ""}</textarea></td>
-                <td class="col-del">
-                    <button class="btn-del" style="border:none; background:none; color:var(--rose); cursor:pointer; padding: 10px;">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-            row.querySelectorAll('textarea').forEach(autoResize);
-        });
-        document.getElementById("recordCount").innerText = `${data.length} Activities`;
-    }
-
-    tableBody.addEventListener('click', async (e) => {
-        const delBtn = e.target.closest('.btn-del');
-        if (!delBtn) return;
-        const row = delBtn.closest('tr');
-        const rowId = row.dataset.id;
-        if (!confirm("Are you sure you want to delete this activity?")) return;
-        if (rowId) {
-            const { error } = await supabaseClient.from("iapb").delete().eq("id", rowId);
-            if (error) { alert("Error deleting from database: " + error.message); return; }
-            activityData = activityData.filter(item => item.id != rowId);
-        } else {
-            const rowIndex = Array.from(tableBody.children).indexOf(row);
-            activityData.splice(rowIndex, 1);
-        }
-        filterAndRefresh();
+  function refreshView(data){
+    tableBody.innerHTML="";
+    data.forEach((item,index)=>{
+      const selectedMonths=(item.date_of_implementation||"").split(", ");
+      const monthsHtml=months.map(m=>`<label class="month-item ${selectedMonths.includes(m)?'active':''}"><input type="checkbox" value="${m}" ${selectedMonths.includes(m)?"checked":""} style="display:none;">${m}</label>`).join("");
+      const row=document.createElement("tr");row.dataset.id=item.id||"";
+      row.innerHTML=`
+        <td class="col-ref"><b>${index+1}</b></td>
+        <td class="col-act"><textarea oninput="autoResize(this)">${item.activity_title||""}</textarea></td>
+        <td class="col-sub"><textarea oninput="autoResize(this)">${item.sub_activity_title||""}</textarea></td>
+        <td class="col-time"><div class="month-grid">${monthsHtml}</div></td>
+        <td class="col-qtr"><select class="qtr-select">
+          <option value="">Select Quarter</option>
+          <option ${item.quarter_implementation==="First Quarter"?"selected":""}>First Quarter</option>
+          <option ${item.quarter_implementation==="Second Quarter"?"selected":""}>Second Quarter</option>
+          <option ${item.quarter_implementation==="Third Quarter"?"selected":""}>Third Quarter</option>
+          <option ${item.quarter_implementation==="Fourth Quarter"?"selected":""}>Fourth Quarter</option>
+        </select></td>
+        <td class="col-remarks"><textarea oninput="autoResize(this)">${item.remarks||""}</textarea></td>
+        <td class="col-del"><button class="btn-del"><i class="fas fa-trash-alt"></i></button></td>`;
+      tableBody.appendChild(row);
+      row.querySelectorAll('textarea').forEach(autoResize);
     });
+    document.getElementById("recordCount").innerText=`${data.length} Activities`;
+  }
 
-    document.querySelectorAll('.btn-filter').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.filter;
-            filterAndRefresh();
-        };
-    });
+  tableBody.addEventListener('click',async e=>{
+    const delBtn=e.target.closest('.btn-del');if(!delBtn)return;
+    const row=delBtn.closest('tr');const rowId=row.dataset.id;
+    if(!confirm("Are you sure you want to delete this activity?"))return;
+    if(rowId){const{error}=await supabaseClient.from("iapb").delete().eq("id",rowId);if(error){alert("Error: "+error.message);return;}activityData=activityData.filter(i=>i.id!=rowId);}
+    else{const idx=Array.from(tableBody.children).indexOf(row);activityData.splice(idx,1);}
+    filterAndRefresh();
+  });
 
-    document.getElementById("searchInput").oninput = (e) => {
-        searchTerm = e.target.value;
-        filterAndRefresh();
+  document.querySelectorAll('.btn-filter').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.btn-filter').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');currentFilter=btn.dataset.filter;filterAndRefresh();
     };
+  });
 
-    function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+  document.getElementById("searchInput").oninput=e=>{searchTerm=e.target.value;filterAndRefresh();};
+  function autoResize(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
 
-    document.getElementById("updateBtn").onclick = async () => {
-        const btn = document.getElementById("updateBtn");
-        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Saving...";
-        btn.disabled = true;
-        const rows = tableBody.querySelectorAll("tr");
-        for (let r of rows) {
-            const payload = {
-                activity_title: r.querySelector(".col-act textarea").value,
-                sub_activity_title: r.querySelector(".col-sub textarea").value,
-                date_of_implementation: Array.from(r.querySelectorAll('input:checked')).map(i => i.value).join(", "),
-                quarter_implementation: r.querySelector(".qtr-select").value,
-                remarks: r.querySelector(".col-remarks textarea").value
-            };
-            if (r.dataset.id) {
-                await supabaseClient.from("iapb").update(payload).eq("id", r.dataset.id);
-            } else if (payload.activity_title) {
-                await supabaseClient.from("iapb").insert([payload]);
-            }
-        }
-        await fetchData();
-        btn.innerHTML = "Save Changes";
-        btn.disabled = false;
-        alert("Database synced successfully!");
-    };
+  document.getElementById("updateBtn").onclick=async()=>{
+    const btn=document.getElementById("updateBtn");
+    btn.innerHTML="<i class='fas fa-spinner fa-spin'></i> Saving…";btn.disabled=true;
+    const rows=tableBody.querySelectorAll("tr");
+    for(let r of rows){
+      const payload={activity_title:r.querySelector(".col-act textarea").value,sub_activity_title:r.querySelector(".col-sub textarea").value,date_of_implementation:Array.from(r.querySelectorAll('input:checked')).map(i=>i.value).join(", "),quarter_implementation:r.querySelector(".qtr-select").value,remarks:r.querySelector(".col-remarks textarea").value};
+      if(r.dataset.id)await supabaseClient.from("iapb").update(payload).eq("id",r.dataset.id);
+      else if(payload.activity_title)await supabaseClient.from("iapb").insert([payload]);
+    }
+    await fetchData();btn.innerHTML="<i class='fas fa-save'></i> Save Changes";btn.disabled=false;
+    alert("Database synced successfully!");
+  };
 
-    document.getElementById("addRowBtn").onclick = () => {
-        activityData.push({ 
-            activity_title: "", 
-            remarks: "", 
-            quarter_implementation: currentFilter !== "All" ? currentFilter : "" 
-        });
-        filterAndRefresh();
-    };
+  document.getElementById("addRowBtn").onclick=()=>{
+    activityData.push({activity_title:"",remarks:"",quarter_implementation:currentFilter!=="All"?currentFilter:""});
+    filterAndRefresh();
+  };
 
-    tableBody.addEventListener('change', (e) => {
-        if (e.target.type === 'checkbox') {
-            e.target.parentElement.classList.toggle('active', e.target.checked);
-        }
-    });
-
-    document.getElementById("printBtn").onclick = () => window.print();
-    
-    fetchData();
+  tableBody.addEventListener('change',e=>{if(e.target.type==='checkbox')e.target.parentElement.classList.toggle('active',e.target.checked);});
+  document.getElementById("printBtn").onclick=()=>window.print();
+  fetchData();
 </script>
 </body>
 </html>
