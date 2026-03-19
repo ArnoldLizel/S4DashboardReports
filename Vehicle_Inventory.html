@@ -827,7 +827,7 @@
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         function dbPayload(raw) {
             // Only include columns that actually exist in the vehicles table
-            const allowed = ['office','vehicle_type','plate_number','engine_number','chassis_number','remarks','date_of_registration'];
+            const allowed = ['office','vehicle_type','plate_number','engine_number','chassis_number','remarks','date_of_registration','year'];
             const out = {};
             allowed.forEach(k => { if (raw[k] !== undefined) out[k] = raw[k]; });
             return out;
@@ -967,7 +967,8 @@
                 engine_number:        document.getElementById('engine_number').value.trim(),
                 chassis_number:       document.getElementById('chassis_number').value.trim(),
                 remarks:              document.getElementById('remarks').value.trim(),
-                date_of_registration: document.getElementById('date_of_registration').value || null
+                date_of_registration: document.getElementById('date_of_registration').value || null,
+                year:                 new Date().getFullYear()
             };
         }
 
