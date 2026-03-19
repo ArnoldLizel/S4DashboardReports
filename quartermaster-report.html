@@ -8,127 +8,407 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* BASE STYLES */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          font-size: 16px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          min-height: 100vh; padding: 1.5rem;
-        }
-        .app-container { max-width: 1600px; margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; }
-        .sidebar { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.15); position: sticky; top: 1.5rem; height: fit-content; }
-        .logo-section { text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #f3f4f6; padding-bottom: 1.5rem; }
-        
-        /* BUTTONS & FORMS */
-        .btn { padding: 0.75rem 1rem; border: none; border-radius: 0.5rem; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s; width: 100%; margin-bottom: 0.75rem; }
-        .btn-primary { background: #667eea; color: white; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-orange { background: #f59e0b; color: white; }
-        .btn-manage { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .form-select { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 2px solid #e5e7eb; margin-bottom: 1.5rem; font-size: 16px; }
-        .section-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin: 1.25rem 0 0.75rem; }
+    :root {
+        --bg:          #dce8f8;
+        --border:      rgba(255,255,255,0.90);
+        --blue:        #3567ae;
+        --blue2:       #4a7fc1;
+        --purple:      #6248C8;
+        --navy:        #2D3580;
+        --green:       #2d9460;
+        --red:         #c04040;
+        --amber:       #a06010;
+        --text:        #1a2e4a;
+        --text2:       #3a5070;
+        --text3:       #7090b0;
+        --sh:     8px 8px 20px rgba(74,127,193,0.28), -4px -4px 12px rgba(255,255,255,0.85);
+        --sh-sm:  4px 4px 12px rgba(74,127,193,0.22), -2px -2px 7px rgba(255,255,255,0.80);
+        --sh-in:  inset 2px 2px 6px rgba(74,127,193,0.14), inset -2px -2px 6px rgba(255,255,255,0.90);
+        --ff:  'Nunito', sans-serif;
+        --r:   14px;
+        --r-lg: 22px;
+    }
 
-        /* MAIN TABLE */
-        .main-content { background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
-        .content-header { padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .content-header h2 { font-size: 28px; }
-        .inventory-table { width: 100%; border-collapse: collapse; }
-        .inventory-table th { padding: 1.2rem; background: #f9fafb; border-bottom: 2px solid #e5e7eb; position: sticky; top: 0; font-size: 18px; font-weight: 700; }
-        .inventory-table td { padding: 1rem; border-bottom: 1px solid #f3f4f6; text-align: center; font-size: 18px; }
-        .category-row td { background: #667eea !important; color: white !important; text-align: left !important; font-weight: bold; font-size: 19px !important; }
-        .qty-input { width: 90px; padding: 0.5rem; text-align: center; border: 2px solid #ddd; border-radius: 0.375rem; font-size: 18px; font-weight: 600; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-        /* MODALS */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal.show { display: flex; }
-        .modal-content { background: white; border-radius: 1rem; padding: 2rem; width: 95%; max-width: 1000px; max-height: 90vh; overflow-y: auto; }
-        .modal-content h2 { font-size: 26px; }
-        .modal-content h3 { font-size: 22px; }
+    body {
+        font-family: var(--ff);
+        font-size: 14px;
+        background: linear-gradient(135deg, #c8daf0 0%, #dce8f5 40%, #e8f0fb 70%, #d5e5f8 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+        padding: 1.5rem;
+        color: var(--text);
+    }
 
-        /* IMPORT PREVIEW */
-        .import-preview-area { max-height: 400px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 0.5rem; margin: 1rem 0; }
-        .import-preview-area table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .import-preview-area th { background: #f8fafc; padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: 700; }
-        .import-preview-area td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
-        
-        /* DRAG & DROP STYLES */
-        .sortable-item { cursor: grab; background: white; transition: background 0.2s; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; padding: 12px; font-size: 16px; }
-        .sortable-item:active { cursor: grabbing; }
-        .sortable-ghost { opacity: 0.4; background: #e0e7ff; }
+    body::before {
+        content: '';
+        position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background-image:
+            radial-gradient(ellipse 60% 50% at 20% 20%, rgba(255,255,255,0.45) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(168,200,240,0.35) 0%, transparent 55%);
+    }
 
-        /* SUMMARY CARDS */
-        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
-        .summary-card { padding: 1.5rem; background: #f8fafc; border-radius: 0.5rem; text-align: center; border-bottom: 4px solid #10b981; }
-        .summary-card div { font-size: 16px; margin-bottom: 0.5rem; color: #64748b; font-weight: 600; }
-        .summary-card h3 { font-size: 36px; color: #0f172a; font-weight: 700; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #d0e5f8; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #4a7fc1; border-radius: 10px; }
 
-        /* NOTIFICATION */
-        .notification { position: fixed; top: 1.5rem; right: 1.5rem; padding: 1rem 1.5rem; border-radius: 0.5rem; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 99999; font-weight: 600; font-size: 15px; animation: slideIn 0.3s ease; }
-        .notification.success { border-left: 5px solid #10b981; }
-        .notification.error { border-left: 5px solid #ef4444; }
-        .notification.info { border-left: 5px solid #3b82f6; }
-        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .app-container {
+        max-width: 1600px; margin: 0 auto;
+        display: grid; grid-template-columns: 290px 1fr;
+        gap: 1.5rem;
+        position: relative; z-index: 1;
+    }
 
-        /* PRINT LOGIC */
-        @media print {
-            body * { visibility: hidden; background: white !important; }
-            .modal.show, .modal.show * { visibility: visible; }
-            .modal.show { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-            .modal-content { box-shadow: none !important; width: 100% !important; max-width: 100% !important; border: none !important; overflow: visible !important; }
-            .no-print { display: none !important; }
-            .inventory-table { width: 100% !important; border: 1px solid #000; }
-            .inventory-table th, .inventory-table td { border: 1px solid #ccc !important; padding: 10px !important; color: black !important; font-size: 14px !important; }
-            .category-row td { background: #eee !important; color: black !important; -webkit-print-color-adjust: exact; font-size: 14px !important; }
-            .summary-card h3 { font-size: 24px !important; }
-            @page { margin: 1cm; }
-        }
+    /* ── SIDEBAR ── */
+    .sidebar {
+        background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(220,235,250,0.78));
+        border: 2px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 1.75rem 1.25rem;
+        box-shadow: var(--sh);
+        position: sticky; top: 1.5rem;
+        height: fit-content;
+        backdrop-filter: blur(10px);
+    }
+
+    .logo-section {
+        text-align: center; margin-bottom: 1.75rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 2px solid rgba(255,255,255,0.70);
+    }
+
+    .logo-icon {
+        width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 0.8rem;
+        background: linear-gradient(135deg, var(--navy), var(--blue2));
+        border: 2px solid rgba(255,255,255,0.6);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: var(--sh-sm);
+    }
+
+    .logo-icon i { font-size: 1.5rem; color: white; }
+
+    .logo-section h2 {
+        font-size: 1.1rem; font-weight: 900; color: var(--navy);
+        text-shadow: 2px 2px 4px rgba(255,255,255,0.7);
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 0.65rem 0.9rem; border: 2px solid var(--border);
+        border-radius: 12px; font-weight: 800; font-size: 0.82rem;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+        transition: all 0.18s; width: 100%; margin-bottom: 0.55rem;
+        box-shadow: var(--sh-sm); font-family: var(--ff);
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 6px 6px 16px rgba(74,127,193,0.30), -3px -3px 10px rgba(255,255,255,0.85); }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-primary { background: linear-gradient(135deg, rgba(208,229,248,0.92), rgba(185,215,245,0.85)); color: var(--navy); }
+    .btn-success { background: linear-gradient(135deg, rgba(200,240,220,0.92), rgba(155,225,195,0.85)); color: #1a5a30; }
+    .btn-orange  { background: linear-gradient(135deg, rgba(255,235,195,0.92), rgba(245,210,145,0.85)); color: #7a4a10; }
+    .btn-manage  { background: linear-gradient(135deg, rgba(220,225,240,0.88), rgba(205,215,235,0.80)); color: var(--text2); }
+
+    .form-select {
+        width: 100%; padding: 0.65rem 0.9rem; border-radius: 12px;
+        border: 2px solid var(--border);
+        background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(235,245,255,0.78));
+        color: var(--text); font-size: 0.88rem; margin-bottom: 1.25rem;
+        box-shadow: var(--sh-in); outline: none; cursor: pointer;
+        font-family: var(--ff); font-weight: 600;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a7fc1'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+    }
+
+    .form-select:focus { border-color: var(--blue2); }
+    .form-select option { background: #e8f2fb; }
+
+    .section-label {
+        font-size: 0.65rem; font-weight: 900; color: var(--text3);
+        text-transform: uppercase; letter-spacing: 2px;
+        margin: 1.25rem 0 0.65rem;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+        background: linear-gradient(135deg, rgba(255,255,255,0.82), rgba(220,235,250,0.70));
+        border: 2px solid var(--border);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        box-shadow: var(--sh);
+        backdrop-filter: blur(8px);
+    }
+
+    .content-header {
+        padding: 1.25rem 1.75rem;
+        background: linear-gradient(135deg, var(--navy), var(--blue2));
+        color: white;
+        position: relative; overflow: hidden;
+    }
+
+    .content-header::before {
+        content: '';
+        position: absolute; right: -30px; top: -30px;
+        width: 100px; height: 100px; border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+    }
+
+    .content-header h2 {
+        font-size: 1.15rem; font-weight: 900; letter-spacing: 0.03em;
+    }
+
+    /* ── INVENTORY TABLE ── */
+    .inventory-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+
+    .inventory-table th {
+        padding: 0.8rem 1rem;
+        background: linear-gradient(135deg, var(--navy), var(--blue2));
+        border-bottom: none;
+        font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 1px; color: rgba(255,255,255,0.90);
+    }
+
+    .inventory-table td {
+        padding: 0.7rem 1rem;
+        border-bottom: 1px solid rgba(200,220,240,0.50);
+        text-align: center; font-size: 0.88rem; color: var(--text2);
+        transition: background 0.12s;
+    }
+
+    .inventory-table tr:nth-child(even) td { background: rgba(208,229,248,0.20); }
+    .inventory-table tr:hover td { background: rgba(208,229,248,0.40); }
+
+    .category-row td {
+        background: linear-gradient(90deg, rgba(74,127,193,0.14), rgba(74,127,193,0.06)) !important;
+        color: var(--blue) !important;
+        text-align: left !important;
+        font-weight: 900 !important; font-size: 0.88rem !important;
+        border-left: 4px solid var(--blue2) !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    /* Number inputs */
+    .qty-input {
+        width: 80px; padding: 0.45rem 0.5rem; text-align: center;
+        border: 2px solid rgba(255,255,255,0.80); border-radius: 10px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(235,245,255,0.75));
+        color: var(--navy); font-size: 0.88rem; font-weight: 800;
+        box-shadow: var(--sh-in); outline: none;
+        font-family: var(--ff);
+        transition: border-color 0.15s;
+    }
+
+    .qty-input:focus { border-color: var(--blue2); }
+    .qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    /* ── SUMMARY CARDS ── */
+    .summary-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem; margin-bottom: 1.75rem;
+    }
+
+    .summary-card {
+        padding: 1.5rem; text-align: center;
+        background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(220,235,250,0.75));
+        border-radius: var(--r-lg);
+        border: 2px solid var(--border);
+        box-shadow: var(--sh);
+        position: relative; overflow: hidden;
+        transition: transform 0.2s;
+    }
+
+    .summary-card:hover { transform: translateY(-2px); }
+
+    .summary-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+        border-radius: var(--r-lg) var(--r-lg) 0 0;
+        background: linear-gradient(90deg, var(--blue2), var(--green));
+    }
+
+    .summary-card div { font-size: 0.70rem; color: var(--text3); font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem; }
+    .summary-card h3 { font-size: 2.2rem; color: var(--navy); font-weight: 900; text-shadow: 2px 2px 4px rgba(255,255,255,0.7); }
+
+    /* ── MODALS ── */
+    .modal {
+        display: none; position: fixed; inset: 0;
+        background: rgba(180,210,240,0.50);
+        z-index: 9999; align-items: center; justify-content: center;
+        backdrop-filter: blur(8px);
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-content {
+        background: linear-gradient(135deg, rgba(255,255,255,0.93), rgba(220,235,250,0.90));
+        border-radius: var(--r-lg);
+        border: 2px solid var(--border);
+        padding: 2rem;
+        width: 95%; max-width: 1000px; max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 14px 14px 40px rgba(74,127,193,0.30), -4px -4px 16px rgba(255,255,255,0.80);
+        animation: popIn 0.25s cubic-bezier(.34,1.56,.64,1);
+        backdrop-filter: blur(12px);
+    }
+
+    @keyframes popIn { from{opacity:0;transform:scale(0.90)} to{opacity:1;transform:scale(1)} }
+
+    .modal-content h2, .modal-content h3 { color: var(--navy); font-weight: 900; }
+    .modal-content h2 { font-size: 1.3rem; }
+    .modal-content h3 { font-size: 1.1rem; }
+    .modal-content::-webkit-scrollbar { width: 5px; }
+
+    /* Office buttons */
+    .ofc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+
+    .ofc-btn {
+        padding: 9px; border-radius: 12px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(220,235,250,0.75));
+        border: 2px solid var(--border);
+        text-align: center; font-weight: 800; font-size: 0.82rem;
+        cursor: pointer; color: var(--text2);
+        transition: all 0.15s; box-shadow: var(--sh-sm);
+    }
+
+    .ofc-btn:hover { transform: translateY(-2px); border-color: var(--blue2); color: var(--navy); }
+    .ofc-btn.has-data { background: linear-gradient(135deg, rgba(200,240,220,0.90), rgba(155,225,195,0.80)); color: #1a5a30; border-color: rgba(255,255,255,0.75); }
+    .ofc-btn.no-data  { background: linear-gradient(135deg, rgba(255,205,205,0.90), rgba(245,175,175,0.80)); color: var(--red); }
+
+    /* Import preview */
+    .import-preview-area {
+        max-height: 380px; overflow-y: auto;
+        border: 2px solid rgba(255,255,255,0.75); border-radius: var(--r);
+        margin: 1rem 0;
+        background: rgba(255,255,255,0.50);
+        box-shadow: var(--sh-in);
+    }
+
+    .import-preview-area table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    .import-preview-area th { background: rgba(208,229,248,0.80); padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.7); font-weight: 800; color: var(--navy); }
+    .import-preview-area td { padding: 6px 8px; border-bottom: 1px solid rgba(200,220,240,0.4); color: var(--text2); }
+
+    /* Drag-sort items */
+    .sortable-item {
+        cursor: grab;
+        background: linear-gradient(135deg, rgba(255,255,255,0.80), rgba(220,235,250,0.70));
+        border: 2px solid rgba(255,255,255,0.75);
+        transition: all 0.15s; border-radius: 10px;
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 12px; font-size: 0.88rem; color: var(--text2);
+        margin-bottom: 5px; box-shadow: var(--sh-sm);
+        font-weight: 700;
+    }
+
+    .sortable-item:active { cursor: grabbing; }
+    .sortable-item:hover  { transform: translateX(3px); }
+    .sortable-ghost { opacity: 0.4; background: rgba(208,229,248,0.60); }
+
+    /* Notification */
+    .notification {
+        position: fixed; top: 1.5rem; right: 1.5rem;
+        padding: 0.9rem 1.25rem; border-radius: var(--r-lg);
+        background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(220,235,250,0.90));
+        border: 2px solid var(--border);
+        box-shadow: var(--sh);
+        z-index: 99999; font-weight: 800; font-size: 0.88rem;
+        animation: slideIn 0.3s ease; color: var(--text);
+        backdrop-filter: blur(8px);
+    }
+
+    .notification.success { border-left: 5px solid var(--green); color: var(--green); }
+    .notification.error   { border-left: 5px solid var(--red); color: var(--red); }
+    .notification.info    { border-left: 5px solid var(--blue2); color: var(--blue); }
+
+    @keyframes slideIn { from{transform:translateX(380px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+    /* Add item inputs in manage modal */
+    .manage-input {
+        width: 100%; padding: 0.65rem 0.85rem; margin-bottom: 0.55rem;
+        border: 2px solid rgba(255,255,255,0.80); border-radius: 12px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(235,245,255,0.78));
+        color: var(--text); font-size: 0.88rem; font-family: var(--ff); font-weight: 600;
+        box-shadow: var(--sh-in); outline: none;
+    }
+
+    .manage-input:focus { border-color: var(--blue2); }
+    .manage-input option { background: #e8f2fb; }
+
+    .del-item-btn {
+        color: var(--red); background: none; border: none; cursor: pointer;
+        font-size: 0.88rem; transition: transform 0.15s;
+    }
+    .del-item-btn:hover { transform: scale(1.2); }
+
+    /* Close button for modals */
+    .modal-close {
+        border: none; background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(220,235,250,0.75));
+        color: var(--text3); font-size: 1.2rem; cursor: pointer; border-radius: 10px;
+        width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+        box-shadow: var(--sh-sm); border: 2px solid rgba(255,255,255,0.80);
+        transition: all 0.15s;
+    }
+    .modal-close:hover { color: var(--red); transform: scale(1.1); }
+
+    /* ── Print ── */
+    @media print {
+        body * { visibility: hidden; background: white !important; }
+        .modal.show, .modal.show * { visibility: visible; }
+        .modal.show { position: absolute; left:0; top:0; width:100%; display:block !important; }
+        .modal-content { box-shadow:none !important; width:100% !important; max-width:100% !important; border:none !important; overflow:visible !important; }
+        .no-print { display: none !important; }
+        .inventory-table th, .inventory-table td { border: 1px solid #ccc !important; padding: 8px !important; color: #000 !important; font-size: 12px !important; }
+        .category-row td { background: rgba(74,127,193,0.12) !important; color: #1a2e4a !important; }
+        .summary-card h3 { font-size: 20px !important; color: #000 !important; }
+        @page { margin: 1cm; }
+    }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+
+    <!-- ── SIDEBAR ── -->
     <aside class="sidebar no-print">
         <div class="logo-section">
-            <div class="logo-icon" style="font-size:2rem; color:#667eea;"><i class="fas fa-clipboard-list"></i></div>
+            <div class="logo-icon"><i class="fas fa-clipboard-list"></i></div>
             <h2>Quartermaster</h2>
         </div>
 
-        <select id="officeSelect" class="form-select">
-            <option value="">-- Choose Office --</option>
-        </select>
+        <select id="officeSelect" class="form-select"></select>
 
-        <div class="section-label">Office Actions</div>
+        <div class="section-label"><i class="fas fa-building"></i> &nbsp;Office Actions</div>
         <button class="btn btn-primary" id="saveBtn"><i class="fas fa-save"></i> Save Office Data</button>
         <button class="btn btn-success" id="printOfficeBtn" disabled><i class="fas fa-print"></i> Print Office Report</button>
 
-        <div class="section-label">Data Import / Export</div>
+        <div class="section-label"><i class="fas fa-exchange-alt"></i> &nbsp;Data Import / Export</div>
         <button class="btn btn-orange" onclick="downloadTemplate()"><i class="fas fa-download"></i> Download Template</button>
         <button class="btn btn-orange" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> Import Data</button>
         <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileImport(event)" style="display:none;">
         <button class="btn btn-success" onclick="exportAllData()"><i class="fas fa-file-excel"></i> Export All Data</button>
 
-        <div class="section-label">Reports</div>
+        <div class="section-label"><i class="fas fa-chart-bar"></i> &nbsp;Reports</div>
         <button class="btn btn-success" id="totalSummaryBtn"><i class="fas fa-chart-bar"></i> Global Summary</button>
         <button class="btn btn-success" id="printGlobalBtn"><i class="fas fa-print"></i> Print Global Report</button>
 
-        <div class="section-label">Settings</div>
+        <div class="section-label"><i class="fas fa-cog"></i> &nbsp;Settings</div>
         <button class="btn btn-manage" id="manageItemsBtn"><i class="fas fa-sort"></i> Reorder / Add Items</button>
     </aside>
 
+    <!-- ── MAIN ── -->
     <main class="main-content no-print">
         <div class="content-header">
-            <h2 id="contentTitle">Inventory</h2>
+            <h2 id="contentTitle"><i class="fas fa-clipboard-list"></i> &nbsp;Inventory</h2>
         </div>
-        <div style="padding: 2rem; overflow-x: auto;">
+        <div style="padding:1.5rem;overflow-x:auto;">
             <table class="inventory-table">
                 <thead>
                     <tr>
-                        <th style="text-align: left;">Item Description</th>
+                        <th style="text-align:left;">Item Description</th>
                         <th>TE 2019</th>
                         <th>On Hand</th>
                         <th>TE 2025</th>
@@ -140,30 +420,33 @@
     </main>
 </div>
 
-<!-- MANAGE ITEMS MODAL -->
+<!-- ── MANAGE ITEMS MODAL ── -->
 <div class="modal" id="manageModal">
-    <div class="modal-content" style="max-width: 600px;">
-        <h3>Manage Master Items</h3>
-        <p style="font-size: 0.9rem; color: #667; margin-bottom: 1rem;">Drag items to reorder. Changes save instantly.</p>
-        <div style="background: #f1f5f9; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <input type="text" id="newItemName" placeholder="Item Name" style="width:100%; padding:0.6rem; margin-bottom:0.5rem; font-size: 16px; border: 1px solid #ddd; border-radius: 0.375rem;">
-            <select id="newItemType" style="width:100%; padding:0.6rem; margin-bottom:0.5rem; font-size: 16px; border: 1px solid #ddd; border-radius: 0.375rem;">
+    <div class="modal-content" style="max-width:560px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h3><i class="fas fa-sort"></i> &nbsp;Manage Master Items</h3>
+            <button class="modal-close no-print" onclick="closeModal('manageModal')">&times;</button>
+        </div>
+        <p style="font-size:0.80rem;color:var(--text3);margin-bottom:1rem;font-weight:600;">Drag items to reorder. Changes save instantly.</p>
+        <div style="background:rgba(208,229,248,0.30);padding:1rem;border-radius:var(--r);margin-bottom:1rem;border:2px solid rgba(255,255,255,0.75);box-shadow:var(--sh-in);">
+            <input type="text" id="newItemName" placeholder="Item Name" class="manage-input">
+            <select id="newItemType" class="manage-input">
                 <option value="false">Regular Item</option>
                 <option value="true">Category Header</option>
             </select>
-            <button class="btn btn-primary" onclick="handleAddItem()">Add Item</button>
+            <button class="btn btn-primary" onclick="handleAddItem()"><i class="fas fa-plus"></i> Add Item</button>
         </div>
-        <div id="dragList" style="border: 1px solid #eee; border-radius: 0.5rem; max-height: 400px; overflow-y: auto;"></div>
-        <button class="btn btn-manage" style="margin-top:1rem" onclick="closeModal('manageModal')">Close</button>
+        <div id="dragList" style="border:2px solid rgba(255,255,255,0.70);border-radius:var(--r);max-height:380px;overflow-y:auto;background:rgba(255,255,255,0.35);padding:6px;box-shadow:var(--sh-in);"></div>
+        <button class="btn btn-manage" style="margin-top:1rem;" onclick="closeModal('manageModal')"><i class="fas fa-times"></i> Close</button>
     </div>
 </div>
 
-<!-- GLOBAL SUMMARY MODAL -->
+<!-- ── GLOBAL SUMMARY MODAL ── -->
 <div class="modal" id="summaryModal">
     <div class="modal-content">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h2>Global Inventory Report</h2>
-            <button class="no-print" onclick="closeModal('summaryModal')" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+            <h2><i class="fas fa-chart-bar"></i> &nbsp;Global Inventory Report</h2>
+            <button class="modal-close no-print" onclick="closeModal('summaryModal')">&times;</button>
         </div>
         <div class="summary-grid">
             <div class="summary-card"><div>Global TE 2019</div><h3 id="sum19">0</h3></div>
@@ -171,28 +454,21 @@
             <div class="summary-card"><div>Global TE 2025</div><h3 id="sum25">0</h3></div>
         </div>
         <table class="inventory-table">
-            <thead>
-                <tr>
-                    <th style="text-align: left;">Description</th>
-                    <th>Global TE 2019</th>
-                    <th>Global On Hand</th>
-                    <th>Global TE 2025</th>
-                </tr>
-            </thead>
+            <thead><tr><th style="text-align:left;">Description</th><th>Global TE 2019</th><th>Global On Hand</th><th>Global TE 2025</th></tr></thead>
             <tbody id="summaryTableBody"></tbody>
         </table>
-        <div style="margin-top: 2rem;" class="no-print">
-            <button class="btn btn-primary" onclick="window.print()">Print This Report</button>
+        <div style="margin-top:1.5rem;" class="no-print">
+            <button class="btn btn-primary" onclick="window.print()" style="width:auto;padding:0.65rem 1.5rem;"><i class="fas fa-print"></i> Print This Report</button>
         </div>
     </div>
 </div>
 
-<!-- OFFICE REPORT MODAL -->
+<!-- ── OFFICE REPORT MODAL ── -->
 <div class="modal" id="officeReportModal">
     <div class="modal-content">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h2 id="officeReportTitle">Office Inventory Report</h2>
-            <button class="no-print" onclick="closeModal('officeReportModal')" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+            <h2 id="officeReportTitle"><i class="fas fa-building"></i> &nbsp;Office Report</h2>
+            <button class="modal-close no-print" onclick="closeModal('officeReportModal')">&times;</button>
         </div>
         <div class="summary-grid">
             <div class="summary-card"><div>TE 2019</div><h3 id="office19">0</h3></div>
@@ -200,31 +476,24 @@
             <div class="summary-card"><div>TE 2025</div><h3 id="office25">0</h3></div>
         </div>
         <table class="inventory-table">
-            <thead>
-                <tr>
-                    <th style="text-align: left;">Description</th>
-                    <th>TE 2019</th>
-                    <th>On Hand</th>
-                    <th>TE 2025</th>
-                </tr>
-            </thead>
+            <thead><tr><th style="text-align:left;">Description</th><th>TE 2019</th><th>On Hand</th><th>TE 2025</th></tr></thead>
             <tbody id="officeReportBody"></tbody>
         </table>
-        <div style="margin-top: 2rem;" class="no-print">
-            <button class="btn btn-primary" onclick="window.print()">Print This Report</button>
+        <div style="margin-top:1.5rem;" class="no-print">
+            <button class="btn btn-primary" onclick="window.print()" style="width:auto;padding:0.65rem 1.5rem;"><i class="fas fa-print"></i> Print</button>
         </div>
     </div>
 </div>
 
-<!-- IMPORT PREVIEW MODAL -->
+<!-- ── IMPORT PREVIEW MODAL ── -->
 <div class="modal" id="importModal">
-    <div class="modal-content" style="max-width: 800px;">
-        <h3 style="color: #667eea; margin-bottom: 0.5rem;">Import Data Preview</h3>
-        <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Review the data below before confirming the import.</p>
+    <div class="modal-content" style="max-width:760px;">
+        <h3 style="color:var(--navy);margin-bottom:0.5rem;"><i class="fas fa-file-import"></i> &nbsp;Import Data Preview</h3>
+        <p style="font-size:0.80rem;color:var(--text3);margin-bottom:1rem;font-weight:600;">Review the data below before confirming the import.</p>
         <div id="importPreviewArea" class="import-preview-area"></div>
-        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+        <div style="display:flex;gap:0.75rem;margin-top:1rem;">
             <button class="btn btn-success" onclick="confirmImport()" style="flex:1;"><i class="fas fa-check"></i> Confirm Import</button>
-            <button class="btn btn-manage" onclick="closeImportModal()" style="flex:1;">Cancel</button>
+            <button class="btn btn-manage" onclick="closeImportModal()" style="flex:1;"><i class="fas fa-times"></i> Cancel</button>
         </div>
     </div>
 </div>
@@ -234,452 +503,254 @@ const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let masterItems = [];
-let officeMap = {};
-let allOffices = [];
-let allData = [];
-let currentOfficeId = null;
-let currentOfficeData = {};
-let importedData = null;
+let masterItems=[],officeMap={},allOffices=[],allData=[],currentOfficeId=null,currentOfficeData={},importedData=null;
 
-// ─── NOTIFICATION ─────────────────────────────────────────────────────────────
-function showNotification(message, type = 'success') {
-    const notif = document.createElement('div');
-    notif.className = `notification ${type}`;
-    notif.textContent = message;
-    document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 3000);
+function showNotification(message,type='success'){
+    const n=document.createElement('div');
+    n.className=`notification ${type}`;
+    n.textContent=message;
+    document.body.appendChild(n);
+    setTimeout(()=>n.remove(),3000);
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-async function init() {
+async function init(){
     await loadOffices();
     await loadMasterItems();
     await fetchAllData();
 
-    document.getElementById('officeSelect').onchange = (e) => loadOfficeInventory(e.target.value);
-    document.getElementById('saveBtn').onclick = saveCurrentData;
-    document.getElementById('printOfficeBtn').onclick = printOfficeReport;
-    document.getElementById('totalSummaryBtn').onclick = showGlobalSummary;
-    document.getElementById('printGlobalBtn').onclick = generateCompleteSummary;
-    document.getElementById('manageItemsBtn').onclick = openManageModal;
-    
-    const el = document.getElementById('dragList');
-    Sortable.create(el, {
-        animation: 150,
-        ghostClass: 'sortable-ghost',
-        onEnd: async () => {
-            const items = Array.from(el.children).map((child, index) => ({ id: child.dataset.id, display_order: index + 1 }));
-            for (const item of items) {
-                await supabaseClient.from('quartermaster_items').update({ display_order: item.display_order }).eq('id', item.id);
-            }
+    document.getElementById('officeSelect').onchange=(e)=>loadOfficeInventory(e.target.value);
+    document.getElementById('saveBtn').onclick=saveCurrentData;
+    document.getElementById('printOfficeBtn').onclick=printOfficeReport;
+    document.getElementById('totalSummaryBtn').onclick=showGlobalSummary;
+    document.getElementById('printGlobalBtn').onclick=generateCompleteSummary;
+    document.getElementById('manageItemsBtn').onclick=openManageModal;
+
+    Sortable.create(document.getElementById('dragList'),{
+        animation:150, ghostClass:'sortable-ghost',
+        onEnd:async()=>{
+            const items=Array.from(document.getElementById('dragList').children).map((c,i)=>({id:c.dataset.id,display_order:i+1}));
+            for(const item of items) await supabaseClient.from('quartermaster_items').update({display_order:item.display_order}).eq('id',item.id);
             await loadMasterItems();
-            if (currentOfficeId) renderMainTable();
+            if(currentOfficeId) renderMainTable();
         }
     });
 }
 
-async function fetchAllData() {
-    const { data } = await supabaseClient.from('office_quartermaster').select("*");
-    allData = data || [];
+async function fetchAllData(){ const {data}=await supabaseClient.from('office_quartermaster').select("*"); allData=data||[]; }
+
+async function loadOffices(){
+    const {data}=await supabaseClient.from('offices').select("*").order('office_name');
+    const sel=document.getElementById('officeSelect');
+    allOffices=data||[];
+    if(data) data.forEach(o=>{ officeMap[o.id]=o.office_name; sel.add(new Option(o.office_name,o.id)); });
 }
 
-async function loadOffices() {
-    const { data } = await supabaseClient.from('offices').select("*").order('office_name');
-    const select = document.getElementById('officeSelect');
-    allOffices = data || [];
-    if (data) data.forEach(o => { officeMap[o.id] = o.office_name; select.add(new Option(o.office_name, o.id)); });
+async function loadMasterItems(){
+    const {data}=await supabaseClient.from('quartermaster_items').select("*").order('display_order');
+    masterItems=data||[];
 }
 
-async function loadMasterItems() {
-    const { data } = await supabaseClient.from('quartermaster_items').select("*").order('display_order');
-    masterItems = data || [];
-}
-
-async function loadOfficeInventory(officeId) {
-    if (!officeId) { currentOfficeId = null; document.getElementById('printOfficeBtn').disabled = true; return; }
-    currentOfficeId = officeId;
-    document.getElementById('printOfficeBtn').disabled = false;
-    document.getElementById('contentTitle').textContent = officeMap[officeId];
-    const { data } = await supabaseClient.from('office_quartermaster').select("*").eq('office_id', officeId);
-    currentOfficeData = {};
-    (data || []).forEach(row => { currentOfficeData[row.item_id] = { t19: row.te_2019, oh: row.onhand, t25: row.proposed_te_2025 }; });
+async function loadOfficeInventory(officeId){
+    if(!officeId){currentOfficeId=null;document.getElementById('printOfficeBtn').disabled=true;return;}
+    currentOfficeId=officeId;
+    document.getElementById('printOfficeBtn').disabled=false;
+    document.getElementById('contentTitle').innerHTML=`<i class="fas fa-building"></i> &nbsp;${officeMap[officeId]}`;
+    const {data}=await supabaseClient.from('office_quartermaster').select("*").eq('office_id',officeId);
+    currentOfficeData={};
+    (data||[]).forEach(r=>{currentOfficeData[r.item_id]={t19:r.te_2019,oh:r.onhand,t25:r.proposed_te_2025};});
     renderMainTable();
 }
 
-function renderMainTable() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = "";
-    masterItems.forEach(item => {
-        const tr = document.createElement('tr');
-        if (item.colspan) {
-            tr.className = "category-row";
-            tr.innerHTML = `<td colspan="4"><i class="fas fa-folder"></i> ${item.item_name}</td>`;
+function renderMainTable(){
+    const tbody=document.getElementById('tableBody');
+    tbody.innerHTML="";
+    masterItems.forEach(item=>{
+        const tr=document.createElement('tr');
+        if(item.colspan){
+            tr.className="category-row";
+            tr.innerHTML=`<td colspan="4"><i class="fas fa-folder"></i> &nbsp;${item.item_name}</td>`;
         } else {
-            const v = currentOfficeData[item.id] || { t19: 0, oh: 0, t25: 0 };
-            tr.innerHTML = `
-                <td style="text-align: left;">${item.item_name}</td>
-                <td><input type="number" class="qty-input" value="${v.t19 || 0}" onchange="updateLocal(${item.id}, 't19', this.value)"></td>
-                <td><input type="number" class="qty-input" value="${v.oh || 0}" onchange="updateLocal(${item.id}, 'oh', this.value)"></td>
-                <td><input type="number" class="qty-input" value="${v.t25 || 0}" onchange="updateLocal(${item.id}, 't25', this.value)"></td>`;
+            const v=currentOfficeData[item.id]||{t19:0,oh:0,t25:0};
+            tr.innerHTML=`<td style="text-align:left;font-weight:600;">${item.item_name}</td>
+                <td><input type="number" class="qty-input" value="${v.t19||0}" onchange="updateLocal(${item.id},'t19',this.value)"></td>
+                <td><input type="number" class="qty-input" value="${v.oh||0}" onchange="updateLocal(${item.id},'oh',this.value)"></td>
+                <td><input type="number" class="qty-input" value="${v.t25||0}" onchange="updateLocal(${item.id},'t25',this.value)"></td>`;
         }
         tbody.appendChild(tr);
     });
 }
 
-function updateLocal(id, f, v) {
-    if (!currentOfficeData[id]) currentOfficeData[id] = { t19: 0, oh: 0, t25: 0 };
-    currentOfficeData[id][f] = parseInt(v) || 0;
+function updateLocal(id,f,v){
+    if(!currentOfficeData[id]) currentOfficeData[id]={t19:0,oh:0,t25:0};
+    currentOfficeData[id][f]=parseInt(v)||0;
 }
 
-async function saveCurrentData() {
-    if (!currentOfficeId) return alert("Select office.");
-    const records = Object.keys(currentOfficeData).map(itemId => ({
-        office_id: currentOfficeId, item_id: parseInt(itemId),
-        te_2019: currentOfficeData[itemId].t19, onhand: currentOfficeData[itemId].oh,
-        proposed_te_2025: currentOfficeData[itemId].t25
-    }));
-    await supabaseClient.from('office_quartermaster').delete().eq('office_id', currentOfficeId);
+async function saveCurrentData(){
+    if(!currentOfficeId) return alert("Select office.");
+    const records=Object.keys(currentOfficeData).map(itemId=>({office_id:currentOfficeId,item_id:parseInt(itemId),te_2019:currentOfficeData[itemId].t19,onhand:currentOfficeData[itemId].oh,proposed_te_2025:currentOfficeData[itemId].t25}));
+    await supabaseClient.from('office_quartermaster').delete().eq('office_id',currentOfficeId);
     await supabaseClient.from('office_quartermaster').insert(records);
-    showNotification('✅ Data saved successfully!', 'success');
+    showNotification('✅ Data saved successfully!','success');
     await fetchAllData();
 }
 
-function openManageModal() {
-    const list = document.getElementById('dragList');
-    list.innerHTML = masterItems.map(i => `
-        <div class="sortable-item" data-id="${i.id}">
-            <span>${i.colspan ? '📁 ' : ''}${i.item_name}</span>
-            <button onclick="deleteMasterItem(${i.id})" style="color:red; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
-        </div>`).join('');
+function openManageModal(){
+    const list=document.getElementById('dragList');
+    list.innerHTML=masterItems.map(i=>`<div class="sortable-item" data-id="${i.id}"><span>${i.colspan?'📁 ':''}${i.item_name}</span><button class="del-item-btn" onclick="deleteMasterItem(${i.id})"><i class="fas fa-trash"></i></button></div>`).join('');
     document.getElementById('manageModal').classList.add('show');
 }
 
-async function handleAddItem() {
-    const name = document.getElementById('newItemName').value;
-    const isHeader = document.getElementById('newItemType').value === "true";
-    if (!name) return;
-    await supabaseClient.from('quartermaster_items').insert([{ item_name: name, colspan: isHeader, display_order: masterItems.length + 1 }]);
-    document.getElementById('newItemName').value = "";
+async function handleAddItem(){
+    const name=document.getElementById('newItemName').value;
+    const isHeader=document.getElementById('newItemType').value==="true";
+    if(!name) return;
+    await supabaseClient.from('quartermaster_items').insert([{item_name:name,colspan:isHeader,display_order:masterItems.length+1}]);
+    document.getElementById('newItemName').value="";
     await loadMasterItems();
     openManageModal();
-    if (currentOfficeId) renderMainTable();
+    if(currentOfficeId) renderMainTable();
 }
 
-async function deleteMasterItem(id) {
-    if (!confirm("Delete item?")) return;
-    await supabaseClient.from('quartermaster_items').delete().eq('id', id);
+async function deleteMasterItem(id){
+    if(!confirm("Delete item?")) return;
+    await supabaseClient.from('quartermaster_items').delete().eq('id',id);
     await loadMasterItems();
     openManageModal();
-    if (currentOfficeId) renderMainTable();
+    if(currentOfficeId) renderMainTable();
 }
 
-async function showGlobalSummary() {
-    const { data } = await supabaseClient.from('office_quartermaster').select("*");
-    const totals = {};
-    let g19 = 0, gOH = 0, g25 = 0;
-    (data || []).forEach(r => {
-        if (!totals[r.item_id]) totals[r.item_id] = { t19: 0, oh: 0, t25: 0 };
-        totals[r.item_id].t19 += (r.te_2019 || 0);
-        totals[r.item_id].oh += (r.onhand || 0);
-        totals[r.item_id].t25 += (r.proposed_te_2025 || 0);
-        g19 += (r.te_2019 || 0); gOH += (r.onhand || 0); g25 += (r.proposed_te_2025 || 0);
+async function showGlobalSummary(){
+    const {data}=await supabaseClient.from('office_quartermaster').select("*");
+    const totals={};let g19=0,gOH=0,g25=0;
+    (data||[]).forEach(r=>{
+        if(!totals[r.item_id]) totals[r.item_id]={t19:0,oh:0,t25:0};
+        totals[r.item_id].t19+=(r.te_2019||0);totals[r.item_id].oh+=(r.onhand||0);totals[r.item_id].t25+=(r.proposed_te_2025||0);
+        g19+=(r.te_2019||0);gOH+=(r.onhand||0);g25+=(r.proposed_te_2025||0);
     });
-    document.getElementById('sum19').innerText = g19;
-    document.getElementById('sumOH').innerText = gOH;
-    document.getElementById('sum25').innerText = g25;
-    const tbody = document.getElementById('summaryTableBody');
-    tbody.innerHTML = "";
-    masterItems.forEach(item => {
-        const tr = document.createElement('tr');
-        if (item.colspan) {
-            tr.className = "category-row";
-            tr.innerHTML = `<td colspan="4">${item.item_name}</td>`;
-        } else {
-            const t = totals[item.id] || { t19: 0, oh: 0, t25: 0 };
-            tr.innerHTML = `<td>${item.item_name}</td><td>${t.t19}</td><td>${t.oh}</td><td>${t.t25}</td>`;
-        }
+    document.getElementById('sum19').innerText=g19;document.getElementById('sumOH').innerText=gOH;document.getElementById('sum25').innerText=g25;
+    const tbody=document.getElementById('summaryTableBody');tbody.innerHTML="";
+    masterItems.forEach(item=>{
+        const tr=document.createElement('tr');
+        if(item.colspan){tr.className="category-row";tr.innerHTML=`<td colspan="4">${item.item_name}</td>`;}
+        else{const t=totals[item.id]||{t19:0,oh:0,t25:0};tr.innerHTML=`<td style="text-align:left;">${item.item_name}</td><td>${t.t19}</td><td>${t.oh}</td><td>${t.t25}</td>`;}
         tbody.appendChild(tr);
     });
     document.getElementById('summaryModal').classList.add('show');
 }
 
-async function generateCompleteSummary() {
-    await showGlobalSummary();
-    setTimeout(() => window.print(), 300);
-}
+async function generateCompleteSummary(){ await showGlobalSummary(); setTimeout(()=>window.print(),300); }
 
-function printOfficeReport() {
-    if (!currentOfficeId) return;
-    let o19 = 0, oOH = 0, o25 = 0;
-    Object.values(currentOfficeData).forEach(v => { o19 += (v.t19 || 0); oOH += (v.oh || 0); o25 += (v.t25 || 0); });
-    document.getElementById('officeReportTitle').innerText = `${officeMap[currentOfficeId]} - Inventory Report`;
-    document.getElementById('office19').innerText = o19;
-    document.getElementById('officeOH').innerText = oOH;
-    document.getElementById('office25').innerText = o25;
-    const tbody = document.getElementById('officeReportBody');
-    tbody.innerHTML = "";
-    masterItems.forEach(item => {
-        const tr = document.createElement('tr');
-        if (item.colspan) {
-            tr.className = "category-row";
-            tr.innerHTML = `<td colspan="4">${item.item_name}</td>`;
-        } else {
-            const v = currentOfficeData[item.id] || { t19: 0, oh: 0, t25: 0 };
-            tr.innerHTML = `<td>${item.item_name}</td><td>${v.t19}</td><td>${v.oh}</td><td>${v.t25}</td>`;
-        }
+function printOfficeReport(){
+    if(!currentOfficeId) return;
+    let o19=0,oOH=0,o25=0;
+    Object.values(currentOfficeData).forEach(v=>{o19+=(v.t19||0);oOH+=(v.oh||0);o25+=(v.t25||0);});
+    document.getElementById('officeReportTitle').innerHTML=`<i class="fas fa-building"></i> &nbsp;${officeMap[currentOfficeId]} — Report`;
+    document.getElementById('office19').innerText=o19;document.getElementById('officeOH').innerText=oOH;document.getElementById('office25').innerText=o25;
+    const tbody=document.getElementById('officeReportBody');tbody.innerHTML="";
+    masterItems.forEach(item=>{
+        const tr=document.createElement('tr');
+        if(item.colspan){tr.className="category-row";tr.innerHTML=`<td colspan="4">${item.item_name}</td>`;}
+        else{const v=currentOfficeData[item.id]||{t19:0,oh:0,t25:0};tr.innerHTML=`<td style="text-align:left;">${item.item_name}</td><td>${v.t19}</td><td>${v.oh}</td><td>${v.t25}</td>`;}
         tbody.appendChild(tr);
     });
     document.getElementById('officeReportModal').classList.add('show');
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function closeModal(id){document.getElementById(id).classList.remove('show');}
 
-// ─── DOWNLOAD TEMPLATE ────────────────────────────────────────────────────────
-function downloadTemplate() {
-    const wb = XLSX.utils.book_new();
-
-    // Instructions sheet
-    const instructions = [
-        ['QUARTERMASTER - DATA IMPORT TEMPLATE'],
-        [''],
-        ['INSTRUCTIONS:'],
-        ['1. Fill in the data for each office in the corresponding sheet'],
-        ['2. Do not modify the "Item Description" column'],
-        ['3. Enter numeric values only in TE 2019, On Hand, and TE 2025 columns'],
-        ['4. Category header rows (📁) should be left with empty numeric columns'],
-        ['5. Save the file and use "Import Data" to upload'],
-        [''],
-        ['NOTE: Each office has its own sheet. Fill only the offices you need to update.']
-    ];
-    const wsInst = XLSX.utils.aoa_to_sheet(instructions);
-    wsInst['!cols'] = [{ wch: 60 }];
-    XLSX.utils.book_append_sheet(wb, wsInst, 'Instructions');
-
-    // One sheet per office
-    allOffices.forEach(office => {
-        const sheetData = [['Item Description', 'TE 2019', 'On Hand', 'TE 2025']];
-        masterItems.forEach(item => {
-            sheetData.push(item.colspan
-                ? [item.item_name, '', '', '']
-                : [item.item_name, 0, 0, 0]
-            );
-        });
-        const ws = XLSX.utils.aoa_to_sheet(sheetData);
-        ws['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-        const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+function downloadTemplate(){
+    const wb=XLSX.utils.book_new();
+    const inst=[['QUARTERMASTER - DATA IMPORT TEMPLATE'],[''],['Fill in numeric values only.']];
+    const wsInst=XLSX.utils.aoa_to_sheet(inst);wsInst['!cols']=[{wch:60}];XLSX.utils.book_append_sheet(wb,wsInst,'Instructions');
+    allOffices.forEach(office=>{
+        const sd=[['Item Description','TE 2019','On Hand','TE 2025']];
+        masterItems.forEach(item=>{sd.push(item.colspan?[item.item_name,'','','']:[item.item_name,0,0,0]);});
+        const ws=XLSX.utils.aoa_to_sheet(sd);ws['!cols']=[{wch:50},{wch:12},{wch:12},{wch:12}];
+        XLSX.utils.book_append_sheet(wb,ws,office.office_name.substring(0,31).replace(/[:\\\/?*\[\]]/g,''));
     });
-
-    XLSX.writeFile(wb, 'Quartermaster_Template.xlsx');
-    showNotification('📥 Template downloaded!', 'success');
+    XLSX.writeFile(wb,'Quartermaster_Template.xlsx');
+    showNotification('📥 Template downloaded!','success');
 }
 
-// ─── IMPORT DATA ──────────────────────────────────────────────────────────────
-function handleFileImport(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            importedData = [];
-            let totalRecords = 0;
-
-            workbook.SheetNames.forEach(sheetName => {
-                if (sheetName === 'Instructions') return;
-
-                const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-                const office = allOffices.find(o =>
-                    o.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '') === sheetName
-                );
-                if (!office) { console.warn(`Office not found: ${sheetName}`); return; }
-
-                for (let i = 1; i < jsonData.length; i++) {
-                    const row = jsonData[i];
-                    const itemName = row[0];
-                    const te2019 = parseInt(row[1]) || 0;
-                    const onhand = parseInt(row[2]) || 0;
-                    const te2025 = parseInt(row[3]) || 0;
-                    const item = masterItems.find(m => m.item_name === itemName && !m.colspan);
-                    if (item) {
-                        importedData.push({ office_id: office.id, office_name: office.office_name, item_id: item.id, item_name: item.item_name, te_2019: te2019, onhand: onhand, proposed_te_2025: te2025 });
-                        totalRecords++;
-                    }
+function handleFileImport(event){
+    const file=event.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+        try{
+            const data=new Uint8Array(e.target.result);
+            const workbook=XLSX.read(data,{type:'array'});
+            importedData=[];
+            workbook.SheetNames.forEach(sn=>{
+                if(sn==='Instructions')return;
+                const ws=workbook.Sheets[sn];
+                const json=XLSX.utils.sheet_to_json(ws,{header:1});
+                const office=allOffices.find(o=>o.office_name.substring(0,31).replace(/[:\\\/?*\[\]]/g,'')===sn);
+                if(!office)return;
+                for(let i=1;i<json.length;i++){
+                    const row=json[i];const item=masterItems.find(m=>m.item_name===row[0]&&!m.colspan);
+                    if(item) importedData.push({office_id:office.id,office_name:office.office_name,item_id:item.id,item_name:item.item_name,te_2019:parseInt(row[1])||0,onhand:parseInt(row[2])||0,proposed_te_2025:parseInt(row[3])||0});
                 }
             });
-
-            if (importedData.length > 0) {
-                showImportPreview();
-                showNotification(`📊 ${totalRecords} records ready to import`, 'info');
-            } else {
-                showNotification('⚠️ No valid data found in file', 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            showNotification('❌ Error reading file. Check the format.', 'error');
-        }
+            if(importedData.length>0){showImportPreview();showNotification(`📊 ${importedData.length} records ready`,'info');}
+            else showNotification('⚠️ No valid data found','error');
+        } catch(err){console.error(err);showNotification('❌ Error reading file','error');}
     };
-    reader.readAsArrayBuffer(file);
-    event.target.value = '';
+    reader.readAsArrayBuffer(file);event.target.value='';
 }
 
-function showImportPreview() {
-    const grouped = {};
-    importedData.forEach(r => {
-        if (!grouped[r.office_name]) grouped[r.office_name] = [];
-        grouped[r.office_name].push(r);
+function showImportPreview(){
+    const grouped={};importedData.forEach(r=>{if(!grouped[r.office_name])grouped[r.office_name]=[];grouped[r.office_name].push(r);});
+    let html=`<div style="padding:1rem;"><p style="font-weight:800;color:var(--navy);margin-bottom:1rem;">${importedData.length} records across ${Object.keys(grouped).length} office(s)</p>`;
+    Object.keys(grouped).forEach(on=>{
+        html+=`<h4 style="margin:0.75rem 0 0.5rem;color:var(--navy);">${on}</h4>
+        <table style="width:100%;font-size:0.82rem;border-collapse:collapse;">
+        <thead><tr><th style="text-align:left;padding:6px 8px;background:rgba(208,229,248,0.80);color:var(--navy);">Item</th><th style="padding:6px 8px;background:rgba(208,229,248,0.80);color:var(--navy);">TE 2019</th><th style="padding:6px 8px;background:rgba(208,229,248,0.80);color:var(--navy);">On Hand</th><th style="padding:6px 8px;background:rgba(208,229,248,0.80);color:var(--navy);">TE 2025</th></tr></thead><tbody>`;
+        grouped[on].slice(0,5).forEach(r=>{html+=`<tr><td style="padding:5px 8px;">${r.item_name}</td><td style="text-align:center;padding:5px 8px;">${r.te_2019}</td><td style="text-align:center;padding:5px 8px;">${r.onhand}</td><td style="text-align:center;padding:5px 8px;">${r.proposed_te_2025}</td></tr>`;});
+        if(grouped[on].length>5) html+=`<tr><td colspan="4" style="text-align:center;padding:5px;color:var(--text3);font-style:italic;">...and ${grouped[on].length-5} more items</td></tr>`;
+        html+=`</tbody></table>`;
     });
-
-    let html = `<div style="padding:1rem;">`;
-    html += `<p style="font-weight:700; color:#667eea; margin-bottom:1rem;">${importedData.length} records across ${Object.keys(grouped).length} office(s)</p>`;
-
-    Object.keys(grouped).forEach(officeName => {
-        html += `<h4 style="margin:1rem 0 0.5rem; color:#374151;">${officeName}</h4>`;
-        html += `<table style="width:100%; font-size:0.9rem; border-collapse:collapse;">
-            <thead><tr style="background:#f9fafb;">
-                <th style="text-align:left; padding:6px 8px; border:1px solid #e5e7eb;">Item</th>
-                <th style="padding:6px 8px; border:1px solid #e5e7eb;">TE 2019</th>
-                <th style="padding:6px 8px; border:1px solid #e5e7eb;">On Hand</th>
-                <th style="padding:6px 8px; border:1px solid #e5e7eb;">TE 2025</th>
-            </tr></thead><tbody>`;
-
-        grouped[officeName].slice(0, 5).forEach(r => {
-            html += `<tr>
-                <td style="padding:5px 8px; border:1px solid #f1f5f9;">${r.item_name}</td>
-                <td style="text-align:center; padding:5px 8px; border:1px solid #f1f5f9;">${r.te_2019}</td>
-                <td style="text-align:center; padding:5px 8px; border:1px solid #f1f5f9;">${r.onhand}</td>
-                <td style="text-align:center; padding:5px 8px; border:1px solid #f1f5f9;">${r.proposed_te_2025}</td>
-            </tr>`;
-        });
-
-        if (grouped[officeName].length > 5) {
-            html += `<tr><td colspan="4" style="text-align:center; padding:5px; color:#94a3b8; font-style:italic;">...and ${grouped[officeName].length - 5} more items</td></tr>`;
-        }
-        html += `</tbody></table>`;
-    });
-
-    html += `</div>`;
-    document.getElementById('importPreviewArea').innerHTML = html;
+    html+=`</div>`;
+    document.getElementById('importPreviewArea').innerHTML=html;
     document.getElementById('importModal').classList.add('show');
 }
 
-function closeImportModal() {
-    document.getElementById('importModal').classList.remove('show');
-    importedData = null;
+function closeImportModal(){document.getElementById('importModal').classList.remove('show');importedData=null;}
+
+async function confirmImport(){
+    if(!importedData||!importedData.length)return;
+    try{
+        const byOffice={};importedData.forEach(r=>{if(!byOffice[r.office_id])byOffice[r.office_id]=[];byOffice[r.office_id].push({office_id:r.office_id,item_id:r.item_id,te_2019:r.te_2019,onhand:r.onhand,proposed_te_2025:r.proposed_te_2025});});
+        for(const oid of Object.keys(byOffice)){
+            await supabaseClient.from('office_quartermaster').delete().eq('office_id',oid);
+            await supabaseClient.from('office_quartermaster').insert(byOffice[oid]);
+        }
+        showNotification(`✅ Imported ${importedData.length} records`,'success');
+        closeImportModal();await fetchAllData();
+        if(currentOfficeId) await loadOfficeInventory(currentOfficeId);
+    } catch(err){console.error(err);showNotification('❌ Import failed: '+err.message,'error');}
 }
 
-async function confirmImport() {
-    if (!importedData || importedData.length === 0) return;
-    try {
-        // Group by office and upsert
-        const groupedByOffice = {};
-        importedData.forEach(r => {
-            if (!groupedByOffice[r.office_id]) groupedByOffice[r.office_id] = [];
-            groupedByOffice[r.office_id].push({ office_id: r.office_id, item_id: r.item_id, te_2019: r.te_2019, onhand: r.onhand, proposed_te_2025: r.proposed_te_2025 });
-        });
-
-        for (const officeId of Object.keys(groupedByOffice)) {
-            await supabaseClient.from('office_quartermaster').delete().eq('office_id', officeId);
-            await supabaseClient.from('office_quartermaster').insert(groupedByOffice[officeId]);
-        }
-
-        showNotification(`✅ Imported ${importedData.length} records successfully`, 'success');
-        closeImportModal();
-        await fetchAllData();
-        if (currentOfficeId) await loadOfficeInventory(currentOfficeId);
-    } catch (err) {
-        console.error(err);
-        showNotification('❌ Import failed: ' + err.message, 'error');
-    }
-}
-
-// ─── EXPORT ALL DATA ──────────────────────────────────────────────────────────
-function exportAllData() {
-    if (allData.length === 0) {
-        showNotification('⚠️ No data to export. Try refreshing.', 'error');
-        return;
-    }
-
-    showNotification('⏳ Preparing export...', 'info');
-
-    const wb = XLSX.utils.book_new();
-
-    // ── Sheet 1: Consolidated Summary ────────────────────────────────────────
-    const summaryData = [
-        ['QUARTERMASTER - CONSOLIDATED SUMMARY'],
-        ['Exported: ' + new Date().toLocaleString()],
-        [''],
-        ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
-    ];
-
-    let grandTE2019 = 0, grandOnHand = 0, grandTE2025 = 0;
-
-    masterItems.forEach(item => {
-        if (item.colspan) {
-            summaryData.push([item.item_name, '', '', '']);
-        } else {
-            const recs = allData.filter(d => d.item_id === item.id);
-            const te2019 = recs.reduce((a, b) => a + (b.te_2019 || 0), 0);
-            const onhand = recs.reduce((a, b) => a + (b.onhand || 0), 0);
-            const te2025 = recs.reduce((a, b) => a + (b.proposed_te_2025 || 0), 0);
-            grandTE2019 += te2019; grandOnHand += onhand; grandTE2025 += te2025;
-            summaryData.push([item.item_name, te2019, onhand, te2025]);
+function exportAllData(){
+    if(!allData.length){showNotification('⚠️ No data to export','error');return;}
+    const wb=XLSX.utils.book_new();
+    const sd=[['QUARTERMASTER - CONSOLIDATED SUMMARY'],['Exported: '+new Date().toLocaleString()],[''],['Item Description','TE 2019','On Hand','TE 2025']];
+    let g19=0,gOH=0,g25=0;
+    masterItems.forEach(item=>{
+        if(item.colspan){sd.push([item.item_name,'','','']);}
+        else{
+            const recs=allData.filter(d=>d.item_id===item.id);
+            const t19=recs.reduce((a,b)=>a+(b.te_2019||0),0);
+            const oh=recs.reduce((a,b)=>a+(b.onhand||0),0);
+            const t25=recs.reduce((a,b)=>a+(b.proposed_te_2025||0),0);
+            g19+=t19;gOH+=oh;g25+=t25;sd.push([item.item_name,t19,oh,t25]);
         }
     });
-
-    summaryData.push(['']);
-    summaryData.push(['GRAND TOTAL', grandTE2019, grandOnHand, grandTE2025]);
-
-    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-    wsSummary['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-    XLSX.utils.book_append_sheet(wb, wsSummary, 'Consolidated Summary');
-
-    // ── One Sheet per Office ──────────────────────────────────────────────────
-    allOffices.forEach(office => {
-        const officeRecords = allData.filter(d => d.office_id === office.id);
-        const valMap = {};
-        officeRecords.forEach(r => valMap[r.item_id] = r);
-
-        const sheetData = [
-            [office.office_name],
-            ['Generated: ' + new Date().toLocaleString()],
-            [''],
-            ['Item Description', 'TE 2019', 'On Hand', 'TE 2025']
-        ];
-
-        let totalTE2019 = 0, totalOnHand = 0, totalTE2025 = 0;
-
-        masterItems.forEach(item => {
-            if (item.colspan) {
-                sheetData.push([item.item_name, '', '', '']);
-            } else {
-                const v = valMap[item.id] || { te_2019: 0, onhand: 0, proposed_te_2025: 0 };
-                const te2019 = v.te_2019 || 0;
-                const onhand = v.onhand || 0;
-                const te2025 = v.proposed_te_2025 || 0;
-                totalTE2019 += te2019; totalOnHand += onhand; totalTE2025 += te2025;
-                sheetData.push([item.item_name, te2019, onhand, te2025]);
-            }
-        });
-
-        sheetData.push(['']);
-        sheetData.push(['OFFICE TOTAL', totalTE2019, totalOnHand, totalTE2025]);
-
-        const ws = XLSX.utils.aoa_to_sheet(sheetData);
-        ws['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-        const sheetName = office.office_name.substring(0, 31).replace(/[:\\\/?*\[\]]/g, '');
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
-    });
-
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-    XLSX.writeFile(wb, `Quartermaster_Export_${timestamp}.xlsx`);
-    showNotification(`✅ Exported ${allOffices.length} offices successfully`, 'success');
+    sd.push([''],['GRAND TOTAL',g19,gOH,g25]);
+    const ws=XLSX.utils.aoa_to_sheet(sd);ws['!cols']=[{wch:50},{wch:12},{wch:12},{wch:12}];
+    XLSX.utils.book_append_sheet(wb,ws,'Consolidated Summary');
+    const ts=new Date().toISOString().slice(0,10).replace(/-/g,'');
+    XLSX.writeFile(wb,`Quartermaster_Export_${ts}.xlsx`);
+    showNotification(`✅ Exported successfully`,'success');
 }
 
 init();
