@@ -791,64 +791,112 @@
         let allData = [];
         let activePlateFilter = 'all';
 
-        /* ── TOAST ── */
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           PLATE TYPE STORE
+           • In-memory map (primary) — always works
+           • sessionStorage (secondary, best-effort) — survives page refresh within the same tab
+           • NEVER touches localStorage — avoids Edge Tracking Prevention 400 errors
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        const _plateMemory = {};   // in-memory fallback (always available)
+        const SS_KEY = 'pn_pt';   // sessionStorage key (may be blocked — handled gracefully)
+
+        function _readStore() {
+            try { return JSON.parse(sessionStorage.getItem(SS_KEY) || '{}'); }
+            catch { return {}; }
+        }
+
+        function savePlateType(id, type) {
+            _plateMemory[String(id)] = type;
+            try { const s = _readStore(); s[String(id)] = type; sessionStorage.setItem(SS_KEY, JSON.stringify(s)); }
+            catch { /* blocked by Tracking Prevention — in-memory still works */ }
+        }
+
+        function getPlateType(id, dbValue) {
+            // Priority: in-memory → sessionStorage → DB column → default 'black'
+            if (_plateMemory[String(id)]) return _plateMemory[String(id)];
+            const s = _readStore();
+            if (s[String(id)]) return s[String(id)];
+            if (dbValue && dbValue !== '') return dbValue;
+            return 'black';
+        }
+
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           SAFE SUPABASE PAYLOAD — strips plate_type column entirely.
+           The vehicles table does NOT have a plate_type column.
+           Plate type is handled client-side only.
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function dbPayload(raw) {
+            // Only include columns that actually exist in the vehicles table
+            const allowed = ['office','vehicle_type','plate_number','engine_number','chassis_number','remarks','date_of_registration'];
+            const out = {};
+            allowed.forEach(k => { if (raw[k] !== undefined) out[k] = raw[k]; });
+            return out;
+        }
+
+        /* ━━━ TOAST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         function showToast(message, type='success') {
-            document.querySelectorAll('.toast-clay').forEach(t=>t.remove());
-            const icons = {success:'fas fa-circle-check',error:'fas fa-circle-xmark',info:'fas fa-circle-info',warning:'fas fa-triangle-exclamation'};
+            document.querySelectorAll('.toast-clay').forEach(t => t.remove());
+            const icons = {
+                success: 'fas fa-circle-check',
+                error:   'fas fa-circle-xmark',
+                info:    'fas fa-circle-info',
+                warning: 'fas fa-triangle-exclamation'
+            };
             const toast = document.createElement('div');
             toast.className = `toast-clay ${type}`;
             toast.innerHTML = `<i class="${icons[type]||icons.info}" style="font-size:1.05rem;flex-shrink:0;"></i><span>${message}</span>`;
             document.body.appendChild(toast);
-            setTimeout(()=>{ toast.style.animation='toastOut .3s ease forwards'; setTimeout(()=>toast.remove(),300); }, 3500);
+            setTimeout(() => {
+                toast.style.animation = 'toastOut .3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
         }
 
-        /* ── LOCAL STORAGE FALLBACK FOR PLATE TYPE ── */
-        const LS_KEY = 'pn_fleet_plate_types';
-        function getLocalPlateTypes(){ try{return JSON.parse(localStorage.getItem(LS_KEY)||'{}');}catch{return{};} }
-        function saveLocalPlateType(id,type){ const m=getLocalPlateTypes(); m[String(id)]=type; localStorage.setItem(LS_KEY,JSON.stringify(m)); }
-        function getPlateTypeForRecord(id,dbValue){ if(dbValue&&dbValue!=='black')return dbValue; const l=getLocalPlateTypes(); return l[String(id)]||dbValue||'black'; }
-
-        /* ── PLATE PREVIEW ── */
-        function updatePlatePreview(){
-            const type=document.querySelector('input[name="plate_type"]:checked').value;
-            const hint=document.getElementById('plateTypeHint');
-            hint.className='plate-preview '+type;
-            hint.innerHTML = type==='red'
+        /* ━━━ PLATE PREVIEW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function updatePlatePreview() {
+            const type = document.querySelector('input[name="plate_type"]:checked').value;
+            const hint = document.getElementById('plateTypeHint');
+            hint.className = 'plate-preview ' + type;
+            hint.innerHTML = type === 'red'
                 ? '<i class="fas fa-circle-info"></i> Transferred to Philippine Navy — Red Government Plate'
                 : '<i class="fas fa-circle-info"></i> Civilian vehicle — Not yet transferred to PN';
         }
 
-        /* ── PLATE FILTER ── */
-        function setPlateFilter(type,btn){
-            activePlateFilter=type;
-            document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+        /* ━━━ PLATE FILTER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function setPlateFilter(type, btn) {
+            activePlateFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             renderTable(allData);
         }
 
-        /* ── RENDER TABLE ── */
-        function renderTable(data){
+        /* ━━━ RENDER TABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function renderTable(data) {
             let filtered = data;
-            if(activePlateFilter!=='all') filtered=data.filter(v=>getPlateTypeForRecord(v.id,v.plate_type)===activePlateFilter);
+            if (activePlateFilter !== 'all')
+                filtered = data.filter(v => getPlateType(v.id, v.plate_type) === activePlateFilter);
 
-            const tbody=document.getElementById("vehicleTable");
-            tbody.innerHTML=""; let currentOffice=""; let counter=1;
+            const tbody = document.getElementById('vehicleTable');
+            tbody.innerHTML = '';
+            let currentOffice = '', counter = 1;
 
-            filtered.forEach(v=>{
-                if(v.office!==currentOffice){
-                    currentOffice=v.office;
-                    const gr=tbody.insertRow(); gr.className="office-group-row";
-                    gr.innerHTML=`<td colspan="10" style="padding:8px 16px;">OFFICE: ${currentOffice}</td>`;
+            filtered.forEach(v => {
+                if (v.office !== currentOffice) {
+                    currentOffice = v.office;
+                    const gr = tbody.insertRow();
+                    gr.className = 'office-group-row';
+                    gr.innerHTML = `<td colspan="10" style="padding:8px 16px;">OFFICE: ${currentOffice}</td>`;
                 }
-                const plateType=getPlateTypeForRecord(v.id,v.plate_type);
-                const plateClass=plateType==='red'?'red':'black';
-                const plateHtml=v.plate_number
-                    ?`<span class="plate-badge ${plateClass}"><span class="plate-dot"></span>${v.plate_number}</span>`
-                    :`<span class="plate-badge unknown">—</span>`;
 
-                const row=tbody.insertRow();
-                row.dataset.plateType=plateType;
-                row.innerHTML=`
+                const pt = getPlateType(v.id, v.plate_type);
+                const pc = pt === 'red' ? 'red' : 'black';
+                const plateHtml = v.plate_number
+                    ? `<span class="plate-badge ${pc}"><span class="plate-dot"></span>${v.plate_number}</span>`
+                    : `<span class="plate-badge unknown">—</span>`;
+
+                const row = tbody.insertRow();
+                row.dataset.plateType = pt;
+                row.innerHTML = `
                     <td class="badge-print-hide"><input type="checkbox" class="row-checkbox" data-id="${v.id}"></td>
                     <td style="font-weight:800;color:var(--text3);">${counter++}</td>
                     <td class="office-cell">${v.office||''}</td>
@@ -862,174 +910,290 @@
                         <button class="btn-edit" onclick="editRecord(${v.id})"><i class="fas fa-edit"></i> Edit</button>
                     </td>`;
 
-                const cb=row.querySelector('.row-checkbox');
-                cb.addEventListener('change',function(){ row.classList.toggle('row-selected',this.checked); updateBulkBar(); });
+                row.querySelector('.row-checkbox').addEventListener('change', function () {
+                    row.classList.toggle('row-selected', this.checked);
+                    updateBulkBar();
+                });
             });
 
-            const redCnt=data.filter(v=>getPlateTypeForRecord(v.id,v.plate_type)==='red').length;
-            const blkCnt=data.filter(v=>getPlateTypeForRecord(v.id,v.plate_type)==='black').length;
-            document.getElementById('statTotal').innerText=data.length;
-            document.getElementById('statOffices').innerText=[...new Set(data.map(v=>v.office))].length;
-            document.getElementById('statRedPlates').innerText=redCnt;
-            document.getElementById('statBlackPlates').innerText=blkCnt;
+            const redCnt = data.filter(v => getPlateType(v.id, v.plate_type) === 'red').length;
+            const blkCnt = data.filter(v => getPlateType(v.id, v.plate_type) === 'black').length;
+            document.getElementById('statTotal').innerText    = data.length;
+            document.getElementById('statOffices').innerText  = [...new Set(data.map(v => v.office))].length;
+            document.getElementById('statRedPlates').innerText   = redCnt;
+            document.getElementById('statBlackPlates').innerText = blkCnt;
         }
 
-        /* ── REFRESH ── */
-        async function refreshData(){
-            const {data,error}=await db.from('vehicles').select('*').order('office',{ascending:true}).order('vehicle_type',{ascending:true});
-            if(error){showToast('Failed to load: '+error.message,'error');return;}
-            allData=data;renderTable(allData);
+        /* ━━━ REFRESH FROM DB ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        async function refreshData() {
+            const { data, error } = await db
+                .from('vehicles').select('*')
+                .order('office', { ascending: true })
+                .order('vehicle_type', { ascending: true });
+            if (error) { showToast('Failed to load: ' + error.message, 'error'); return; }
+            allData = data || [];
+            renderTable(allData);
         }
 
-        /* ── SEARCH ── */
-        function filterTable(){
-            const f=document.getElementById('searchInput').value.toUpperCase();
-            const rows=document.getElementById('vehicleTable').getElementsByTagName('tr');
-            for(let i=0;i<rows.length;i++){
-                if(rows[i].classList.contains('office-group-row')){rows[i].style.display=f===""?"":"none";continue;}
-                rows[i].style.display=rows[i].textContent.toUpperCase().includes(f)?"":"none";
+        /* ━━━ SEARCH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function filterTable() {
+            const f = document.getElementById('searchInput').value.toUpperCase();
+            const rows = document.getElementById('vehicleTable').getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].classList.contains('office-group-row')) {
+                    rows[i].style.display = f === '' ? '' : 'none'; continue;
+                }
+                rows[i].style.display = rows[i].textContent.toUpperCase().includes(f) ? '' : 'none';
             }
         }
 
-        /* ── FORM HELPERS ── */
-        function getSelectedPlateType(){ const c=document.querySelector('input[name="plate_type"]:checked'); return c?c.value:'black'; }
-        function setPlateTypeInForm(t){ const r=document.querySelector(`input[name="plate_type"][value="${t==='red'?'red':'black'}"]`); if(r){r.checked=true;updatePlatePreview();} }
+        /* ━━━ FORM HELPERS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function getSelectedPlateType() {
+            const c = document.querySelector('input[name="plate_type"]:checked');
+            return c ? c.value : 'black';
+        }
 
-        /* ── ADD ── */
-        async function addData(){
-            const plateType=getSelectedPlateType();
-            const payload={office:document.getElementById('office').value,vehicle_type:document.getElementById('vehicle_type').value,plate_number:document.getElementById('plate_number').value,plate_type:plateType,engine_number:document.getElementById('engine_number').value,chassis_number:document.getElementById('chassis_number').value,remarks:document.getElementById('remarks').value,date_of_registration:document.getElementById('date_of_registration').value||null};
-            let {data:inserted,error}=await db.from('vehicles').insert([payload]).select().single();
-            if(error&&error.message&&error.message.includes('plate_type')){
-                const {plate_type:_,...noPT}=payload;
-                const r=await db.from('vehicles').insert([noPT]).select().single();
-                if(!r.error&&r.data){saveLocalPlateType(r.data.id,plateType);showToast('Asset registered! (Plate saved locally)','warning');clearForm();refreshData();return;}
-                showToast('Failed: '+r.error.message,'error');return;
+        function setPlateTypeInForm(t) {
+            const val = t === 'red' ? 'red' : 'black';
+            const r = document.querySelector(`input[name="plate_type"][value="${val}"]`);
+            if (r) { r.checked = true; updatePlatePreview(); }
+        }
+
+        function readFormFields() {
+            return {
+                office:               document.getElementById('office').value.trim(),
+                vehicle_type:         document.getElementById('vehicle_type').value.trim(),
+                plate_number:         document.getElementById('plate_number').value.trim(),
+                engine_number:        document.getElementById('engine_number').value.trim(),
+                chassis_number:       document.getElementById('chassis_number').value.trim(),
+                remarks:              document.getElementById('remarks').value.trim(),
+                date_of_registration: document.getElementById('date_of_registration').value || null
+            };
+        }
+
+        /* ━━━ ADD (Register) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        async function addData() {
+            const plateType = getSelectedPlateType();
+            const fields    = readFormFields();
+
+            if (!fields.office || !fields.vehicle_type) {
+                showToast('Please fill in Office and Vehicle Type.', 'warning'); return;
             }
-            if(error){showToast('Failed: '+error.message,'error');return;}
-            if(inserted)saveLocalPlateType(inserted.id,plateType);
-            showToast('Asset registered successfully!','success');
-            clearForm();refreshData();
-        }
 
-        /* ── EDIT ── */
-        async function editRecord(id){
-            const {data,error}=await db.from('vehicles').select('*').eq('id',id).single();
-            if(error){showToast('Could not load: '+error.message,'error');return;}
-            document.getElementById('edit_id').value=data.id;
-            document.getElementById('office').value=data.office||'';
-            document.getElementById('vehicle_type').value=data.vehicle_type||'';
-            document.getElementById('plate_number').value=data.plate_number||'';
-            document.getElementById('engine_number').value=data.engine_number||'';
-            document.getElementById('chassis_number').value=data.chassis_number||'';
-            document.getElementById('remarks').value=data.remarks||'';
-            document.getElementById('date_of_registration').value=data.date_of_registration||'';
-            setPlateTypeInForm(getPlateTypeForRecord(data.id,data.plate_type));
-            document.getElementById('submitBtn').style.display='none';
-            document.getElementById('updateBtn').style.display='block';
-            document.getElementById('cancelBtn').style.display='block';
-            window.scrollTo({top:0,behavior:'smooth'});
-            showToast('Record loaded — make changes then click Update','info');
-        }
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> &nbsp;Saving…';
 
-        /* ── UPDATE ── */
-        async function updateData(){
-            const id=document.getElementById('edit_id').value;
-            if(!id){showToast('No record selected','error');return;}
-            const plateType=getSelectedPlateType();
-            const payload={office:document.getElementById('office').value,vehicle_type:document.getElementById('vehicle_type').value,plate_number:document.getElementById('plate_number').value,plate_type:plateType,engine_number:document.getElementById('engine_number').value,chassis_number:document.getElementById('chassis_number').value,remarks:document.getElementById('remarks').value,date_of_registration:document.getElementById('date_of_registration').value||null};
-            const btn=document.getElementById('updateBtn');
-            btn.disabled=true;btn.textContent='Saving…';
-            let {error}=await db.from('vehicles').update(payload).eq('id',id);
-            if(error&&error.message&&error.message.includes('plate_type')){
-                const {plate_type:_,...noPT}=payload;
-                const r=await db.from('vehicles').update(noPT).eq('id',id);
-                if(!r.error){saveLocalPlateType(id,plateType);const idx=allData.findIndex(v=>String(v.id)===String(id));if(idx!==-1)Object.assign(allData[idx],noPT);showToast('Updated! Plate type saved locally','warning');btn.disabled=false;btn.textContent='UPDATE ASSET';cancelEdit();renderTable(allData);return;}
-                showToast('Update failed: '+r.error.message,'error');btn.disabled=false;btn.textContent='UPDATE ASSET';return;
+            const payload = dbPayload(fields);   // ← NEVER includes plate_type
+            const { data: inserted, error } = await db
+                .from('vehicles').insert([payload]).select().single();
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus"></i> &nbsp;Register Asset';
+
+            if (error) {
+                showToast('Failed to register: ' + error.message, 'error');
+                return;
             }
-            if(error){showToast('Update failed: '+error.message,'error');btn.disabled=false;btn.textContent='UPDATE ASSET';return;}
-            saveLocalPlateType(id,plateType);
-            const idx=allData.findIndex(v=>String(v.id)===String(id));if(idx!==-1)Object.assign(allData[idx],payload);
-            showToast('Record updated!','success');btn.disabled=false;btn.textContent='UPDATE ASSET';cancelEdit();renderTable(allData);
+
+            // Store plate type client-side only
+            savePlateType(inserted.id, plateType);
+
+            showToast('✅ Asset registered successfully!', 'success');
+            clearForm();
+            refreshData();
         }
 
-        /* ── SELECTION / BULK ── */
-        function toggleSelectAll(){ const c=document.getElementById('selectAll').checked; document.querySelectorAll('.row-checkbox').forEach(cb=>{cb.checked=c;const r=cb.closest('tr');if(r)r.classList.toggle('row-selected',c);}); updateBulkBar(); }
+        /* ━━━ EDIT (load into form) ━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        async function editRecord(id) {
+            const { data, error } = await db.from('vehicles').select('*').eq('id', id).single();
+            if (error) { showToast('Could not load record: ' + error.message, 'error'); return; }
 
-        function updateBulkBar(){
-            const sel=document.querySelectorAll('.row-checkbox:checked');
-            document.getElementById('bulkCount').textContent=sel.length;
-            const bar=document.getElementById('bulkBar');
-            sel.length>0?bar.classList.add('visible'):bar.classList.remove('visible');
-            if(!sel.length)document.getElementById('selectAll').checked=false;
+            document.getElementById('edit_id').value              = data.id;
+            document.getElementById('office').value               = data.office || '';
+            document.getElementById('vehicle_type').value         = data.vehicle_type || '';
+            document.getElementById('plate_number').value         = data.plate_number || '';
+            document.getElementById('engine_number').value        = data.engine_number || '';
+            document.getElementById('chassis_number').value       = data.chassis_number || '';
+            document.getElementById('remarks').value              = data.remarks || '';
+            document.getElementById('date_of_registration').value = data.date_of_registration || '';
+
+            setPlateTypeInForm(getPlateType(data.id, data.plate_type));
+
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('updateBtn').style.display = 'block';
+            document.getElementById('cancelBtn').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast('Record loaded — make your changes then click Update.', 'info');
         }
 
-        function clearAllSelections(){
-            document.querySelectorAll('.row-checkbox').forEach(cb=>{cb.checked=false;const r=cb.closest('tr');if(r)r.classList.remove('row-selected');});
-            document.getElementById('selectAll').checked=false;updateBulkBar();
-        }
+        /* ━━━ UPDATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        async function updateData() {
+            const id = document.getElementById('edit_id').value;
+            if (!id) { showToast('No record selected to update.', 'error'); return; }
 
-        async function bulkSetPlateType(type){
-            const checkboxes=Array.from(document.querySelectorAll('.row-checkbox:checked'));
-            if(!checkboxes.length){showToast('No records selected','warning');return;}
-            const ids=checkboxes.map(cb=>cb.dataset.id);
-            const label=type==='red'?'🔴 Red Plate':'⚫ Black Plate';
-            if(!confirm(`Tag ${ids.length} vehicle(s) as ${label}?`))return;
-            const bar=document.getElementById('bulkBar');
-            const orig=bar.innerHTML;
-            bar.innerHTML=`<div class="bulk-bar-count"><i class="fas fa-spinner fa-spin" style="color:var(--blue2);"></i> Updating ${ids.length} record(s)…</div>`;
-            let ok=0,fail=0;
-            for(const id of ids){
-                let {error}=await db.from('vehicles').update({plate_type:type}).eq('id',id);
-                if(error&&error.message&&error.message.includes('plate_type')){saveLocalPlateType(id,type);const idx=allData.findIndex(v=>String(v.id)===String(id));if(idx!==-1)allData[idx].plate_type=type;ok++;}
-                else if(error){fail++;}
-                else{saveLocalPlateType(id,type);const idx=allData.findIndex(v=>String(v.id)===String(id));if(idx!==-1)allData[idx].plate_type=type;ok++;}
+            const plateType = getSelectedPlateType();
+            const fields    = readFormFields();
+            const payload   = dbPayload(fields);   // ← NEVER includes plate_type
+
+            const btn = document.getElementById('updateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> &nbsp;Saving…';
+
+            const { error } = await db.from('vehicles').update(payload).eq('id', id);
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> &nbsp;Update Asset';
+
+            if (error) {
+                showToast('Update failed: ' + error.message, 'error'); return;
             }
-            bar.innerHTML=orig;clearAllSelections();renderTable(allData);
-            fail===0?showToast(`✅ ${ok} vehicle(s) tagged as ${label}!`,'success'):showToast(`⚠️ ${ok} updated, ${fail} failed`,'warning');
+
+            // Update client-side plate type and in-memory cache
+            savePlateType(id, plateType);
+            const idx = allData.findIndex(v => String(v.id) === String(id));
+            if (idx !== -1) Object.assign(allData[idx], payload);
+
+            showToast('✅ Record updated successfully!', 'success');
+            cancelEdit();
+            renderTable(allData);
         }
 
-        async function deleteSelected(){
-            const ids=Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb=>parseInt(cb.dataset.id));
-            if(!ids.length){showToast('Select records first','warning');return;}
-            if(confirm(`Delete ${ids.length} record(s)?`)){
-                const {error}=await db.from('vehicles').delete().in('id',ids);
-                if(error){showToast('Delete failed: '+error.message,'error');return;}
-                const m=getLocalPlateTypes();ids.forEach(id=>delete m[String(id)]);localStorage.setItem(LS_KEY,JSON.stringify(m));
-                showToast(`${ids.length} record(s) deleted`,'success');refreshData();
+        /* ━━━ SELECTION / BULK ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function toggleSelectAll() {
+            const c = document.getElementById('selectAll').checked;
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.checked = c;
+                const r = cb.closest('tr');
+                if (r) r.classList.toggle('row-selected', c);
+            });
+            updateBulkBar();
+        }
+
+        function updateBulkBar() {
+            const sel = document.querySelectorAll('.row-checkbox:checked');
+            document.getElementById('bulkCount').textContent = sel.length;
+            const bar = document.getElementById('bulkBar');
+            sel.length > 0 ? bar.classList.add('visible') : bar.classList.remove('visible');
+            if (!sel.length) document.getElementById('selectAll').checked = false;
+        }
+
+        function clearAllSelections() {
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.checked = false;
+                const r = cb.closest('tr');
+                if (r) r.classList.remove('row-selected');
+            });
+            document.getElementById('selectAll').checked = false;
+            updateBulkBar();
+        }
+
+        async function bulkSetPlateType(type) {
+            const checkboxes = Array.from(document.querySelectorAll('.row-checkbox:checked'));
+            if (!checkboxes.length) { showToast('No records selected.', 'warning'); return; }
+            const ids   = checkboxes.map(cb => cb.dataset.id);
+            const label = type === 'red' ? '🔴 Red Plate' : '⚫ Black Plate';
+            if (!confirm(`Tag ${ids.length} vehicle(s) as ${label}?`)) return;
+
+            // Plate type is client-side only — just update in-memory + sessionStorage
+            ids.forEach(id => {
+                savePlateType(id, type);
+                const idx = allData.findIndex(v => String(v.id) === String(id));
+                if (idx !== -1) allData[idx]._clientPlateType = type;
+            });
+
+            clearAllSelections();
+            renderTable(allData);
+            showToast(`✅ ${ids.length} vehicle(s) tagged as ${label}!`, 'success');
+        }
+
+        async function deleteSelected() {
+            const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.id));
+            if (!ids.length) { showToast('Select at least one record first.', 'warning'); return; }
+            if (!confirm(`Delete ${ids.length} record(s)?`)) return;
+
+            const { error } = await db.from('vehicles').delete().in('id', ids);
+            if (error) { showToast('Delete failed: ' + error.message, 'error'); return; }
+
+            // Clean up in-memory store
+            ids.forEach(id => delete _plateMemory[String(id)]);
+            try {
+                const s = _readStore();
+                ids.forEach(id => delete s[String(id)]);
+                sessionStorage.setItem(SS_KEY, JSON.stringify(s));
+            } catch { /* blocked */ }
+
+            showToast(`${ids.length} record(s) deleted.`, 'success');
+            refreshData();
+        }
+
+        async function removeDuplicates() {
+            const { data } = await db.from('vehicles').select('*').order('id', { ascending: true });
+            const seen = new Set(), dups = [];
+            (data || []).forEach(v => {
+                const k = String(v.plate_number || '').toLowerCase().trim();
+                if (seen.has(k)) dups.push(v.id); else seen.add(k);
+            });
+            if (dups.length > 0 && confirm(`Delete ${dups.length} duplicate(s)?`)) {
+                await db.from('vehicles').delete().in('id', dups);
+                showToast(`${dups.length} duplicate(s) removed.`, 'success');
+                refreshData();
+            } else if (!dups.length) {
+                showToast('No duplicates found.', 'info');
             }
         }
 
-        async function removeDuplicates(){
-            const {data}=await db.from('vehicles').select('*').order('id',{ascending:true});
-            const seen=new Set(),dups=[];
-            data.forEach(v=>{const k=`${v.plate_number}`.toLowerCase().trim();if(seen.has(k))dups.push(v.id);else seen.add(k);});
-            if(dups.length>0&&confirm(`Delete ${dups.length} duplicate(s)?`)){await db.from('vehicles').delete().in('id',dups);showToast(`${dups.length} duplicate(s) removed`,'success');refreshData();}
-            else if(!dups.length)showToast('No duplicates found','info');
+        function cancelEdit() {
+            clearForm();
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('updateBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.getElementById('updateBtn').disabled = false;
+            document.getElementById('updateBtn').innerHTML = '<i class="fas fa-save"></i> &nbsp;Update Asset';
         }
 
-        function cancelEdit(){clearForm();document.getElementById('submitBtn').style.display='block';document.getElementById('updateBtn').style.display='none';document.getElementById('cancelBtn').style.display='none';document.getElementById('updateBtn').disabled=false;document.getElementById('updateBtn').textContent='UPDATE ASSET';}
-
-        function clearForm(){['vehicle_type','plate_number','engine_number','chassis_number','remarks','date_of_registration'].forEach(id=>{document.getElementById(id).value="";});setPlateTypeInForm('red');}
-
-        function downloadTemplate(){
-            const t=[['Office','Vehicle Type','Plate Number','Plate Type (red/black)','Engine Number','Chassis Number','Remarks']];
-            const ws=XLSX.utils.aoa_to_sheet(t);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Vehicles');XLSX.writeFile(wb,'PN_Fleet_Template.xlsx');
+        function clearForm() {
+            ['vehicle_type','plate_number','engine_number','chassis_number','remarks','date_of_registration']
+                .forEach(id => { document.getElementById(id).value = ''; });
+            setPlateTypeInForm('red');
         }
 
-        async function importExcel(event){
-            const file=event.target.files[0];const reader=new FileReader();
-            reader.onload=async function(e){
-                const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-                const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                const vehicles=rows.map(r=>({office:(r['Office']||'').toString().toUpperCase(),vehicle_type:(r['Vehicle Type']||r['Vehicle Model']||'').toString(),plate_number:(r['Plate Number']||r['Plate ID']||'').toString(),plate_type:((r['Plate Type (red/black)']||r['Plate Type']||'black')).toString().toLowerCase().trim(),engine_number:(r['Engine Number']||'').toString(),chassis_number:(r['Chassis Number']||'').toString(),remarks:(r['Remarks']||'').toString()}));
-                const {error}=await db.from('vehicles').insert(vehicles);
-                if(error){showToast('Import failed: '+error.message,'error');return;}
-                showToast(`${vehicles.length} records imported!`,'success');refreshData();
+        function downloadTemplate() {
+            const t = [['Office','Vehicle Type','Plate Number','Plate Type (red/black)','Engine Number','Chassis Number','Remarks']];
+            const ws = XLSX.utils.aoa_to_sheet(t);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Vehicles');
+            XLSX.writeFile(wb, 'PN_Fleet_Template.xlsx');
+        }
+
+        async function importExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const wb   = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+
+                const vehicles = rows.map(r => ({
+                    office:         (r['Office'] || '').toString().toUpperCase(),
+                    vehicle_type:   (r['Vehicle Type'] || r['Vehicle Model'] || '').toString(),
+                    plate_number:   (r['Plate Number'] || r['Plate ID'] || '').toString(),
+                    engine_number:  (r['Engine Number'] || '').toString(),
+                    chassis_number: (r['Chassis Number'] || '').toString(),
+                    remarks:        (r['Remarks'] || '').toString()
+                    // date_of_registration intentionally omitted if not in template
+                }));
+
+                const { error } = await db.from('vehicles').insert(vehicles);
+                if (error) { showToast('Import failed: ' + error.message, 'error'); return; }
+                showToast(`${vehicles.length} records imported!`, 'success');
+                refreshData();
             };
             reader.readAsArrayBuffer(file);
+            event.target.value = '';
         }
 
+        /* ━━━ INIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         refreshData();
     </script>
 </body>
