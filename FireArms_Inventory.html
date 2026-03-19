@@ -4,257 +4,411 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weapons Inventory</title>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-    :root {
-        --navy:   #2D3580;
-        --royal:  #2b4acb;
-        --purple: #6248C8;
-    }
+/* ═══════════════════════════════════════════
+   CLAY MORPHISM  —  Weapons Inventory
+   Palette: soft blue-lavender clay
+═══════════════════════════════════════════ */
+:root {
+    --bg:          #dce8f8;
+    --clay-1:      #c8daf0;
+    --clay-2:      #b8cee8;
+    --white-glass: rgba(255,255,255,0.82);
+    --white-deep:  rgba(255,255,255,0.65);
+    --border:      rgba(255,255,255,0.90);
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    --blue:        #3567ae;
+    --blue2:       #4a7fc1;
+    --purple:      #6248C8;
+    --navy:        #2D3580;
+    --green:       #2d9460;
+    --red:         #c04040;
+    --amber:       #a06010;
 
-    body {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, var(--navy) 0%, var(--royal) 60%, var(--purple) 100%);
-        min-height: 100vh;
-        padding: 1.5rem;
-        color: #1e293b;
-    }
+    --text:        #1a2e4a;
+    --text2:       #3a5070;
+    --text3:       #7090b0;
 
-    .container {
-        background-color: #ffffff;
-        border-radius: 12px;
-        padding: 2rem;
-        margin: 0 auto;
-        max-width: 1400px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
+    /* Clay shadow = soft colored outer shadow + white inner highlight */
+    --sh:    8px 8px 20px rgba(74,127,193,0.28), -4px -4px 12px rgba(255,255,255,0.85);
+    --sh-sm: 4px 4px 12px rgba(74,127,193,0.22), -2px -2px 7px rgba(255,255,255,0.80);
+    --sh-in: inset 2px 2px 6px rgba(74,127,193,0.14), inset -2px -2px 6px rgba(255,255,255,0.90);
 
-    /* ===== PAGE HEADER ===== */
-    .page-header {
-        text-align: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 3px solid var(--royal);
-    }
-    .page-header h1 {
-        color: var(--navy);
-        font-size: 1.75rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        letter-spacing: 0.05em;
-    }
-    .page-header p {
-        color: #64748b;
-        font-size: 0.95rem;
-    }
+    --ff: 'Nunito', sans-serif;
+    --r:  16px;
+    --r-lg: 24px;
+}
 
-    /* ===== STATS CARDS ===== */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .stat-card {
-        color: white;
-        padding: 1.25rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .stat-card:nth-child(1) { background: linear-gradient(135deg, var(--navy), var(--royal)); }
-    .stat-card:nth-child(2) { background: linear-gradient(135deg, var(--royal), var(--purple)); }
-    .stat-card:nth-child(3) { background: linear-gradient(135deg, var(--purple), var(--navy)); }
-    .stat-card:nth-child(4) { background: linear-gradient(135deg, var(--navy), var(--purple)); }
-    .stat-card:nth-child(5) { background: linear-gradient(135deg, #b91c1c, #dc2626); }
-    .stat-card:nth-child(6) { background: linear-gradient(135deg, var(--royal), var(--navy)); }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-    .stat-card .stat-label {
-        font-size: 0.875rem;
-        opacity: 0.9;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .stat-card .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-    }
+body {
+    font-family: var(--ff);
+    background: linear-gradient(135deg, #c8daf0 0%, #dce8f5 40%, #e8f0fb 70%, #d5e5f8 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem;
+}
 
-    /* ===== CARD ===== */
-    .card {
-        background: white;
-        border-radius: 0.5rem;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    .card-header {
-        background: linear-gradient(90deg, var(--navy), var(--royal));
-        color: white;
-        padding: 1rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-    }
-    .card-body { padding: 1.5rem; }
-    .card-footer {
-        padding: 0.875rem 1.5rem;
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        font-size: 0.875rem;
-        color: #64748b;
-    }
+body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+        radial-gradient(ellipse 60% 50% at 20% 20%, rgba(255,255,255,0.45) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(168,200,240,0.35) 0%, transparent 55%);
+}
 
-    /* ===== BUTTONS ===== */
-    .btn {
-        display: inline-flex; align-items: center; gap: 0.5rem;
-        padding: 0.5rem 1rem; border-radius: 0.375rem; border: none;
-        font-size: 0.875rem; font-weight: 600; cursor: pointer;
-        transition: all 0.2s; font-family: 'Inter', sans-serif;
-    }
-    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-    .btn-success { background: #16a34a; color: white; }
-    .btn-success:hover { background: #15803d; }
-    .btn-info    { background: var(--royal); color: white; }
-    .btn-info:hover { background: var(--navy); }
-    .btn-secondary { background: #64748b; color: white; }
-    .btn-secondary:hover { background: #475569; }
-    .btn-primary { background: var(--navy); color: white; }
-    .btn-primary:hover { background: var(--royal); }
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #d0e5f8; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #4a7fc1; border-radius: 10px; }
 
-    .d-flex { display: flex; }
-    .gap-2 { gap: 0.5rem; }
-    .mb-3 { margin-bottom: 0.75rem; }
-    .mb-4 { margin-bottom: 1rem; }
-    .flex-wrap { flex-wrap: wrap; }
-    .justify-content-between { justify-content: space-between; }
-    .align-items-center { align-items: center; }
-    .text-muted { color: #64748b; }
+.container {
+    background: linear-gradient(135deg, rgba(255,255,255,0.82), rgba(220,235,250,0.72));
+    border: 2px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 2rem;
+    margin: 0 auto;
+    max-width: 1400px;
+    box-shadow: var(--sh);
+    position: relative; z-index: 1;
+    backdrop-filter: blur(12px);
+}
 
-    /* ===== ALERTS ===== */
-    .alert {
-        padding: 0.875rem 1rem; border-radius: 0.375rem;
-        font-size: 0.875rem; border: 1px solid transparent;
-    }
-    .alert-info { background: #eff2ff; border-color: #c7d2fe; color: var(--royal); }
-    .alert-success { background: #f0fdf4; border-color: #86efac; color: #15803d; }
-    .alert-danger { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
-    .alert-dismissible { display: flex; justify-content: space-between; align-items: flex-start; }
-    .alert-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: inherit; padding: 0; }
+/* ── Page header ── */
+.page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1.75rem 2rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.75), rgba(208,229,248,0.70));
+    border: 2px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh);
+    position: relative; overflow: hidden;
+}
 
-    /* ===== TABLE ===== */
-    .table-responsive { overflow-x: auto; }
-    .table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    .table thead tr { background: var(--navy); }
-    .table thead th {
-        padding: 0.75rem 0.875rem; text-align: center;
-        font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.06em; color: rgba(255,255,255,0.9);
-        border-bottom: 2px solid var(--royal);
-    }
-    .table thead th:first-child { text-align: left; }
-    .table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
-    .table tbody tr:nth-child(even):not(.section-header) { background: #f8fafc; }
-    .table tbody tr:hover:not(.section-header) { background: #eff2ff; }
-    .table tbody td { padding: 0.625rem 0.875rem; vertical-align: middle; color: #1e293b; }
+.page-header::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    background: linear-gradient(90deg, var(--navy), var(--blue2), var(--purple));
+}
 
-    /* Section headers in table */
-    .section-header td {
-        background: linear-gradient(135deg, var(--navy) 0%, var(--royal) 100%) !important;
-        color: white !important;
-        font-weight: 700 !important;
-        text-align: left !important;
-        padding: 0.75rem 1rem !important;
-        border-left: 4px solid var(--purple) !important;
-        font-size: 0.9375rem;
-    }
+.page-header h1 {
+    color: var(--navy);
+    font-size: 1.75rem; font-weight: 900;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+}
 
-    /* Editable cells */
-    td[contenteditable="true"] {
-        background-color: #fffbeb;
-        cursor: text;
-        transition: background-color 0.15s ease;
-        min-height: 2rem;
-    }
-    td[contenteditable="true"]:hover { background-color: #fef3c7; }
-    td[contenteditable="true"]:focus { outline: 2px solid var(--royal); background-color: #fff; }
+.page-header p {
+    color: var(--text3);
+    font-size: 0.88rem; margin-top: 4px; font-weight: 600;
+}
 
-    /* Unit/Item select dropdown */
-    select.uicell {
-        width: 100%; padding: 0.5rem; font-size: 0.875rem;
-        border: 1px solid #d1d5db; border-radius: 0.25rem;
-        background-color: white; cursor: pointer; font-family: 'Inter', sans-serif;
-    }
-    select.uicell:focus { border-color: var(--royal); outline: 0; box-shadow: 0 0 0 3px rgba(43,74,203,0.1); }
+/* ── Stats grid ── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
 
-    /* Total column */
-    td.total { background-color: #eff2ff !important; font-weight: 700; color: var(--navy); }
+.stat-card {
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--r-lg);
+    border: 2px solid rgba(255,255,255,0.75);
+    box-shadow: var(--sh);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: white;
+}
 
-    /* Column widths */
-    .table th:nth-child(1), .table td:nth-child(1) { width: 5%; }
-    .table th:nth-child(2), .table td:nth-child(2) { width: 12%; }
-    .table th:nth-child(3), .table td:nth-child(3) { width: 15%; }
-    .table th:nth-child(4), .table td:nth-child(4) { width: 8%; }
-    .table th:nth-child(5), .table td:nth-child(5) { width: 10%; }
-    .table th:nth-child(6), .table td:nth-child(6) { width: 10%; }
-    .table th:nth-child(7), .table td:nth-child(7) { width: 10%; }
-    .table th:nth-child(8), .table td:nth-child(8) { width: 10%; }
-    .table th:nth-child(9), .table td:nth-child(9) { width: 10%; }
-    .table th:nth-child(10), .table td:nth-child(10) { width: 10%; }
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 10px 10px 28px rgba(74,127,193,0.32), -4px -4px 14px rgba(255,255,255,0.88);
+}
 
-    /* ===== TOAST ===== */
-    .toast-container { position: fixed; top: 2rem; right: 2rem; z-index: 1000; min-width: 300px; }
+.stat-card::after {
+    content: '';
+    position: absolute; top: -20px; right: -20px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+}
 
-    /* ===== LOADING ===== */
-    .loading-overlay {
-        position: fixed; inset: 0; display: none; align-items: center;
-        justify-content: center; background: rgba(15,23,42,0.5);
-        z-index: 9999; backdrop-filter: blur(2px);
-    }
-    .loading-overlay.show { display: flex; }
-    .spinner {
-        width: 42px; height: 42px; border-radius: 50%;
-        border: 4px solid rgba(255,255,255,0.25);
-        border-top-color: white; animation: spin 0.75s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+.stat-card:nth-child(1) { background: linear-gradient(135deg, #3567ae, #2D3580); }
+.stat-card:nth-child(2) { background: linear-gradient(135deg, #4a7fc1, #6248C8); }
+.stat-card:nth-child(3) { background: linear-gradient(135deg, #6248C8, #3567ae); }
+.stat-card:nth-child(4) { background: linear-gradient(135deg, #2d9460, #1a6040); }
+.stat-card:nth-child(5) { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+.stat-card:nth-child(6) { background: linear-gradient(135deg, #4a7fc1, #2D3580); }
 
-    /* ===== PRINT ===== */
-    @media print {
-        body { background: white !important; padding: 0; }
-        .no-print { display: none !important; }
-        .card { box-shadow: none; border: 1px solid #ddd; }
-        .page-header h1 { font-size: 1.5rem; color: #000; }
-        .stats-grid { display: none !important; }
-        .table thead tr { background: #2D3580 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-        .table thead th { color: white !important; }
-        .section-header td { background: #2D3580 !important; color: white !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-        .card-header { background: #2D3580 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    }
+.stat-label {
+    font-size: 0.78rem; opacity: 0.88; margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 6px; font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 2rem; font-weight: 900;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+}
+
+/* ── Card ── */
+.card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.82), rgba(220,235,250,0.70));
+    border: 2px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--sh);
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(8px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--navy), var(--blue2));
+    color: white;
+    padding: 1rem 1.5rem;
+    font-size: 1rem; font-weight: 800; letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 9px;
+    position: relative; overflow: hidden;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute; right: -30px; top: -30px;
+    width: 100px; height: 100px; border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+}
+
+.card-body { padding: 1.5rem; }
+
+.card-footer {
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(208,229,248,0.50));
+    border-top: 2px solid rgba(255,255,255,0.7);
+    font-size: 0.82rem; color: var(--text3); font-weight: 600;
+}
+
+/* ── Buttons ── */
+.btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0.6rem 1.1rem; border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.85);
+    font-size: 0.82rem; font-weight: 800; cursor: pointer;
+    transition: all 0.18s; font-family: var(--ff); letter-spacing: 0.3px;
+    box-shadow: var(--sh-sm); white-space: nowrap;
+}
+
+.btn:hover { transform: translateY(-2px); box-shadow: 6px 6px 16px rgba(74,127,193,0.30), -3px -3px 10px rgba(255,255,255,0.85); }
+.btn:active { transform: translateY(0px) scale(0.97); }
+
+.btn-success  { background: linear-gradient(135deg, rgba(200,240,220,0.92), rgba(150,220,190,0.85)); color: #1a5a30; }
+.btn-info     { background: linear-gradient(135deg, rgba(208,229,248,0.92), rgba(180,210,245,0.85)); color: var(--navy); }
+.btn-secondary{ background: linear-gradient(135deg, rgba(220,220,235,0.92), rgba(200,210,228,0.85)); color: #445566; }
+.btn-primary  { background: linear-gradient(135deg, rgba(208,220,250,0.92), rgba(185,205,245,0.85)); color: var(--navy); }
+
+.d-flex { display: flex; }
+.gap-2  { gap: 0.5rem; }
+.mb-3   { margin-bottom: 0.75rem; }
+.flex-wrap { flex-wrap: wrap; }
+.justify-content-between { justify-content: space-between; }
+.align-items-center { align-items: center; }
+.text-muted { color: var(--text3); }
+
+/* ── Alerts ── */
+.alert {
+    padding: 0.875rem 1rem; border-radius: var(--r);
+    font-size: 0.84rem; border: 2px solid;
+    box-shadow: var(--sh-sm);
+    font-weight: 600;
+}
+
+.alert-info    { background: linear-gradient(135deg, rgba(208,229,248,0.80), rgba(185,215,245,0.72)); border-color: rgba(255,255,255,0.85); color: var(--blue); }
+.alert-success { background: linear-gradient(135deg, rgba(200,240,220,0.80), rgba(170,230,200,0.72)); border-color: rgba(255,255,255,0.85); color: var(--green); }
+.alert-danger  { background: linear-gradient(135deg, rgba(255,210,210,0.80), rgba(245,180,180,0.72)); border-color: rgba(255,255,255,0.85); color: var(--red); }
+
+.alert-dismissible { display: flex; justify-content: space-between; align-items: flex-start; }
+.alert-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: inherit; }
+
+/* ── Table ── */
+.table-responsive { overflow-x: auto; border-radius: var(--r); }
+.table-responsive::-webkit-scrollbar { height: 5px; }
+
+.table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.84rem; }
+
+.table thead tr {
+    background: linear-gradient(135deg, var(--navy), var(--blue2));
+}
+
+.table thead th {
+    padding: 0.8rem 0.875rem; text-align: center;
+    font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; color: rgba(255,255,255,0.90);
+    border-bottom: none;
+}
+
+.table thead th:first-child { text-align: left; border-radius: var(--r) 0 0 0; }
+.table thead th:last-child  { border-radius: 0 var(--r) 0 0; }
+
+.table tbody tr {
+    transition: background 0.12s;
+}
+
+.table tbody tr:nth-child(even):not(.section-header) {
+    background: rgba(208,229,248,0.25);
+}
+
+.table tbody tr:hover:not(.section-header) {
+    background: rgba(208,229,248,0.45);
+}
+
+.table tbody td {
+    padding: 0.65rem 0.875rem;
+    vertical-align: middle;
+    color: var(--text2);
+    border-bottom: 1px solid rgba(200,220,240,0.5);
+}
+
+/* Section header rows */
+.section-header td {
+    background: linear-gradient(135deg, rgba(74,127,193,0.15), rgba(74,127,193,0.08)) !important;
+    color: var(--blue) !important;
+    font-weight: 800 !important;
+    text-align: left !important;
+    padding: 0.7rem 1rem !important;
+    border-left: 4px solid var(--blue2) !important;
+    font-size: 0.90rem !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Editable cells */
+td[contenteditable="true"] {
+    background: linear-gradient(135deg, rgba(255,255,255,0.70), rgba(235,245,255,0.60));
+    cursor: text; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.6) !important;
+    box-shadow: var(--sh-in);
+    transition: all 0.15s;
+}
+
+td[contenteditable="true"]:hover {
+    background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(240,248,255,0.80));
+}
+
+td[contenteditable="true"]:focus {
+    outline: 2px solid var(--blue2);
+    background: rgba(255,255,255,0.95);
+    box-shadow: var(--sh-in), 0 0 0 3px rgba(74,127,193,0.15);
+}
+
+/* Select dropdown */
+select.uicell {
+    width: 100%; padding: 0.45rem 0.6rem; font-size: 0.82rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(220,235,250,0.75));
+    color: var(--text);
+    border: 2px solid rgba(255,255,255,0.85);
+    border-radius: 10px; cursor: pointer;
+    font-family: var(--ff); font-weight: 600;
+    box-shadow: var(--sh-sm); outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a7fc1'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+}
+
+select.uicell option { background: #e8f2fb; }
+select.uicell:focus  { border-color: var(--blue2); }
+
+/* Total column */
+td.total {
+    background: linear-gradient(135deg, rgba(74,127,193,0.12), rgba(74,127,193,0.07)) !important;
+    font-weight: 800;
+    color: var(--navy) !important;
+    border-radius: 8px;
+    box-shadow: var(--sh-in);
+}
+
+/* Column widths */
+.table th:nth-child(1), .table td:nth-child(1) { width:5%; }
+.table th:nth-child(2), .table td:nth-child(2) { width:11%; }
+.table th:nth-child(3), .table td:nth-child(3) { width:15%; }
+.table th:nth-child(4), .table td:nth-child(4) { width:8%; }
+.table th:nth-child(5), .table td:nth-child(5) { width:10%; }
+.table th:nth-child(6), .table td:nth-child(6) { width:10%; }
+.table th:nth-child(7), .table td:nth-child(7) { width:10%; }
+.table th:nth-child(8), .table td:nth-child(8) { width:10%; }
+.table th:nth-child(9), .table td:nth-child(9) { width:10%; }
+.table th:nth-child(10),.table td:nth-child(10){ width:11%; }
+
+/* ── Toast ── */
+.toast-container {
+    position: fixed; top: 1.5rem; right: 1.5rem; z-index: 1000; min-width: 280px;
+}
+
+/* ── Loading ── */
+.loading-overlay {
+    position: fixed; inset: 0; display: none; align-items: center;
+    justify-content: center; background: rgba(200,220,240,0.55);
+    backdrop-filter: blur(8px); z-index: 9999;
+}
+
+.loading-overlay.show { display: flex; }
+
+.spinner-wrap {
+    background: linear-gradient(135deg, rgba(255,255,255,0.90), rgba(220,235,250,0.85));
+    border: 2px solid rgba(255,255,255,0.95);
+    border-radius: 24px; padding: 2rem;
+    box-shadow: var(--sh);
+    display: flex; flex-direction: column; align-items: center; gap: 1rem;
+}
+
+.spinner {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 4px solid rgba(74,127,193,0.20);
+    border-top-color: var(--blue2);
+    animation: spin 0.75s linear infinite;
+}
+
+.spinner-label {
+    font-size: 0.75rem; font-weight: 800; letter-spacing: 2px;
+    color: var(--text3); text-transform: uppercase;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Print ── */
+@media print {
+    body { background: white !important; padding: 0; }
+    .no-print { display: none !important; }
+    .container { box-shadow: none; border: 1px solid #ddd; }
+    .page-header h1 { font-size: 1.5rem; }
+    .stats-grid { display: none !important; }
+    .table thead tr { background: #2D3580 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .section-header td { background: rgba(74,127,193,0.15) !important; }
+    .card-header { background: #2D3580 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
 </style>
 </head>
 <body>
 
-<!-- Loading Overlay -->
 <div class="loading-overlay" id="loader">
-  <div class="spinner"></div>
+  <div class="spinner-wrap">
+    <div class="spinner"></div>
+    <div class="spinner-label">Loading…</div>
+  </div>
 </div>
 
 <div class="container">
-  
-  <!-- Page Header -->
+
   <div class="page-header">
-    <h1><i class="fas fa-crosshairs"></i> WEAPONS INVENTORY</h1>
+    <h1><i class="fas fa-crosshairs"></i> &nbsp;Weapons Inventory</h1>
     <p>Manage and track firearms and weapons inventory</p>
   </div>
 
-  <!-- Statistics Cards -->
   <div class="stats-grid" id="statsGrid">
     <div class="stat-card">
       <div class="stat-label"><i class="fas fa-box"></i> Total Authorized</div>
@@ -282,88 +436,60 @@
     </div>
   </div>
 
-  <!-- Main Data Card -->
   <div class="card">
     <div class="card-header">
       <i class="fas fa-table"></i> Weapons Inventory Data
     </div>
     <div class="card-body">
-      
-      <!-- Action Buttons -->
+
       <div class="d-flex gap-2 mb-3 flex-wrap no-print">
-        <button class="btn btn-success" onclick="saveTable()">
-          <i class="fas fa-save"></i> Save Changes
-        </button>
-        <button class="btn btn-info" onclick="updateTable()">
-          <i class="fas fa-sync-alt"></i> Update All
-        </button>
-        <button class="btn btn-secondary" onclick="refreshData()">
-          <i class="fas fa-redo"></i> Refresh
-        </button>
-        <button class="btn btn-primary" onclick="printPage()">
-          <i class="fas fa-print"></i> Print Report
-        </button>
+        <button class="btn btn-success" onclick="saveTable()"><i class="fas fa-save"></i> Save Changes</button>
+        <button class="btn btn-info" onclick="updateTable()"><i class="fas fa-sync-alt"></i> Update All</button>
+        <button class="btn btn-secondary" onclick="refreshData()"><i class="fas fa-redo"></i> Refresh</button>
+        <button class="btn btn-primary" onclick="printPage()"><i class="fas fa-print"></i> Print Report</button>
       </div>
 
-      <!-- Info Alert -->
       <div class="alert alert-info mb-3 no-print">
-        <span><i class="fas fa-info-circle"></i> <strong>Tip:</strong> Click on yellow cells to edit. Total On-Hand is calculated automatically. Changes are saved when you click "Save Changes".</span>
+        <span><i class="fas fa-info-circle"></i> &nbsp;<strong>Tip:</strong> Click yellow cells to edit. Total On-Hand is calculated automatically.</span>
       </div>
 
-      <!-- Table -->
       <div class="table-responsive">
         <table class="table" id="weaponTable">
           <thead>
             <tr>
-              <th>L/I</th>
-              <th>Category</th>
-              <th>Nomenclature</th>
-              <th>U/I</th>
-              <th>Authorized Allowance</th>
-              <th>Issued to Individual</th>
-              <th>Stock at Armory</th>
-              <th>Serviceable</th>
-              <th>Unserviceable</th>
-              <th>Total On-Hand</th>
+              <th>L/I</th><th>Category</th><th>Nomenclature</th><th>U/I</th>
+              <th>Authorized Allowance</th><th>Issued to Individual</th><th>Stock at Armory</th>
+              <th>Serviceable</th><th>Unserviceable</th><th>Total On-Hand</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-
-            <tr class="section-header">
-              <td colspan="10"><i class="fas fa-shield-alt"></i> Individual Weapons</td>
-            </tr>
+            <tr class="section-header"><td colspan="10"><i class="fas fa-shield-alt"></i> &nbsp;Individual Weapons</td></tr>
             <tr><td>1</td><td>9mm</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
             <tr><td>2</td><td>Cal.45</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
             <tr><td>3</td><td>R4</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
             <tr><td>4</td><td>M16(S)</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
             <tr><td>5</td><td>M16(L)</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
             <tr><td>6</td><td>M14</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
-
-            <tr class="section-header">
-              <td colspan="10"><i class="fas fa-users-cog"></i> Crew-Served Weapons</td>
-            </tr>
+            <tr class="section-header"><td colspan="10"><i class="fas fa-users-cog"></i> &nbsp;Crew-Served Weapons</td></tr>
             <tr><td>1</td><td>M60 LMG</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
             <tr><td>2</td><td>Cal.30 LMG</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
             <tr><td>3</td><td>Cal.50 BMG</td><td contenteditable="true"></td><td data-ui="true"></td><td contenteditable="true"></td><td contenteditable="true" class="issued"></td><td contenteditable="true" class="stock"></td><td contenteditable="true"></td><td contenteditable="true"></td><td class="total"></td></tr>
-
           </tbody>
         </table>
       </div>
 
-      <!-- Footer Info -->
       <div class="card-footer">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <span><i class="fas fa-calculator"></i> Total On-Hand = Issued + Stock at Armory</span>
-          <span id="lastUpdated" class="text-muted" style="font-size: 0.875rem;"></span>
+          <span><i class="fas fa-calculator"></i> &nbsp;Total On-Hand = Issued + Stock at Armory</span>
+          <span id="lastUpdated" class="text-muted" style="font-size:0.80rem;"></span>
         </div>
       </div>
 
     </div>
   </div>
 
-</div>
+</div><!-- container -->
 
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
@@ -375,146 +501,117 @@ const loader = document.getElementById("loader");
 const toastContainer = document.getElementById("toastContainer");
 const lastUpdated = document.getElementById("lastUpdated");
 
-function showLoader(on = true) {
-  if (on) loader.classList.add('show');
-  else loader.classList.remove('show');
+function showLoader(on=true){ on ? loader.classList.add('show') : loader.classList.remove('show'); }
+
+function showToast(message, type='success') {
+    const cls = type==='success'?'alert-success':type==='error'?'alert-danger':'alert-info';
+    toastContainer.innerHTML = `<div class="alert ${cls} alert-dismissible"><span>${message}</span><button class="alert-close" onclick="this.parentElement.remove()">×</button></div>`;
+    setTimeout(()=>{ toastContainer.innerHTML=''; }, 3000);
 }
 
-function showToast(message, type = 'success') {
-  const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
-  toastContainer.innerHTML = `
-    <div class="alert ${alertClass} alert-dismissible">
-      <span>${message}</span>
-      <button class="alert-close" onclick="this.parentElement.remove()">×</button>
-    </div>
-  `;
-  setTimeout(() => { toastContainer.innerHTML = ''; }, 3000);
-}
-
-/* ---------- Initialize UI Dropdowns ---------- */
 const uiOptions = ["pcs","units","sets","box","pack","rounds","rifles","mags"];
 document.querySelectorAll('td[data-ui="true"]').forEach(td=>{
-    const select = document.createElement("select");
-    select.className="uicell";
-    const blank = document.createElement("option");
-    blank.value=""; blank.innerText="--"; select.appendChild(blank);
-    uiOptions.forEach(opt=>{
-        const o = document.createElement("option");
-        o.value = o.innerText = opt;
-        select.appendChild(o);
+    const sel = document.createElement("select");
+    sel.className = "uicell";
+    ["",...uiOptions].forEach(o=>{
+        const opt = document.createElement("option");
+        opt.value = opt.innerText = o||"--";
+        sel.appendChild(opt);
     });
-    td.appendChild(select);
+    td.appendChild(sel);
 });
 
-/* ---------- Compute Totals ---------- */
 function computeTotals(row){
-    const issued = parseFloat(row.querySelector(".issued")?.innerText || 0);
-    const stock = parseFloat(row.querySelector(".stock")?.innerText || 0);
-    const totalCell = row.querySelector(".total");
-    totalCell.innerText = (issued || stock) ? issued + stock : "";
+    const issued = parseFloat(row.querySelector(".issued")?.innerText||0);
+    const stock  = parseFloat(row.querySelector(".stock")?.innerText||0);
+    const tc = row.querySelector(".total");
+    tc.innerText = (issued||stock) ? issued+stock : "";
 }
 
-function updateAllStats() {
-  let totalAuthorized=0, totalIssued=0, totalStock=0, totalServiceable=0, totalUnserviceable=0, totalOnHand=0;
-  document.querySelectorAll("#tableBody tr:not(.section-header)").forEach(row => {
-    totalAuthorized += parseFloat(row.cells[4]?.innerText || 0);
-    totalIssued += parseFloat(row.cells[5]?.innerText || 0);
-    totalStock += parseFloat(row.cells[6]?.innerText || 0);
-    totalServiceable += parseFloat(row.cells[7]?.innerText || 0);
-    totalUnserviceable += parseFloat(row.cells[8]?.innerText || 0);
-    totalOnHand += parseFloat(row.cells[9]?.innerText || 0);
-  });
-  document.getElementById('totalAuthorized').textContent = totalAuthorized;
-  document.getElementById('totalIssued').textContent = totalIssued;
-  document.getElementById('totalStock').textContent = totalStock;
-  document.getElementById('totalServiceable').textContent = totalServiceable;
-  document.getElementById('totalUnserviceable').textContent = totalUnserviceable;
-  document.getElementById('totalOnHand').textContent = totalOnHand;
-}
-
-/* ---------- Event Listeners ---------- */
-document.querySelectorAll("td[contenteditable='true']").forEach(td=>{
-    td.addEventListener("input", e=>{
-        computeTotals(e.target.parentElement);
-        updateAllStats();
+function updateAllStats(){
+    let a=0,i=0,s=0,sv=0,us=0,oh=0;
+    document.querySelectorAll("#tableBody tr:not(.section-header)").forEach(r=>{
+        a+=parseFloat(r.cells[4]?.innerText||0);
+        i+=parseFloat(r.cells[5]?.innerText||0);
+        s+=parseFloat(r.cells[6]?.innerText||0);
+        sv+=parseFloat(r.cells[7]?.innerText||0);
+        us+=parseFloat(r.cells[8]?.innerText||0);
+        oh+=parseFloat(r.cells[9]?.innerText||0);
     });
+    document.getElementById('totalAuthorized').textContent=a;
+    document.getElementById('totalIssued').textContent=i;
+    document.getElementById('totalStock').textContent=s;
+    document.getElementById('totalServiceable').textContent=sv;
+    document.getElementById('totalUnserviceable').textContent=us;
+    document.getElementById('totalOnHand').textContent=oh;
+}
+
+document.querySelectorAll("td[contenteditable='true']").forEach(td=>{
+    td.addEventListener("input",e=>{ computeTotals(e.target.parentElement); updateAllStats(); });
 });
 
-/* ---------- Collect Data ---------- */
 function collectRows(){
-    const rows = [];
+    const rows=[];
     document.querySelectorAll("#tableBody tr:not(.section-header)").forEach(r=>{
-        const li = parseInt(r.cells[0].innerText.trim());
-        const category = r.cells[1].innerText.trim();
-        const nomenclature = r.cells[2].innerText.trim() || '';
-        const ui = r.querySelector("select.uicell")?.value || '';
-        const authorized_allowance = parseFloat(r.cells[4].innerText) || 0;
-        const issued_to_individual = parseFloat(r.cells[5].innerText) || 0;
-        const stock_at_armory = parseFloat(r.cells[6].innerText) || 0;
-        const serviceable = parseFloat(r.cells[7].innerText) || 0;
-        const unserviceable = parseFloat(r.cells[8].innerText) || 0;
-        const total_on_hand = issued_to_individual + stock_at_armory;
-        const year = 2025;
-        if(!li || !category) return;
-        rows.push({ li, category, nomenclature, ui, authorized_allowance, issued_to_individual, stock_at_armory, serviceable, unserviceable, total_on_hand, year });
+        const li=parseInt(r.cells[0].innerText.trim());
+        const category=r.cells[1].innerText.trim();
+        if(!li||!category) return;
+        const issued=parseFloat(r.cells[5].innerText)||0;
+        const stock=parseFloat(r.cells[6].innerText)||0;
+        rows.push({li,category,nomenclature:r.cells[2].innerText.trim()||'',ui:r.querySelector("select.uicell")?.value||'',authorized_allowance:parseFloat(r.cells[4].innerText)||0,issued_to_individual:issued,stock_at_armory:stock,serviceable:parseFloat(r.cells[7].innerText)||0,unserviceable:parseFloat(r.cells[8].innerText)||0,total_on_hand:issued+stock,year:2025});
     });
     return rows;
 }
 
-/* ---------- Save ---------- */
 async function saveTable(){
-    const rows = collectRows();
-    if(rows.length === 0){ showToast("No valid rows to save", 'error'); return; }
+    const rows=collectRows();
+    if(!rows.length){ showToast("No valid rows to save",'error'); return; }
     showLoader(true);
-    try {
-      const { error } = await sb.from("weapons_inventory").upsert(rows, { onConflict:["li","category","year"] });
-      if(error) throw error;
-      lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
-      showToast("✅ Data saved successfully!", 'success');
-    } catch(err) { console.error("Save error:", err); showToast("Save failed - check console", 'error'); }
-    finally { showLoader(false); }
+    try{
+        const {error}=await sb.from("weapons_inventory").upsert(rows,{onConflict:["li","category","year"]});
+        if(error) throw error;
+        lastUpdated.textContent=`Last updated: ${new Date().toLocaleString()}`;
+        showToast("✅ Data saved successfully!",'success');
+    } catch(err){ console.error(err); showToast("Save failed",'error'); }
+    finally{ showLoader(false); }
 }
 
-async function updateTable() { await saveTable(); }
-function printPage() { window.print(); }
-async function refreshData() { await loadTable(); showToast("Data refreshed!", 'info'); }
+async function updateTable(){ await saveTable(); }
+function printPage(){ window.print(); }
+async function refreshData(){ await loadTable(); showToast("Data refreshed!",'info'); }
 
-/* ---------- Load ---------- */
-async function loadTable() {
+async function loadTable(){
     showLoader(true);
-    try {
-      const { data, error } = await sb.from("weapons_inventory").select("*").order("li", { ascending: true });
-      if (error) throw error;
-      renderTable(data || []);
-      showToast("Data loaded successfully", 'info');
-    } catch(err) { console.error("Load error:", err); showToast("Failed to load data", 'error'); }
-    finally { showLoader(false); }
+    try{
+        const {data,error}=await sb.from("weapons_inventory").select("*").order("li",{ascending:true});
+        if(error) throw error;
+        renderTable(data||[]);
+        showToast("Data loaded",'info');
+    } catch(err){ console.error(err); showToast("Failed to load data",'error'); }
+    finally{ showLoader(false); }
 }
 
-/* ---------- Render ---------- */
-function renderTable(data) {
-    const tableBody = document.getElementById("tableBody");
-    const rows = Array.from(tableBody.querySelectorAll("tr:not(.section-header)"));
-    rows.forEach(row => {
-        const li = parseInt(row.cells[0].innerText.trim());
-        const category = row.cells[1].innerText.trim();
-        const match = data.find(d => d.li === li && d.category === category);
-        if (match) {
-            row.cells[2].innerText = match.nomenclature || "";
-            row.querySelector("select.uicell").value = match.ui || "";
-            row.cells[4].innerText = match.authorized_allowance || "";
-            row.cells[5].innerText = match.issued_to_individual || "";
-            row.cells[6].innerText = match.stock_at_armory || "";
-            row.cells[7].innerText = match.serviceable || "";
-            row.cells[8].innerText = match.unserviceable || "";
-            computeTotals(row);
+function renderTable(data){
+    const rows=Array.from(document.querySelectorAll("#tableBody tr:not(.section-header)"));
+    rows.forEach(r=>{
+        const li=parseInt(r.cells[0].innerText.trim());
+        const cat=r.cells[1].innerText.trim();
+        const m=data.find(d=>d.li===li&&d.category===cat);
+        if(m){
+            r.cells[2].innerText=m.nomenclature||"";
+            r.querySelector("select.uicell").value=m.ui||"";
+            r.cells[4].innerText=m.authorized_allowance||"";
+            r.cells[5].innerText=m.issued_to_individual||"";
+            r.cells[6].innerText=m.stock_at_armory||"";
+            r.cells[7].innerText=m.serviceable||"";
+            r.cells[8].innerText=m.unserviceable||"";
+            computeTotals(r);
         }
     });
     updateAllStats();
 }
 
-document.addEventListener("DOMContentLoaded", () => { loadTable(); updateAllStats(); });
+document.addEventListener("DOMContentLoaded",()=>{ loadTable(); updateAllStats(); });
 </script>
-
 </body>
 </html>
