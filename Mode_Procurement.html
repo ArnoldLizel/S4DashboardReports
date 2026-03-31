@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Status of Procurement Activities</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg:       #dde3ee;
+    --surface:  #dde3ee;
+
+    --neu-out:    6px 6px 14px #b8bece, -6px -6px 14px #ffffff;
+    --neu-out-sm: 3px 3px 8px  #b8bece, -3px -3px 8px  #ffffff;
+    --neu-in:     inset 4px 4px 10px #b8bece, inset -4px -4px 10px #ffffff;
+    --neu-in-sm:  inset 2px 2px 6px  #b8bece, inset -2px -2px 6px  #ffffff;
+
+    --ink:       #2e3a5c;
+    --ink-soft:  #5c6a8a;
+    --ink-muted: #9aa3bf;
+
+    --green:      #28c78a;
+    --green-dk:   #1fa870;
+    --green-pale: rgba(40,199,138,0.10);
+    --green-pale2:rgba(40,199,138,0.18);
+
+    --blue:       #4a72f5;
+    --blue-dk:    #3358dc;
+    --blue-pale:  rgba(74,114,245,0.10);
+    --blue-pale2: rgba(74,114,245,0.18);
+
+    --amber:      #f5a623;
+    --amber-dk:   #d48a10;
+
+    --purple:     #9b72f5;
+    --purple-pale:rgba(155,114,245,0.12);
+    --purple-pale2:rgba(155,114,245,0.22);
+
+    --red:        #f54a4a;
+    --red-pale:   rgba(245,74,74,0.12);
+
+    --sans: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+    --r:    20px;
+    --r-sm: 12px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  body {
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px 20px 72px;
+  }
+
+  .wrapper {
+    width: 100%; max-width: 1060px;
+    margin: 0 auto;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  /* ══ TITLE CARD ══ */
+  .title-card {
+    background: var(--surface);
+    border-radius: var(--r);
+    padding: 22px 26px;
+    box-shadow: var(--neu-out);
+    display: flex; align-items: center; gap: 18px;
+    position: relative; overflow: hidden;
+  }
+  .title-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--green) 0%, var(--blue) 40%, var(--purple) 70%, var(--amber) 100%);
+    border-radius: var(--r) var(--r) 0 0;
+  }
+  .title-icon {
+    width: 54px; height: 54px; flex-shrink: 0;
+    background: linear-gradient(135deg, #e8f0ff, #d8e8ff);
+    border-radius: 17px;
+    box-shadow: 4px 4px 10px #b8bece, -4px -4px 10px #ffffff, inset 0 1px 0 rgba(255,255,255,0.8);
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+  }
+  .doc-label { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
+  .title-card h1 { font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1.2; }
+  .subtitle { font-size: 13px; font-weight: 500; color: var(--ink-soft); margin-top: 3px; }
+  .period-badge {
+    margin-left: auto; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--blue-pale2), var(--blue-pale));
+    border-radius: 50px;
+    box-shadow: var(--neu-in-sm);
+    padding: 11px 22px;
+    font-size: 13px; font-weight: 600;
+    color: var(--blue-dk); letter-spacing: 0.05em; white-space: nowrap;
+    border: 1.5px solid rgba(74,114,245,0.15);
+  }
+
+  /* ══ TOAST NOTIFICATION ══ */
+  #toast {
+    position: fixed; top: 24px; right: 24px; z-index: 9999;
+    padding: 14px 22px; border-radius: var(--r-sm);
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: var(--neu-out);
+    transition: opacity 0.4s, transform 0.4s;
+    opacity: 0; transform: translateY(-12px); pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  #toast.success { background: linear-gradient(135deg, rgba(40,199,138,0.15), rgba(40,199,138,0.08)); color: var(--green-dk); border: 1.5px solid rgba(40,199,138,0.25); }
+  #toast.error   { background: linear-gradient(135deg, rgba(245,74,74,0.12),   rgba(245,74,74,0.06));  color: var(--red);      border: 1.5px solid rgba(245,74,74,0.2);   }
+  #toast.loading { background: linear-gradient(135deg, rgba(74,114,245,0.12),  rgba(74,114,245,0.06)); color: var(--blue-dk);  border: 1.5px solid rgba(74,114,245,0.2);  }
+
+  /* ══ HISTORY PANEL ══ */
+  .history-card {
+    background: var(--surface); border-radius: var(--r);
+    padding: 18px 22px; box-shadow: var(--neu-out);
+  }
+  .history-title {
+    font-size: 13px; font-weight: 700; color: var(--ink-soft);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .history-list {
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .history-chip {
+    background: var(--surface); border-radius: 50px;
+    box-shadow: var(--neu-out-sm);
+    padding: 9px 18px; font-size: 12px; font-weight: 600;
+    color: var(--ink-soft); cursor: pointer; transition: all 0.18s;
+    border: 1.5px solid transparent; display: flex; align-items: center; gap: 8px;
+  }
+  .history-chip:hover { color: var(--blue); border-color: rgba(74,114,245,0.25); }
+  .history-chip.active { color: var(--blue-dk); border-color: rgba(74,114,245,0.4); box-shadow: var(--neu-in-sm); }
+  .history-chip .del-btn {
+    font-size: 11px; color: var(--ink-muted); cursor: pointer;
+    padding: 1px 4px; border-radius: 50%; transition: color 0.15s;
+  }
+  .history-chip .del-btn:hover { color: var(--red); }
+  .history-empty { font-size: 12px; color: var(--ink-muted); font-style: italic; }
+
+  /* ══ TABLE CARD ══ */
+  .table-card { background: var(--surface); border-radius: var(--r); padding: 22px; box-shadow: var(--neu-out); }
+  .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--r-sm); }
+
+  table {
+    width: 100%; min-width: 820px;
+    border-collapse: separate; border-spacing: 0 5px;
+    font-size: 12px; table-layout: fixed;
+  }
+  col.c-mode { width: 26%; }
+  col.c-num  { width: 11%; }
+  col.c-pct  { width: 9%;  }
+
+  thead tr.tr-main-header th { padding: 4px 5px 10px; text-align: center; }
+  thead tr.tr-main-header th:first-child { text-align: left; }
+
+  .badge-mode {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 11px 18px; border-radius: 14px; background: var(--surface);
+    box-shadow: var(--neu-out-sm);
+    font-size: 12px; font-weight: 700; color: var(--ink-soft);
+    letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap;
+  }
+  .badge-phys {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 12px 24px; border-radius: 50px;
+    background: linear-gradient(135deg, #28c78a, #1fb07a);
+    box-shadow: 4px 4px 12px rgba(28,168,112,0.35), -3px -3px 8px rgba(255,255,255,0.8), inset 0 1px 0 rgba(255,255,255,0.3);
+    font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
+  }
+  .badge-fin {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 12px 24px; border-radius: 50px;
+    background: linear-gradient(135deg, #4a72f5, #3358dc);
+    box-shadow: 4px 4px 12px rgba(51,88,220,0.35), -3px -3px 8px rgba(255,255,255,0.8), inset 0 1px 0 rgba(255,255,255,0.25);
+    font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
+  }
+
+  tr.tr-sub-header th { padding: 6px 6px 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-align: center; }
+  tr.tr-sub-header .h-phys { color: var(--green-dk); }
+  tr.tr-sub-header .h-fin  { color: var(--blue-dk);  }
+  tr.tr-sub-header .h-pct  { color: var(--amber-dk); }
+
+  tr.tr-col-label th { padding: 4px 6px 13px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-align: center; }
+  .lbl-phys { color: var(--green-dk); }
+  .lbl-fin  { color: var(--blue-dk);  }
+  .lbl-pct  { color: var(--amber-dk); }
+  .lbl-dim  { color: var(--ink-muted);}
+
+  tbody tr td { padding: 0; vertical-align: middle; }
+  tbody tr td:first-child { border-radius: var(--r-sm) 0 0 var(--r-sm); }
+  tbody tr td:last-child  { border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+
+  td.mode-cell {
+    font-size: 13px; font-weight: 500; color: var(--ink);
+    padding: 11px 16px; line-height: 1.4;
+    background: var(--surface);
+    box-shadow: inset 3px 3px 7px #c8cfdd, inset -3px -3px 7px #f2f6ff;
+    word-break: break-word; border-left: 3px solid transparent; transition: border-color 0.2s;
+  }
+  tbody tr:hover td.mode-cell { border-left-color: var(--blue); }
+
+  tbody tr td input {
+    width: 100%; min-height: 46px; border: none; outline: none;
+    background: transparent; font-family: var(--mono);
+    font-size: 13px; font-weight: 500; color: var(--ink);
+    text-align: center; padding: 4px 6px; display: block; transition: background 0.15s;
+  }
+  tbody tr td input::placeholder { color: rgba(154,163,191,0.35); font-size: 20px; font-weight: 300; font-family: var(--sans); }
+
+  td.phys { background: linear-gradient(160deg, rgba(40,199,138,0.08), rgba(40,199,138,0.05)); box-shadow: inset 3px 3px 7px rgba(28,168,112,0.12), inset -3px -3px 7px rgba(255,255,255,0.85); border-bottom: 1px solid rgba(40,199,138,0.12); }
+  td.phys input { color: var(--green-dk); }
+  td.phys input:focus { background: rgba(40,199,138,0.1); border-radius: 8px; }
+  td.fin  { background: linear-gradient(160deg, rgba(74,114,245,0.08), rgba(74,114,245,0.05)); box-shadow: inset 3px 3px 7px rgba(51,88,220,0.12), inset -3px -3px 7px rgba(255,255,255,0.85); border-bottom: 1px solid rgba(74,114,245,0.12); }
+  td.fin input { color: var(--blue-dk); }
+  td.fin input:focus { background: rgba(74,114,245,0.1); border-radius: 8px; }
+  td.computed { background: linear-gradient(160deg, rgba(245,166,35,0.10), rgba(245,166,35,0.06)); box-shadow: inset 3px 3px 7px rgba(200,130,10,0.12), inset -3px -3px 7px rgba(255,255,255,0.85); border-bottom: 1px solid rgba(245,166,35,0.14); }
+  td.computed input { font-weight: 700; color: var(--amber-dk); }
+
+  tbody tr:nth-child(even) td.phys     { background: linear-gradient(160deg, rgba(40,199,138,0.14), rgba(40,199,138,0.08)); }
+  tbody tr:nth-child(even) td.fin      { background: linear-gradient(160deg, rgba(74,114,245,0.14), rgba(74,114,245,0.08)); }
+  tbody tr:nth-child(even) td.computed { background: linear-gradient(160deg, rgba(245,166,35,0.16), rgba(245,166,35,0.09)); }
+  tbody tr:nth-child(even) td.mode-cell { background: linear-gradient(160deg, rgba(74,114,245,0.05), var(--surface)); box-shadow: inset 3px 3px 7px #c0c8da, inset -3px -3px 7px #f4f8ff; }
+
+  #total-row td { }
+  #total-row td.mode-cell { background: linear-gradient(135deg, var(--purple-pale2), var(--purple-pale)); box-shadow: inset 4px 4px 10px rgba(120,80,210,0.18), inset -4px -4px 10px rgba(255,255,255,0.85); border-left: 3px solid var(--purple) !important; color: var(--purple) !important; font-weight: 700 !important; font-size: 13px !important; letter-spacing: 0.1em; text-transform: uppercase; }
+  #total-row td.phys     { background: linear-gradient(160deg, rgba(40,199,138,0.22), rgba(40,199,138,0.12)) !important; box-shadow: inset 4px 4px 10px rgba(28,168,112,0.18), inset -4px -4px 10px rgba(255,255,255,0.85) !important; border-top: 2px solid rgba(40,199,138,0.3); }
+  #total-row td.fin      { background: linear-gradient(160deg, rgba(74,114,245,0.22), rgba(74,114,245,0.12)) !important; box-shadow: inset 4px 4px 10px rgba(51,88,220,0.18), inset -4px -4px 10px rgba(255,255,255,0.85) !important; border-top: 2px solid rgba(74,114,245,0.3); }
+  #total-row td.computed { background: linear-gradient(160deg, rgba(245,166,35,0.24), rgba(245,166,35,0.12)) !important; box-shadow: inset 4px 4px 10px rgba(200,130,10,0.18), inset -4px -4px 10px rgba(255,255,255,0.85) !important; border-top: 2px solid rgba(245,166,35,0.3); }
+  #total-row td input { font-weight: 800 !important; font-size: 14px !important; min-height: 52px !important; }
+  #total-row td { border-top: 6px solid transparent; }
+
+  /* ══ FOOTER ══ */
+  .footer { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .legend-card { background: var(--surface); border-radius: var(--r-sm); padding: 12px 20px; box-shadow: var(--neu-out-sm); display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.04em; }
+  .legend-dot  { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .btn-group { margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  button {
+    font-family: var(--sans); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 12px 22px; border: none; border-radius: 50px; cursor: pointer;
+    background: var(--surface); color: var(--ink-soft);
+    box-shadow: var(--neu-out-sm); transition: all 0.18s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  button:hover  { box-shadow: 5px 5px 12px #b0b8cc, -5px -5px 12px #ffffff; }
+  button:active { box-shadow: var(--neu-in-sm); transform: scale(0.98); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-save {
+    background: linear-gradient(135deg, #28c78a, #1fb07a);
+    color: #fff;
+    box-shadow: 4px 4px 12px rgba(28,168,112,0.35), -3px -3px 8px rgba(255,255,255,0.7);
+  }
+  .btn-save:hover { box-shadow: 6px 6px 16px rgba(28,168,112,0.45), -3px -3px 10px rgba(255,255,255,0.8); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #4a72f5, #3358dc);
+    color: #fff;
+    box-shadow: 4px 4px 12px rgba(51,88,220,0.35), -3px -3px 8px rgba(255,255,255,0.7);
+  }
+  .btn-primary:hover { box-shadow: 6px 6px 16px rgba(51,88,220,0.45), -3px -3px 10px rgba(255,255,255,0.8); }
+
+  .note { font-size: 12px; font-weight: 500; color: var(--ink-muted); text-align: center; letter-spacing: 0.04em; }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<div class="wrapper">
+
+  <!-- TITLE -->
+  <div class="title-card">
+    <div class="title-icon">📋</div>
+    <div>
+      <p class="doc-label">Government Procurement · Monthly Report</p>
+      <h1>Monthly Status of Procurement Activities</h1>
+      <p class="subtitle">Track physical and financial performance by procurement mode</p>
+    </div>
+    <div class="period-badge" id="current-period">—</div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-card">
+    <div class="history-title">🗂 Saved Reports</div>
+    <div class="history-list" id="history-list">
+      <span class="history-empty">Loading saved reports…</span>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table id="proc-table">
+        <colgroup>
+          <col class="c-mode">
+          <col class="c-num"><col class="c-num"><col class="c-pct">
+          <col class="c-num"><col class="c-num"><col class="c-pct">
+        </colgroup>
+        <thead>
+          <tr class="tr-main-header">
+            <th style="text-align:left;"><span class="badge-mode">📄 Mode of Procurement</span></th>
+            <th colspan="3"><span class="badge-phys">🌿 Physical Performance</span></th>
+            <th colspan="3"><span class="badge-fin">💰 Financial Performance</span></th>
+          </tr>
+          <tr class="tr-sub-header">
+            <th></th>
+            <th class="h-phys">Target</th><th class="h-phys">Actual</th><th class="h-pct">Ratio</th>
+            <th class="h-fin">Target</th><th class="h-fin">Actual</th><th class="h-pct">Ratio</th>
+          </tr>
+          <tr class="tr-col-label">
+            <th class="lbl-dim"></th>
+            <th class="lbl-phys">(A)</th><th class="lbl-phys">(B)</th><th class="lbl-pct">(C) = B/A</th>
+            <th class="lbl-fin">(D) ₱</th><th class="lbl-fin">(E) ₱</th><th class="lbl-pct">(F) = E/D</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="legend-card">
+      <div class="legend-item"><div class="legend-dot" style="background:linear-gradient(135deg,#28c78a,#1fa870);box-shadow:2px 2px 4px rgba(28,168,112,0.3),-1px -1px 3px #fff;"></div>Physical</div>
+      <div class="legend-item"><div class="legend-dot" style="background:linear-gradient(135deg,#4a72f5,#3358dc);box-shadow:2px 2px 4px rgba(51,88,220,0.3),-1px -1px 3px #fff;"></div>Financial</div>
+      <div class="legend-item"><div class="legend-dot" style="background:linear-gradient(135deg,#f5a623,#d48a10);box-shadow:2px 2px 4px rgba(200,130,10,0.3),-1px -1px 3px #fff;"></div>Computed %</div>
+      <div class="legend-item"><div class="legend-dot" style="background:linear-gradient(135deg,#9b72f5,#7a50dc);box-shadow:2px 2px 4px rgba(120,80,210,0.3),-1px -1px 3px #fff;"></div>Total</div>
+    </div>
+    <div class="btn-group">
+      <button onclick="clearAll()">🗑 Clear</button>
+      <button class="btn-save" id="save-btn" onclick="saveReport()">💾 Save to Supabase</button>
+      <button class="btn-primary" onclick="window.print()">🖨 Print</button>
+    </div>
+  </div>
+  <p class="note">✦ Percentage columns are auto-computed &nbsp;·&nbsp; Figures in Philippine Peso (₱)</p>
+
+</div>
+
+<script>
+  // ════════════════════════════════════════════
+  //  🔧 SUPABASE CONFIG — replace these values
+  // ════════════════════════════════════════════
+  const SUPABASE_URL  = 'https://jdzfxfriydakuqegtahq.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U';
+
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ════════════════════════════════════════════
+  //  MODES
+  // ════════════════════════════════════════════
+  const MODES = [
+    "Limited Source Bidding",
+    "Competitive Bidding",
+    "Direct Contracting",
+    "Government to Government (Section 4.2)",
+    "Negotiated 35.5",
+    "Negotiated 35.9",
+    "Negotiated 35.14",
+    "Small Value Procurement",
+    "Direct Acquisition",
+    "Section 4.4a (Non-Procurement Activity)",
+    "Section 4.4b (Non-Procurement Activity)",
+    "Section 4.4c (Non-Procurement Activity)"
+  ];
+
+  // ════════════════════════════════════════════
+  //  TOAST
+  // ════════════════════════════════════════════
+  let toastTimer;
+  function toast(msg, type = 'success', duration = 3500) {
+    const el = document.getElementById('toast');
+    el.className = `show ${type}`;
+    const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⏳';
+    el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, duration);
+  }
+
+  // ════════════════════════════════════════════
+  //  BUILD TABLE
+  // ════════════════════════════════════════════
+  const tbody = document.getElementById('table-body');
+  const periodEl = document.getElementById('current-period');
+  const currentPeriod = new Date().toLocaleString('en-PH', { month: 'long', year: 'numeric' });
+  periodEl.textContent = currentPeriod;
+
+  function buildRow(mode) {
+    const tr = document.createElement('tr');
+    tr.dataset.mode = mode;
+    tr.innerHTML = `
+      <td class="mode-cell">${mode}</td>
+      <td class="phys"><input type="number" min="0" placeholder="·" /></td>
+      <td class="phys"><input type="number" min="0" placeholder="·" /></td>
+      <td class="computed"><input type="text" readonly placeholder="·" /></td>
+      <td class="fin"><input type="number" min="0" placeholder="·" /></td>
+      <td class="fin"><input type="number" min="0" placeholder="·" /></td>
+      <td class="computed"><input type="text" readonly placeholder="·" /></td>
+    `;
+    const [ptIn, paIn, pcIn, ftIn, faIn, fcIn] = tr.querySelectorAll('input');
+    function recalc() {
+      const pt = parseFloat(ptIn.value), pa = parseFloat(paIn.value);
+      pcIn.value = (pt && pa) ? (pa / pt * 100).toFixed(1) + '%' : '';
+      const ft = parseFloat(ftIn.value), fa = parseFloat(faIn.value);
+      fcIn.value = (ft && fa) ? (fa / ft * 100).toFixed(1) + '%' : '';
+      recalcTotals();
+    }
+    [ptIn, paIn, ftIn, faIn].forEach(el => el.addEventListener('input', recalc));
+    tbody.appendChild(tr);
+  }
+
+  function buildTotalRow() {
+    const tr = document.createElement('tr');
+    tr.id = 'total-row';
+    tr.innerHTML = `
+      <td class="mode-cell">Total</td>
+      <td class="phys"><input type="text" readonly /></td>
+      <td class="phys"><input type="text" readonly /></td>
+      <td class="computed"><input type="text" readonly /></td>
+      <td class="fin"><input type="text" readonly /></td>
+      <td class="fin"><input type="text" readonly /></td>
+      <td class="computed"><input type="text" readonly /></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function recalcTotals() {
+    const rows = tbody.querySelectorAll('tr:not(#total-row)');
+    let ptS=0, paS=0, ftS=0, faS=0;
+    rows.forEach(r => {
+      const ins = r.querySelectorAll('input[type="number"]');
+      ptS += parseFloat(ins[0].value)||0;
+      paS += parseFloat(ins[1].value)||0;
+      ftS += parseFloat(ins[2].value)||0;
+      faS += parseFloat(ins[3].value)||0;
+    });
+    const tots = document.querySelectorAll('#total-row input');
+    tots[0].value = ptS ? ptS.toLocaleString('en-PH') : '';
+    tots[1].value = paS ? paS.toLocaleString('en-PH') : '';
+    tots[2].value = (ptS && paS) ? (paS/ptS*100).toFixed(1)+'%' : '';
+    tots[3].value = ftS ? ftS.toLocaleString('en-PH') : '';
+    tots[4].value = faS ? faS.toLocaleString('en-PH') : '';
+    tots[5].value = (ftS && faS) ? (faS/ftS*100).toFixed(1)+'%' : '';
+  }
+
+  MODES.forEach(buildRow);
+  buildTotalRow();
+
+  function clearAll() {
+    tbody.querySelectorAll('input[type="number"]').forEach(el => el.value = '');
+    tbody.querySelectorAll('input[readonly]').forEach(el => el.value = '');
+  }
+
+  // ════════════════════════════════════════════
+  //  SAVE REPORT
+  // ════════════════════════════════════════════
+  async function saveReport() {
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Saving…`;
+    toast('Saving report to Supabase…', 'loading', 99999);
+
+    try {
+      // 1. Insert report header
+      const { data: reportData, error: reportErr } = await db
+        .from('procurement_reports')
+        .insert({ period: currentPeriod })
+        .select('id')
+        .single();
+
+      if (reportErr) throw reportErr;
+      const reportId = reportData.id;
+
+      // 2. Build entries from rows
+      const rows = tbody.querySelectorAll('tr:not(#total-row)');
+      const entries = [];
+      rows.forEach((row, idx) => {
+        const ins = row.querySelectorAll('input[type="number"]');
+        const ptVal = parseFloat(ins[0].value) || null;
+        const paVal = parseFloat(ins[1].value) || null;
+        const ftVal = parseFloat(ins[2].value) || null;
+        const faVal = parseFloat(ins[3].value) || null;
+        entries.push({
+          report_id:   reportId,
+          mode_name:   row.dataset.mode,
+          phys_target: ptVal,
+          phys_actual: paVal,
+          fin_target:  ftVal,
+          fin_actual:  faVal,
+          sort_order:  idx
+        });
+      });
+
+      // 3. Insert entries
+      const { error: entriesErr } = await db
+        .from('procurement_entries')
+        .insert(entries);
+
+      if (entriesErr) throw entriesErr;
+
+      toast('Report saved successfully! 🎉', 'success');
+      loadHistory();
+
+    } catch (err) {
+      console.error(err);
+      toast('Error: ' + (err.message || 'Could not save report.'), 'error', 6000);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '💾 Save to Supabase';
+    }
+  }
+
+  // ════════════════════════════════════════════
+  //  LOAD HISTORY
+  // ════════════════════════════════════════════
+  async function loadHistory() {
+    const listEl = document.getElementById('history-list');
+    try {
+      const { data, error } = await db
+        .from('procurement_reports')
+        .select('id, period, created_at')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        listEl.innerHTML = '<span class="history-empty">No saved reports yet.</span>';
+        return;
+      }
+
+      listEl.innerHTML = '';
+      data.forEach(report => {
+        const chip = document.createElement('div');
+        chip.className = 'history-chip';
+        const date = new Date(report.created_at).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
+        chip.innerHTML = `
+          <span onclick="loadReport('${report.id}', this.closest('.history-chip'))">📄 ${report.period} <small style="color:var(--ink-muted);font-weight:400;">${date}</small></span>
+          <span class="del-btn" title="Delete" onclick="deleteReport('${report.id}', this.closest('.history-chip'))">✕</span>
+        `;
+        listEl.appendChild(chip);
+      });
+
+    } catch (err) {
+      listEl.innerHTML = '<span class="history-empty" style="color:var(--red);">⚠ Could not load history — check your Supabase config.</span>';
+    }
+  }
+
+  // ════════════════════════════════════════════
+  //  LOAD A SAVED REPORT INTO THE TABLE
+  // ════════════════════════════════════════════
+  async function loadReport(reportId, chipEl) {
+    document.querySelectorAll('.history-chip').forEach(c => c.classList.remove('active'));
+    chipEl.classList.add('active');
+    toast('Loading report…', 'loading', 99999);
+
+    try {
+      const { data, error } = await db
+        .from('procurement_entries')
+        .select('*')
+        .eq('report_id', reportId)
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+
+      clearAll();
+
+      data.forEach(entry => {
+        const row = [...tbody.querySelectorAll('tr:not(#total-row)')]
+          .find(r => r.dataset.mode === entry.mode_name);
+        if (!row) return;
+        const ins = row.querySelectorAll('input[type="number"]');
+        if (entry.phys_target != null) ins[0].value = entry.phys_target;
+        if (entry.phys_actual != null) ins[1].value = entry.phys_actual;
+        if (entry.fin_target  != null) ins[2].value = entry.fin_target;
+        if (entry.fin_actual  != null) ins[3].value = entry.fin_actual;
+        ins[0].dispatchEvent(new Event('input'));
+      });
+
+      toast('Report loaded successfully!', 'success');
+
+    } catch (err) {
+      toast('Error loading report: ' + (err.message || ''), 'error', 5000);
+    }
+  }
+
+  // ════════════════════════════════════════════
+  //  DELETE A REPORT
+  // ════════════════════════════════════════════
+  async function deleteReport(reportId, chipEl) {
+    if (!confirm('Delete this report? This cannot be undone.')) return;
+    try {
+      const { error } = await db
+        .from('procurement_reports')
+        .delete()
+        .eq('id', reportId);
+      if (error) throw error;
+      chipEl.remove();
+      toast('Report deleted.', 'success');
+      const list = document.getElementById('history-list');
+      if (!list.children.length) list.innerHTML = '<span class="history-empty">No saved reports yet.</span>';
+    } catch (err) {
+      toast('Delete failed: ' + (err.message || ''), 'error', 5000);
+    }
+  }
+
+  // ════════════════════════════════════════════
+  //  INIT
+  // ════════════════════════════════════════════
+  loadHistory();
+</script>
+</body>
+</html>
