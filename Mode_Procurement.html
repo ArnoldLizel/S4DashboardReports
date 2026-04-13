@@ -205,6 +205,29 @@
   }
   tbody tr:hover td.mode-cell { border-left-color: var(--blue); }
 
+  /* ══ PESO INPUT WRAPPER ══ */
+  .peso-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 46px;
+  }
+  .peso-sign {
+    position: absolute;
+    left: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 1;
+    line-height: 1;
+  }
+  .peso-wrap.has-value .peso-sign,
+  .peso-wrap.focused .peso-sign { opacity: 1; }
+
   tbody tr td input {
     width: 100%; min-height: 46px; border: none; outline: none;
     background: transparent; font-family: var(--mono);
@@ -213,12 +236,23 @@
   }
   tbody tr td input::placeholder { color: rgba(154,163,191,0.35); font-size: 20px; font-weight: 300; font-family: var(--sans); }
 
+  /* Shift text right when peso sign is visible */
+  .peso-wrap.has-value input,
+  .peso-wrap.focused input {
+    padding-left: 20px;
+    text-align: left;
+  }
+
   td.phys { background: linear-gradient(160deg, rgba(40,199,138,0.08), rgba(40,199,138,0.05)); box-shadow: inset 3px 3px 7px rgba(28,168,112,0.12), inset -3px -3px 7px rgba(255,255,255,0.85); border-bottom: 1px solid rgba(40,199,138,0.12); }
   td.phys input { color: var(--green-dk); }
   td.phys input:focus { background: rgba(40,199,138,0.1); border-radius: 8px; }
+  td.phys .peso-sign { color: var(--green-dk); }
+
   td.fin  { background: linear-gradient(160deg, rgba(74,114,245,0.08), rgba(74,114,245,0.05)); box-shadow: inset 3px 3px 7px rgba(51,88,220,0.12), inset -3px -3px 7px rgba(255,255,255,0.85); border-bottom: 1px solid rgba(74,114,245,0.12); }
   td.fin input { color: var(--blue-dk); }
   td.fin input:focus { background: rgba(74,114,245,0.1); border-radius: 8px; }
+  td.fin .peso-sign { color: var(--blue-dk); }
+
   td.computed { background: linear-gradient(160deg, rgba(245,166,35,0.10), rgba(245,166,35,0.06)); box-shadow: inset 3px 3px 7px rgba(200,130,10,0.12), inset -3px -3px 7px rgba(255,255,255,0.85); border-bottom: 1px solid rgba(245,166,35,0.14); }
   td.computed input { font-weight: 700; color: var(--amber-dk); }
 
@@ -234,6 +268,11 @@
   #total-row td.computed { background: linear-gradient(160deg, rgba(245,166,35,0.24), rgba(245,166,35,0.12)) !important; box-shadow: inset 4px 4px 10px rgba(200,130,10,0.18), inset -4px -4px 10px rgba(255,255,255,0.85) !important; border-top: 2px solid rgba(245,166,35,0.3); }
   #total-row td input { font-weight: 800 !important; font-size: 14px !important; min-height: 52px !important; }
   #total-row td { border-top: 6px solid transparent; }
+
+  /* Total row peso sign styling */
+  #total-row .peso-sign { font-weight: 800; font-size: 14px; }
+  #total-row td.phys .peso-sign { color: var(--green-dk); }
+  #total-row td.fin  .peso-sign { color: var(--blue-dk); }
 
   /* ══ FOOTER ══ */
   .footer { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -270,7 +309,6 @@
 
   .note { font-size: 12px; font-weight: 500; color: var(--ink-muted); text-align: center; letter-spacing: 0.04em; }
 
-  /* Spinner */
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
 
@@ -281,7 +319,6 @@
 </head>
 <body>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <div class="wrapper">
@@ -346,7 +383,7 @@
     </div>
     <div class="btn-group">
       <button onclick="clearAll()">🗑 Clear</button>
-      <button class="btn-save" id="save-btn" onclick="saveReport()">💾 Save Data</button>
+      <button class="btn-save" id="save-btn" onclick="saveReport()">💾 Save to Supabase</button>
       <button class="btn-primary" onclick="window.print()">🖨 Print</button>
     </div>
   </div>
@@ -355,18 +392,12 @@
 </div>
 
 <script>
-  // ════════════════════════════════════════════
-  //  🔧 SUPABASE CONFIG — replace these values
-  // ════════════════════════════════════════════
   const SUPABASE_URL  = 'https://jdzfxfriydakuqegtahq.supabase.co';
   const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U';
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // ════════════════════════════════════════════
-  //  MODES
-  // ════════════════════════════════════════════
   const MODES = [
     "Limited Source Bidding",
     "Competitive Bidding",
@@ -382,9 +413,6 @@
     "Section 4.4c (Non-Procurement Activity)"
   ];
 
-  // ════════════════════════════════════════════
-  //  TOAST
-  // ════════════════════════════════════════════
   let toastTimer;
   function toast(msg, type = 'success', duration = 3500) {
     const el = document.getElementById('toast');
@@ -395,34 +423,83 @@
     toastTimer = setTimeout(() => { el.className = ''; }, duration);
   }
 
-  // ════════════════════════════════════════════
-  //  BUILD TABLE
-  // ════════════════════════════════════════════
   const tbody = document.getElementById('table-body');
   const periodEl = document.getElementById('current-period');
   const currentPeriod = new Date().toLocaleString('en-PH', { month: 'long', year: 'numeric' });
   periodEl.textContent = currentPeriod;
 
+  /* ══════════════════════════════════════════
+     PESO SIGN HELPER
+     Wraps an input in a .peso-wrap div with
+     a ₱ prefix that appears on focus/value.
+     hasPeso = true  → financial field (show ₱)
+     hasPeso = false → physical / computed (no ₱)
+  ══════════════════════════════════════════ */
+  function makePesoWrap(input, hasPeso) {
+    const wrap = document.createElement('div');
+    wrap.className = 'peso-wrap';
+
+    if (hasPeso) {
+      const sign = document.createElement('span');
+      sign.className = 'peso-sign';
+      sign.textContent = '₱';
+      wrap.appendChild(sign);
+
+      // Show/hide ₱ based on focus and value
+      const update = () => {
+        const hasVal = input.value.trim() !== '';
+        wrap.classList.toggle('has-value', hasVal);
+      };
+
+      input.addEventListener('focus', () => wrap.classList.add('focused'));
+      input.addEventListener('blur',  () => { wrap.classList.remove('focused'); update(); });
+      input.addEventListener('input', update);
+    }
+
+    wrap.appendChild(input);
+    return wrap;
+  }
+
   function buildRow(mode) {
     const tr = document.createElement('tr');
     tr.dataset.mode = mode;
-    tr.innerHTML = `
-      <td class="mode-cell">${mode}</td>
-      <td class="phys"><input type="number" min="0" placeholder="·" /></td>
-      <td class="phys"><input type="number" min="0" placeholder="·" /></td>
-      <td class="computed"><input type="text" readonly placeholder="·" /></td>
-      <td class="fin"><input type="number" min="0" placeholder="·" /></td>
-      <td class="fin"><input type="number" min="0" placeholder="·" /></td>
-      <td class="computed"><input type="text" readonly placeholder="·" /></td>
-    `;
-    const [ptIn, paIn, pcIn, ftIn, faIn, fcIn] = tr.querySelectorAll('input');
+
+    // Mode label cell
+    const tdMode = document.createElement('td');
+    tdMode.className = 'mode-cell';
+    tdMode.textContent = mode;
+    tr.appendChild(tdMode);
+
+    // Helper to create a <td> with an input (and optional peso wrap)
+    function addCell(tdClass, inputType, isReadonly, hasPeso) {
+      const td = document.createElement('td');
+      td.className = tdClass;
+      const inp = document.createElement('input');
+      inp.type = inputType;
+      if (inputType === 'number') inp.min = '0';
+      if (isReadonly) inp.readOnly = true;
+      inp.placeholder = '·';
+      td.appendChild(makePesoWrap(inp, hasPeso));
+      tr.appendChild(td);
+      return inp;
+    }
+
+    const ptIn = addCell('phys', 'number', false, false); // Physical Target — no ₱
+    const paIn = addCell('phys', 'number', false, false); // Physical Actual — no ₱
+    const pcIn = addCell('computed', 'text', true, false); // % ratio
+    const ftIn = addCell('fin',  'number', false, true);  // Financial Target — ₱
+    const faIn = addCell('fin',  'number', false, true);  // Financial Actual — ₱
+    const fcIn = addCell('computed', 'text', true, false); // % ratio
+
     function recalc() {
       const pt = parseFloat(ptIn.value), pa = parseFloat(paIn.value);
       pcIn.value = (pt && pa) ? (pa / pt * 100).toFixed(1) + '%' : '';
       const ft = parseFloat(ftIn.value), fa = parseFloat(faIn.value);
       fcIn.value = (ft && fa) ? (fa / ft * 100).toFixed(1) + '%' : '';
+      // Update peso-wrap state for readonly computed fields (no peso, fine to skip)
       recalcTotals();
     }
+
     [ptIn, paIn, ftIn, faIn].forEach(el => el.addEventListener('input', recalc));
     tbody.appendChild(tr);
   }
@@ -430,15 +507,31 @@
   function buildTotalRow() {
     const tr = document.createElement('tr');
     tr.id = 'total-row';
-    tr.innerHTML = `
-      <td class="mode-cell">Total</td>
-      <td class="phys"><input type="text" readonly /></td>
-      <td class="phys"><input type="text" readonly /></td>
-      <td class="computed"><input type="text" readonly /></td>
-      <td class="fin"><input type="text" readonly /></td>
-      <td class="fin"><input type="text" readonly /></td>
-      <td class="computed"><input type="text" readonly /></td>
-    `;
+
+    const tdMode = document.createElement('td');
+    tdMode.className = 'mode-cell';
+    tdMode.textContent = 'Total';
+    tr.appendChild(tdMode);
+
+    function addTotalCell(tdClass, hasPeso) {
+      const td = document.createElement('td');
+      td.className = tdClass;
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.readOnly = true;
+      td.appendChild(makePesoWrap(inp, hasPeso));
+      tr.appendChild(td);
+      return inp;
+    }
+
+    // Physical Target, Actual — no ₱; % — no ₱; Fin Target, Actual — ₱; % — no ₱
+    addTotalCell('phys', false);
+    addTotalCell('phys', false);
+    addTotalCell('computed', false);
+    addTotalCell('fin',  true);
+    addTotalCell('fin',  true);
+    addTotalCell('computed', false);
+
     tbody.appendChild(tr);
   }
 
@@ -452,26 +545,40 @@
       ftS += parseFloat(ins[2].value)||0;
       faS += parseFloat(ins[3].value)||0;
     });
+
     const tots = document.querySelectorAll('#total-row input');
+    // tots order: phys-target, phys-actual, phys-%, fin-target, fin-actual, fin-%
     tots[0].value = ptS ? ptS.toLocaleString('en-PH') : '';
     tots[1].value = paS ? paS.toLocaleString('en-PH') : '';
     tots[2].value = (ptS && paS) ? (paS/ptS*100).toFixed(1)+'%' : '';
     tots[3].value = ftS ? ftS.toLocaleString('en-PH') : '';
     tots[4].value = faS ? faS.toLocaleString('en-PH') : '';
     tots[5].value = (ftS && faS) ? (faS/ftS*100).toFixed(1)+'%' : '';
+
+    // Sync has-value state on total row peso wraps
+    [tots[3], tots[4]].forEach(inp => {
+      const wrap = inp.closest('.peso-wrap');
+      if (wrap) wrap.classList.toggle('has-value', inp.value.trim() !== '');
+    });
   }
 
   MODES.forEach(buildRow);
   buildTotalRow();
 
   function clearAll() {
-    tbody.querySelectorAll('input[type="number"]').forEach(el => el.value = '');
-    tbody.querySelectorAll('input[readonly]').forEach(el => el.value = '');
+    tbody.querySelectorAll('input[type="number"]').forEach(el => {
+      el.value = '';
+      const wrap = el.closest('.peso-wrap');
+      if (wrap) wrap.classList.remove('has-value', 'focused');
+    });
+    tbody.querySelectorAll('input[readonly]').forEach(el => {
+      el.value = '';
+      const wrap = el.closest('.peso-wrap');
+      if (wrap) wrap.classList.remove('has-value');
+    });
   }
 
-  // ════════════════════════════════════════════
-  //  SAVE REPORT
-  // ════════════════════════════════════════════
+  /* ══ SAVE ══ */
   async function saveReport() {
     const btn = document.getElementById('save-btn');
     btn.disabled = true;
@@ -479,7 +586,6 @@
     toast('Saving report to Supabase…', 'loading', 99999);
 
     try {
-      // 1. Insert report header
       const { data: reportData, error: reportErr } = await db
         .from('procurement_reports')
         .insert({ period: currentPeriod })
@@ -489,31 +595,22 @@
       if (reportErr) throw reportErr;
       const reportId = reportData.id;
 
-      // 2. Build entries from rows
       const rows = tbody.querySelectorAll('tr:not(#total-row)');
       const entries = [];
       rows.forEach((row, idx) => {
         const ins = row.querySelectorAll('input[type="number"]');
-        const ptVal = parseFloat(ins[0].value) || null;
-        const paVal = parseFloat(ins[1].value) || null;
-        const ftVal = parseFloat(ins[2].value) || null;
-        const faVal = parseFloat(ins[3].value) || null;
         entries.push({
           report_id:   reportId,
           mode_name:   row.dataset.mode,
-          phys_target: ptVal,
-          phys_actual: paVal,
-          fin_target:  ftVal,
-          fin_actual:  faVal,
+          phys_target: parseFloat(ins[0].value) || null,
+          phys_actual: parseFloat(ins[1].value) || null,
+          fin_target:  parseFloat(ins[2].value) || null,
+          fin_actual:  parseFloat(ins[3].value) || null,
           sort_order:  idx
         });
       });
 
-      // 3. Insert entries
-      const { error: entriesErr } = await db
-        .from('procurement_entries')
-        .insert(entries);
-
+      const { error: entriesErr } = await db.from('procurement_entries').insert(entries);
       if (entriesErr) throw entriesErr;
 
       toast('Report saved successfully! 🎉', 'success');
@@ -528,9 +625,7 @@
     }
   }
 
-  // ════════════════════════════════════════════
-  //  LOAD HISTORY
-  // ════════════════════════════════════════════
+  /* ══ HISTORY ══ */
   async function loadHistory() {
     const listEl = document.getElementById('history-list');
     try {
@@ -564,9 +659,6 @@
     }
   }
 
-  // ════════════════════════════════════════════
-  //  LOAD A SAVED REPORT INTO THE TABLE
-  // ════════════════════════════════════════════
   async function loadReport(reportId, chipEl) {
     document.querySelectorAll('.history-chip').forEach(c => c.classList.remove('active'));
     chipEl.classList.add('active');
@@ -590,8 +682,8 @@
         const ins = row.querySelectorAll('input[type="number"]');
         if (entry.phys_target != null) ins[0].value = entry.phys_target;
         if (entry.phys_actual != null) ins[1].value = entry.phys_actual;
-        if (entry.fin_target  != null) ins[2].value = entry.fin_target;
-        if (entry.fin_actual  != null) ins[3].value = entry.fin_actual;
+        if (entry.fin_target  != null) { ins[2].value = entry.fin_target;  ins[2].closest('.peso-wrap')?.classList.add('has-value'); }
+        if (entry.fin_actual  != null) { ins[3].value = entry.fin_actual;  ins[3].closest('.peso-wrap')?.classList.add('has-value'); }
         ins[0].dispatchEvent(new Event('input'));
       });
 
@@ -602,16 +694,10 @@
     }
   }
 
-  // ════════════════════════════════════════════
-  //  DELETE A REPORT
-  // ════════════════════════════════════════════
   async function deleteReport(reportId, chipEl) {
     if (!confirm('Delete this report? This cannot be undone.')) return;
     try {
-      const { error } = await db
-        .from('procurement_reports')
-        .delete()
-        .eq('id', reportId);
+      const { error } = await db.from('procurement_reports').delete().eq('id', reportId);
       if (error) throw error;
       chipEl.remove();
       toast('Report deleted.', 'success');
@@ -622,9 +708,6 @@
     }
   }
 
-  // ════════════════════════════════════════════
-  //  INIT
-  // ════════════════════════════════════════════
   loadHistory();
 </script>
 </body>
