@@ -6,6 +6,8 @@
 <title>Monthly Status of Procurement Activities</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   :root {
     --bg:       #dde3ee;
@@ -236,7 +238,6 @@
   }
   tbody tr td input::placeholder { color: rgba(154,163,191,0.35); font-size: 20px; font-weight: 300; font-family: var(--sans); }
 
-  /* Shift text right when peso sign is visible */
   .peso-wrap.has-value input,
   .peso-wrap.focused input {
     padding-left: 20px;
@@ -269,7 +270,6 @@
   #total-row td input { font-weight: 800 !important; font-size: 14px !important; min-height: 52px !important; }
   #total-row td { border-top: 6px solid transparent; }
 
-  /* Total row peso sign styling */
   #total-row .peso-sign { font-weight: 800; font-size: 14px; }
   #total-row td.phys .peso-sign { color: var(--green-dk); }
   #total-row td.fin  .peso-sign { color: var(--blue-dk); }
@@ -306,6 +306,13 @@
     box-shadow: 4px 4px 12px rgba(51,88,220,0.35), -3px -3px 8px rgba(255,255,255,0.7);
   }
   .btn-primary:hover { box-shadow: 6px 6px 16px rgba(51,88,220,0.45), -3px -3px 10px rgba(255,255,255,0.8); }
+
+  .btn-pdf {
+    background: linear-gradient(135deg, #e8472b, #c73218);
+    color: #fff;
+    box-shadow: 4px 4px 12px rgba(199,50,24,0.35), -3px -3px 8px rgba(255,255,255,0.7);
+  }
+  .btn-pdf:hover { box-shadow: 6px 6px 16px rgba(199,50,24,0.45), -3px -3px 10px rgba(255,255,255,0.8); }
 
   .note { font-size: 12px; font-weight: 500; color: var(--ink-muted); text-align: center; letter-spacing: 0.04em; }
 
@@ -384,6 +391,7 @@
     <div class="btn-group">
       <button onclick="clearAll()">🗑 Clear</button>
       <button class="btn-save" id="save-btn" onclick="saveReport()">💾 Save to Supabase</button>
+      <button class="btn-pdf" id="pdf-btn" onclick="generatePDF()">📄 Generate PDF</button>
       <button class="btn-primary" onclick="window.print()">🖨 Print</button>
     </div>
   </div>
@@ -428,13 +436,6 @@
   const currentPeriod = new Date().toLocaleString('en-PH', { month: 'long', year: 'numeric' });
   periodEl.textContent = currentPeriod;
 
-  /* ══════════════════════════════════════════
-     PESO SIGN HELPER
-     Wraps an input in a .peso-wrap div with
-     a ₱ prefix that appears on focus/value.
-     hasPeso = true  → financial field (show ₱)
-     hasPeso = false → physical / computed (no ₱)
-  ══════════════════════════════════════════ */
   function makePesoWrap(input, hasPeso) {
     const wrap = document.createElement('div');
     wrap.className = 'peso-wrap';
@@ -445,7 +446,6 @@
       sign.textContent = '₱';
       wrap.appendChild(sign);
 
-      // Show/hide ₱ based on focus and value
       const update = () => {
         const hasVal = input.value.trim() !== '';
         wrap.classList.toggle('has-value', hasVal);
@@ -464,13 +464,11 @@
     const tr = document.createElement('tr');
     tr.dataset.mode = mode;
 
-    // Mode label cell
     const tdMode = document.createElement('td');
     tdMode.className = 'mode-cell';
     tdMode.textContent = mode;
     tr.appendChild(tdMode);
 
-    // Helper to create a <td> with an input (and optional peso wrap)
     function addCell(tdClass, inputType, isReadonly, hasPeso) {
       const td = document.createElement('td');
       td.className = tdClass;
@@ -484,19 +482,18 @@
       return inp;
     }
 
-    const ptIn = addCell('phys', 'number', false, false); // Physical Target — no ₱
-    const paIn = addCell('phys', 'number', false, false); // Physical Actual — no ₱
-    const pcIn = addCell('computed', 'text', true, false); // % ratio
-    const ftIn = addCell('fin',  'number', false, true);  // Financial Target — ₱
-    const faIn = addCell('fin',  'number', false, true);  // Financial Actual — ₱
-    const fcIn = addCell('computed', 'text', true, false); // % ratio
+    const ptIn = addCell('phys', 'number', false, false);
+    const paIn = addCell('phys', 'number', false, false);
+    const pcIn = addCell('computed', 'text', true, false);
+    const ftIn = addCell('fin',  'number', false, true);
+    const faIn = addCell('fin',  'number', false, true);
+    const fcIn = addCell('computed', 'text', true, false);
 
     function recalc() {
       const pt = parseFloat(ptIn.value), pa = parseFloat(paIn.value);
       pcIn.value = (pt && pa) ? (pa / pt * 100).toFixed(1) + '%' : '';
       const ft = parseFloat(ftIn.value), fa = parseFloat(faIn.value);
       fcIn.value = (ft && fa) ? (fa / ft * 100).toFixed(1) + '%' : '';
-      // Update peso-wrap state for readonly computed fields (no peso, fine to skip)
       recalcTotals();
     }
 
@@ -524,7 +521,6 @@
       return inp;
     }
 
-    // Physical Target, Actual — no ₱; % — no ₱; Fin Target, Actual — ₱; % — no ₱
     addTotalCell('phys', false);
     addTotalCell('phys', false);
     addTotalCell('computed', false);
@@ -547,7 +543,6 @@
     });
 
     const tots = document.querySelectorAll('#total-row input');
-    // tots order: phys-target, phys-actual, phys-%, fin-target, fin-actual, fin-%
     tots[0].value = ptS ? ptS.toLocaleString('en-PH') : '';
     tots[1].value = paS ? paS.toLocaleString('en-PH') : '';
     tots[2].value = (ptS && paS) ? (paS/ptS*100).toFixed(1)+'%' : '';
@@ -555,7 +550,6 @@
     tots[4].value = faS ? faS.toLocaleString('en-PH') : '';
     tots[5].value = (ftS && faS) ? (faS/ftS*100).toFixed(1)+'%' : '';
 
-    // Sync has-value state on total row peso wraps
     [tots[3], tots[4]].forEach(inp => {
       const wrap = inp.closest('.peso-wrap');
       if (wrap) wrap.classList.toggle('has-value', inp.value.trim() !== '');
@@ -576,6 +570,183 @@
       const wrap = el.closest('.peso-wrap');
       if (wrap) wrap.classList.remove('has-value');
     });
+  }
+
+  /* ══ GENERATE PDF ══ */
+  function generatePDF() {
+    const btn = document.getElementById('pdf-btn');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Generating…`;
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      const pageW = doc.internal.pageSize.getWidth();
+
+      // ── Header ──
+      doc.setFillColor(46, 58, 92);
+      doc.rect(0, 0, pageW, 22, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.text('Monthly Status of Procurement Activities', pageW / 2, 10, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text('Government Procurement · Monthly Report', pageW / 2, 16.5, { align: 'center' });
+
+      // Period badge (top-right)
+      doc.setFillColor(74, 114, 245);
+      doc.roundedRect(pageW - 58, 4, 50, 13, 3, 3, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text(currentPeriod, pageW - 33, 12, { align: 'center' });
+
+      // ── Collect table data ──
+      const dataRows = [];
+      tbody.querySelectorAll('tr:not(#total-row)').forEach(row => {
+        const ins = row.querySelectorAll('input');
+        const vals = [...ins].map(i => i.value.trim());
+        const mode  = row.dataset.mode;
+        const ptRaw = parseFloat(ins[0].value) || null;
+        const paRaw = parseFloat(ins[1].value) || null;
+        const ftRaw = parseFloat(ins[2].value) || null;
+        const faRaw = parseFloat(ins[3].value) || null;
+
+        dataRows.push([
+          mode,
+          ptRaw != null ? ptRaw.toLocaleString('en-PH') : '—',
+          paRaw != null ? paRaw.toLocaleString('en-PH') : '—',
+          vals[2] || '—',
+          ftRaw != null ? '\u20B1 ' + ftRaw.toLocaleString('en-PH') : '—',
+          faRaw != null ? '\u20B1 ' + faRaw.toLocaleString('en-PH') : '—',
+          vals[5] || '—'
+        ]);
+      });
+
+      // Total row
+      const tots = [...document.querySelectorAll('#total-row input')].map(i => i.value.trim());
+      dataRows.push([
+        'TOTAL',
+        tots[0] || '—',
+        tots[1] || '—',
+        tots[2] || '—',
+        tots[3] ? '\u20B1 ' + tots[3] : '—',
+        tots[4] ? '\u20B1 ' + tots[4] : '—',
+        tots[5] || '—'
+      ]);
+
+      // ── AutoTable ──
+      doc.autoTable({
+        startY: 26,
+        head: [
+          [
+            { content: 'Mode of Procurement', rowSpan: 2, styles: { halign: 'left', valign: 'middle' } },
+            { content: 'Physical Performance', colSpan: 3, styles: { halign: 'center', fillColor: [31, 168, 112] } },
+            { content: 'Financial Performance', colSpan: 3, styles: { halign: 'center', fillColor: [51, 88, 220] } }
+          ],
+          [
+            { content: 'Target (A)',  styles: { halign: 'center', fillColor: [40, 199, 138], textColor: [255,255,255] } },
+            { content: 'Actual (B)',  styles: { halign: 'center', fillColor: [40, 199, 138], textColor: [255,255,255] } },
+            { content: '% (C=B/A)',   styles: { halign: 'center', fillColor: [212, 138, 16],  textColor: [255,255,255] } },
+            { content: 'Target (D) \u20B1', styles: { halign: 'center', fillColor: [74, 114, 245], textColor: [255,255,255] } },
+            { content: 'Actual (E) \u20B1', styles: { halign: 'center', fillColor: [74, 114, 245], textColor: [255,255,255] } },
+            { content: '% (F=E/D)',   styles: { halign: 'center', fillColor: [212, 138, 16],  textColor: [255,255,255] } }
+          ]
+        ],
+        body: dataRows,
+        theme: 'grid',
+        styles: {
+          font: 'helvetica',
+          fontSize: 8,
+          cellPadding: { top: 3, bottom: 3, left: 4, right: 4 },
+          valign: 'middle',
+          textColor: [46, 58, 92],
+          lineColor: [200, 210, 230],
+          lineWidth: 0.3
+        },
+        headStyles: {
+          fontSize: 8,
+          fontStyle: 'bold',
+          textColor: [255, 255, 255],
+          fillColor: [46, 58, 92],
+          halign: 'center'
+        },
+        columnStyles: {
+          0: { cellWidth: 62, halign: 'left' },
+          1: { cellWidth: 28, halign: 'right' },
+          2: { cellWidth: 28, halign: 'right' },
+          3: { cellWidth: 22, halign: 'center' },
+          4: { cellWidth: 38, halign: 'right' },
+          5: { cellWidth: 38, halign: 'right' },
+          6: { cellWidth: 22, halign: 'center' }
+        },
+        alternateRowStyles: { fillColor: [242, 246, 255] },
+        didParseCell: function(data) {
+          // Highlight total row
+          if (data.row.index === dataRows.length - 1 && data.section === 'body') {
+            data.cell.styles.fillColor = [235, 228, 255];
+            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.textColor = [90, 50, 200];
+          }
+          // Color % columns amber
+          if ((data.column.index === 3 || data.column.index === 6) && data.section === 'body') {
+            if (data.row.index < dataRows.length - 1) {
+              data.cell.styles.textColor = [180, 110, 10];
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+          // Color physical columns green
+          if ((data.column.index === 1 || data.column.index === 2) && data.section === 'body') {
+            if (data.row.index < dataRows.length - 1) {
+              data.cell.styles.textColor = [25, 130, 90];
+            }
+          }
+          // Color financial columns blue
+          if ((data.column.index === 4 || data.column.index === 5) && data.section === 'body') {
+            if (data.row.index < dataRows.length - 1) {
+              data.cell.styles.textColor = [40, 80, 200];
+            }
+          }
+        },
+        margin: { left: 8, right: 8 }
+      });
+
+      // ── Footer ──
+      const finalY = doc.lastAutoTable.finalY + 6;
+      doc.setFontSize(7.5);
+      doc.setTextColor(140, 155, 185);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        `Generated on ${new Date().toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'numeric' })}  ·  Figures in Philippine Peso (₱)  ·  Percentage columns are auto-computed`,
+        pageW / 2,
+        finalY,
+        { align: 'center' }
+      );
+
+      // Page numbers
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7.5);
+        doc.setTextColor(140, 155, 185);
+        doc.text(`Page ${i} of ${pageCount}`, pageW - 10, doc.internal.pageSize.getHeight() - 5, { align: 'right' });
+      }
+
+      const filename = `Procurement_Report_${currentPeriod.replace(/\s/g, '_')}.pdf`;
+      doc.save(filename);
+      toast(`PDF saved as "${filename}" ✅`, 'success');
+
+    } catch (err) {
+      console.error(err);
+      toast('PDF generation failed: ' + (err.message || 'Unknown error'), 'error', 6000);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '📄 Generate PDF';
+    }
   }
 
   /* ══ SAVE ══ */
