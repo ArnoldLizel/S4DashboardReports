@@ -319,6 +319,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
 
+  /* Financial inputs use text type for comma formatting */
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=number] { -moz-appearance: textfield; }
@@ -436,6 +437,62 @@
   const currentPeriod = new Date().toLocaleString('en-PH', { month: 'long', year: 'numeric' });
   periodEl.textContent = currentPeriod;
 
+  /* ══ COMMA FORMATTING HELPERS ══ */
+  // Parse a comma-formatted string back to a float
+  function parseComma(str) {
+    const cleaned = str.replace(/,/g, '');
+    return cleaned === '' ? NaN : parseFloat(cleaned);
+  }
+
+  // Format a number with commas (up to 2 decimal places, strips trailing zeros)
+  function formatComma(num) {
+    if (isNaN(num)) return '';
+    // Use toLocaleString for comma formatting
+    return num.toLocaleString('en-PH', { maximumFractionDigits: 2 });
+  }
+
+  // Attach comma-formatting behaviour to a text input used as a financial field
+  function attachCommaFormat(inp) {
+    // Store raw numeric value separately
+    inp._rawValue = null;
+
+    inp.addEventListener('focus', function() {
+      // On focus: show plain number for easy editing
+      if (this._rawValue !== null && !isNaN(this._rawValue)) {
+        this.value = this._rawValue.toString();
+      }
+      const wrap = this.closest('.peso-wrap');
+      if (wrap) wrap.classList.add('focused');
+    });
+
+    inp.addEventListener('blur', function() {
+      const wrap = this.closest('.peso-wrap');
+      if (wrap) wrap.classList.remove('focused');
+      const num = parseFloat(this.value.replace(/,/g, ''));
+      if (!isNaN(num)) {
+        this._rawValue = num;
+        this.value = formatComma(num);
+        if (wrap) wrap.classList.add('has-value');
+      } else {
+        this._rawValue = null;
+        this.value = '';
+        if (wrap) wrap.classList.remove('has-value');
+      }
+      // Trigger recalc
+      this.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    inp.addEventListener('input', function() {
+      // Allow only digits, one dot, commas (strip commas during typing for simplicity)
+      const val = this.value.replace(/[^0-9.]/g, '');
+      // Don't reformat while typing — just keep raw
+      const num = parseFloat(val);
+      this._rawValue = isNaN(num) ? null : num;
+      const wrap = this.closest('.peso-wrap');
+      if (wrap) wrap.classList.toggle('has-value', val !== '');
+    });
+  }
+
   function makePesoWrap(input, hasPeso) {
     const wrap = document.createElement('div');
     wrap.className = 'peso-wrap';
@@ -445,15 +502,6 @@
       sign.className = 'peso-sign';
       sign.textContent = '₱';
       wrap.appendChild(sign);
-
-      const update = () => {
-        const hasVal = input.value.trim() !== '';
-        wrap.classList.toggle('has-value', hasVal);
-      };
-
-      input.addEventListener('focus', () => wrap.classList.add('focused'));
-      input.addEventListener('blur',  () => { wrap.classList.remove('focused'); update(); });
-      input.addEventListener('input', update);
     }
 
     wrap.appendChild(input);
@@ -469,35 +517,62 @@
     tdMode.textContent = mode;
     tr.appendChild(tdMode);
 
-    function addCell(tdClass, inputType, isReadonly, hasPeso) {
+    function addCell(tdClass, isReadonly, hasPeso, isFinancial) {
       const td = document.createElement('td');
       td.className = tdClass;
       const inp = document.createElement('input');
-      inp.type = inputType;
-      if (inputType === 'number') inp.min = '0';
-      if (isReadonly) inp.readOnly = true;
+
+      if (isFinancial && !isReadonly) {
+        // Financial editable: use text input with comma formatting
+        inp.type = 'text';
+        inp.inputMode = 'decimal';
+        attachCommaFormat(inp);
+      } else if (!isReadonly) {
+        // Physical editable: plain number
+        inp.type = 'number';
+        inp.min = '0';
+      } else {
+        // Computed / readonly
+        inp.type = 'text';
+        inp.readOnly = true;
+      }
+
       inp.placeholder = '·';
       td.appendChild(makePesoWrap(inp, hasPeso));
       tr.appendChild(td);
       return inp;
     }
 
-    const ptIn = addCell('phys', 'number', false, false);
-    const paIn = addCell('phys', 'number', false, false);
-    const pcIn = addCell('computed', 'text', true, false);
-    const ftIn = addCell('fin',  'number', false, true);
-    const faIn = addCell('fin',  'number', false, true);
-    const fcIn = addCell('computed', 'text', true, false);
+    const ptIn = addCell('phys',     false, false, false);
+    const paIn = addCell('phys',     false, false, false);
+    const pcIn = addCell('computed', true,  false, false);
+    const ftIn = addCell('fin',      false, true,  true);
+    const faIn = addCell('fin',      false, true,  true);
+    const fcIn = addCell('computed', true,  false, false);
+
+    function getRaw(inp) {
+      // For financial text inputs use _rawValue; for number inputs parse normally
+      if (inp.type === 'text' && '_rawValue' in inp) {
+        return inp._rawValue;
+      }
+      return parseFloat(inp.value) || null;
+    }
 
     function recalc() {
       const pt = parseFloat(ptIn.value), pa = parseFloat(paIn.value);
       pcIn.value = (pt && pa) ? (pa / pt * 100).toFixed(1) + '%' : '';
-      const ft = parseFloat(ftIn.value), fa = parseFloat(faIn.value);
+      const ft = getRaw(ftIn), fa = getRaw(faIn);
       fcIn.value = (ft && fa) ? (fa / ft * 100).toFixed(1) + '%' : '';
       recalcTotals();
     }
 
-    [ptIn, paIn, ftIn, faIn].forEach(el => el.addEventListener('input', recalc));
+    // Physical inputs fire 'input'; financial inputs fire 'change' on blur + 'input' during typing
+    [ptIn, paIn].forEach(el => el.addEventListener('input', recalc));
+    [ftIn, faIn].forEach(el => {
+      el.addEventListener('change', recalc);
+      el.addEventListener('input',  recalc);
+    });
+
     tbody.appendChild(tr);
   }
 
@@ -535,19 +610,23 @@
     const rows = tbody.querySelectorAll('tr:not(#total-row)');
     let ptS=0, paS=0, ftS=0, faS=0;
     rows.forEach(r => {
-      const ins = r.querySelectorAll('input[type="number"]');
-      ptS += parseFloat(ins[0].value)||0;
-      paS += parseFloat(ins[1].value)||0;
-      ftS += parseFloat(ins[2].value)||0;
-      faS += parseFloat(ins[3].value)||0;
+      const numInputs = r.querySelectorAll('input[type="number"]');
+      const finInputs = r.querySelectorAll('td.fin input[type="text"]:not([readonly])');
+      ptS += parseFloat(numInputs[0]?.value) || 0;
+      paS += parseFloat(numInputs[1]?.value) || 0;
+      finInputs.forEach((inp, i) => {
+        const val = inp._rawValue || 0;
+        if (i === 0) ftS += val;
+        if (i === 1) faS += val;
+      });
     });
 
     const tots = document.querySelectorAll('#total-row input');
     tots[0].value = ptS ? ptS.toLocaleString('en-PH') : '';
     tots[1].value = paS ? paS.toLocaleString('en-PH') : '';
     tots[2].value = (ptS && paS) ? (paS/ptS*100).toFixed(1)+'%' : '';
-    tots[3].value = ftS ? ftS.toLocaleString('en-PH') : '';
-    tots[4].value = faS ? faS.toLocaleString('en-PH') : '';
+    tots[3].value = ftS ? ftS.toLocaleString('en-PH', { maximumFractionDigits: 2 }) : '';
+    tots[4].value = faS ? faS.toLocaleString('en-PH', { maximumFractionDigits: 2 }) : '';
     tots[5].value = (ftS && faS) ? (faS/ftS*100).toFixed(1)+'%' : '';
 
     [tots[3], tots[4]].forEach(inp => {
@@ -560,11 +639,20 @@
   buildTotalRow();
 
   function clearAll() {
+    // Clear physical number inputs
     tbody.querySelectorAll('input[type="number"]').forEach(el => {
       el.value = '';
       const wrap = el.closest('.peso-wrap');
       if (wrap) wrap.classList.remove('has-value', 'focused');
     });
+    // Clear financial text inputs (editable)
+    tbody.querySelectorAll('td.fin input[type="text"]:not([readonly])').forEach(el => {
+      el.value = '';
+      el._rawValue = null;
+      const wrap = el.closest('.peso-wrap');
+      if (wrap) wrap.classList.remove('has-value', 'focused');
+    });
+    // Clear all readonly inputs (computed + totals)
     tbody.querySelectorAll('input[readonly]').forEach(el => {
       el.value = '';
       const wrap = el.closest('.peso-wrap');
@@ -572,7 +660,11 @@
     });
   }
 
-  /* ══ GENERATE PDF ══ */
+  /* ══ GENERATE PDF ══
+     FIX: jsPDF's built-in Helvetica font does not support the ₱ (U+20B1) character
+     — it renders as ± or a box. We use "PHP" as the currency prefix instead,
+     which is universally supported and unambiguous in the Philippine context.
+  ══ */
   function generatePDF() {
     const btn = document.getElementById('pdf-btn');
     btn.disabled = true;
@@ -595,7 +687,7 @@
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
-      doc.text('Government Procurement · Monthly Report', pageW / 2, 16.5, { align: 'center' });
+      doc.text('Government Procurement  |  Monthly Report', pageW / 2, 16.5, { align: 'center' });
 
       // Period badge (top-right)
       doc.setFillColor(74, 114, 245);
@@ -608,22 +700,27 @@
       // ── Collect table data ──
       const dataRows = [];
       tbody.querySelectorAll('tr:not(#total-row)').forEach(row => {
-        const ins = row.querySelectorAll('input');
-        const vals = [...ins].map(i => i.value.trim());
-        const mode  = row.dataset.mode;
-        const ptRaw = parseFloat(ins[0].value) || null;
-        const paRaw = parseFloat(ins[1].value) || null;
-        const ftRaw = parseFloat(ins[2].value) || null;
-        const faRaw = parseFloat(ins[3].value) || null;
+        const numInputs = row.querySelectorAll('input[type="number"]');
+        const finInputs = row.querySelectorAll('td.fin input[type="text"]:not([readonly])');
+        const compInputs = row.querySelectorAll('td.computed input');
 
+        const ptRaw = parseFloat(numInputs[0]?.value) || null;
+        const paRaw = parseFloat(numInputs[1]?.value) || null;
+        const ftRaw = finInputs[0]?._rawValue || null;
+        const faRaw = finInputs[1]?._rawValue || null;
+
+        const pcVal = compInputs[0]?.value.trim() || '—';
+        const fcVal = compInputs[1]?.value.trim() || '—';
+
+        // ── KEY FIX: Use "PHP" prefix instead of ₱ to avoid Helvetica encoding issue ──
         dataRows.push([
-          mode,
+          row.dataset.mode,
           ptRaw != null ? ptRaw.toLocaleString('en-PH') : '—',
           paRaw != null ? paRaw.toLocaleString('en-PH') : '—',
-          vals[2] || '—',
-          ftRaw != null ? '\u20B1 ' + ftRaw.toLocaleString('en-PH') : '—',
-          faRaw != null ? '\u20B1 ' + faRaw.toLocaleString('en-PH') : '—',
-          vals[5] || '—'
+          pcVal,
+          ftRaw != null ? 'PHP ' + ftRaw.toLocaleString('en-PH', { maximumFractionDigits: 2 }) : '—',
+          faRaw != null ? 'PHP ' + faRaw.toLocaleString('en-PH', { maximumFractionDigits: 2 }) : '—',
+          fcVal
         ]);
       });
 
@@ -634,8 +731,8 @@
         tots[0] || '—',
         tots[1] || '—',
         tots[2] || '—',
-        tots[3] ? '\u20B1 ' + tots[3] : '—',
-        tots[4] ? '\u20B1 ' + tots[4] : '—',
+        tots[3] ? 'PHP ' + tots[3] : '—',
+        tots[4] ? 'PHP ' + tots[4] : '—',
         tots[5] || '—'
       ]);
 
@@ -646,15 +743,15 @@
           [
             { content: 'Mode of Procurement', rowSpan: 2, styles: { halign: 'left', valign: 'middle' } },
             { content: 'Physical Performance', colSpan: 3, styles: { halign: 'center', fillColor: [31, 168, 112] } },
-            { content: 'Financial Performance', colSpan: 3, styles: { halign: 'center', fillColor: [51, 88, 220] } }
+            { content: 'Financial Performance (PHP)', colSpan: 3, styles: { halign: 'center', fillColor: [51, 88, 220] } }
           ],
           [
-            { content: 'Target (A)',  styles: { halign: 'center', fillColor: [40, 199, 138], textColor: [255,255,255] } },
-            { content: 'Actual (B)',  styles: { halign: 'center', fillColor: [40, 199, 138], textColor: [255,255,255] } },
-            { content: '% (C=B/A)',   styles: { halign: 'center', fillColor: [212, 138, 16],  textColor: [255,255,255] } },
-            { content: 'Target (D) \u20B1', styles: { halign: 'center', fillColor: [74, 114, 245], textColor: [255,255,255] } },
-            { content: 'Actual (E) \u20B1', styles: { halign: 'center', fillColor: [74, 114, 245], textColor: [255,255,255] } },
-            { content: '% (F=E/D)',   styles: { halign: 'center', fillColor: [212, 138, 16],  textColor: [255,255,255] } }
+            { content: 'Target (A)',    styles: { halign: 'center', fillColor: [40, 199, 138], textColor: [255,255,255] } },
+            { content: 'Actual (B)',    styles: { halign: 'center', fillColor: [40, 199, 138], textColor: [255,255,255] } },
+            { content: '% (C=B/A)',     styles: { halign: 'center', fillColor: [212, 138, 16], textColor: [255,255,255] } },
+            { content: 'Target (D)',    styles: { halign: 'center', fillColor: [74, 114, 245], textColor: [255,255,255] } },
+            { content: 'Actual (E)',    styles: { halign: 'center', fillColor: [74, 114, 245], textColor: [255,255,255] } },
+            { content: '% (F=E/D)',     styles: { halign: 'center', fillColor: [212, 138, 16], textColor: [255,255,255] } }
           ]
         ],
         body: dataRows,
@@ -677,12 +774,12 @@
         },
         columnStyles: {
           0: { cellWidth: 62, halign: 'left' },
-          1: { cellWidth: 28, halign: 'right' },
-          2: { cellWidth: 28, halign: 'right' },
-          3: { cellWidth: 22, halign: 'center' },
-          4: { cellWidth: 38, halign: 'right' },
-          5: { cellWidth: 38, halign: 'right' },
-          6: { cellWidth: 22, halign: 'center' }
+          1: { cellWidth: 25, halign: 'right' },
+          2: { cellWidth: 25, halign: 'right' },
+          3: { cellWidth: 20, halign: 'center' },
+          4: { cellWidth: 40, halign: 'right' },
+          5: { cellWidth: 40, halign: 'right' },
+          6: { cellWidth: 20, halign: 'center' }
         },
         alternateRowStyles: { fillColor: [242, 246, 255] },
         didParseCell: function(data) {
@@ -721,7 +818,7 @@
       doc.setTextColor(140, 155, 185);
       doc.setFont('helvetica', 'normal');
       doc.text(
-        `Generated on ${new Date().toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'numeric' })}  ·  Figures in Philippine Peso (₱)  ·  Percentage columns are auto-computed`,
+        `Generated on ${new Date().toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'numeric' })}  |  Figures in Philippine Peso (PHP)  |  Percentage columns are auto-computed`,
         pageW / 2,
         finalY,
         { align: 'center' }
@@ -769,14 +866,15 @@
       const rows = tbody.querySelectorAll('tr:not(#total-row)');
       const entries = [];
       rows.forEach((row, idx) => {
-        const ins = row.querySelectorAll('input[type="number"]');
+        const numInputs = row.querySelectorAll('input[type="number"]');
+        const finInputs = row.querySelectorAll('td.fin input[type="text"]:not([readonly])');
         entries.push({
           report_id:   reportId,
           mode_name:   row.dataset.mode,
-          phys_target: parseFloat(ins[0].value) || null,
-          phys_actual: parseFloat(ins[1].value) || null,
-          fin_target:  parseFloat(ins[2].value) || null,
-          fin_actual:  parseFloat(ins[3].value) || null,
+          phys_target: parseFloat(numInputs[0]?.value) || null,
+          phys_actual: parseFloat(numInputs[1]?.value) || null,
+          fin_target:  finInputs[0]?._rawValue || null,
+          fin_actual:  finInputs[1]?._rawValue || null,
           sort_order:  idx
         });
       });
@@ -850,12 +948,24 @@
         const row = [...tbody.querySelectorAll('tr:not(#total-row)')]
           .find(r => r.dataset.mode === entry.mode_name);
         if (!row) return;
-        const ins = row.querySelectorAll('input[type="number"]');
-        if (entry.phys_target != null) ins[0].value = entry.phys_target;
-        if (entry.phys_actual != null) ins[1].value = entry.phys_actual;
-        if (entry.fin_target  != null) { ins[2].value = entry.fin_target;  ins[2].closest('.peso-wrap')?.classList.add('has-value'); }
-        if (entry.fin_actual  != null) { ins[3].value = entry.fin_actual;  ins[3].closest('.peso-wrap')?.classList.add('has-value'); }
-        ins[0].dispatchEvent(new Event('input'));
+        const numInputs = row.querySelectorAll('input[type="number"]');
+        const finInputs = row.querySelectorAll('td.fin input[type="text"]:not([readonly])');
+
+        if (entry.phys_target != null) numInputs[0].value = entry.phys_target;
+        if (entry.phys_actual != null) numInputs[1].value = entry.phys_actual;
+
+        if (entry.fin_target != null && finInputs[0]) {
+          finInputs[0]._rawValue = entry.fin_target;
+          finInputs[0].value = formatComma(entry.fin_target);
+          finInputs[0].closest('.peso-wrap')?.classList.add('has-value');
+        }
+        if (entry.fin_actual != null && finInputs[1]) {
+          finInputs[1]._rawValue = entry.fin_actual;
+          finInputs[1].value = formatComma(entry.fin_actual);
+          finInputs[1].closest('.peso-wrap')?.classList.add('has-value');
+        }
+
+        numInputs[0]?.dispatchEvent(new Event('input'));
       });
 
       toast('Report loaded successfully!', 'success');
