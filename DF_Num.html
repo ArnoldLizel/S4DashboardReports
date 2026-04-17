@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DF Number System</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<style>
+:root {
+  --bg:#e8eef8;
+  --accent:#6b5fe8;
+  --text:#1e2340; --text2:#5a5f82; --muted:#9098c0;
+  --avail:#24b96e; --avail-bg:#d0fae8; --avail-bd:#7ad9b0; --avail-bot:#1fa85e; --avail-sh:rgba(52,201,126,0.35);
+  --taken:#e84060; --taken-bg:#ffe0e6; --taken-bd:#f09faf; --taken-bot:#c82d4a; --taken-sh:rgba(240,80,110,0.35);
+  --r-xl:28px; --r-lg:22px; --r-md:16px; --r-sm:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse at 20% 10%,rgba(123,110,255,0.18) 0%,transparent 55%),radial-gradient(ellipse at 80% 90%,rgba(52,201,126,0.12) 0%,transparent 55%);
+  min-height:100vh; padding:24px 20px 60px;
+}
+
+/* ── PAGE HEADER ── */
+.page-header{
+  background:linear-gradient(135deg,#7c6ffe 0%,#5a8fff 100%);
+  border-radius:var(--r-xl); padding:22px 28px; margin-bottom:18px;
+  position:relative; overflow:hidden;
+  border:3px solid rgba(255,255,255,0.5);
+  box-shadow:0 10px 0 0 rgba(72,58,180,0.35),0 18px 44px rgba(72,58,180,0.25),inset 0 2px 8px rgba(255,255,255,0.3);
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+}
+.page-header::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.22),transparent);border-radius:var(--r-xl) var(--r-xl) 60% 60%/var(--r-xl) var(--r-xl) 30px 30px;pointer-events:none;}
+.page-header::after{content:'';position:absolute;bottom:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.07);pointer-events:none;}
+.ph-left{position:relative;z-index:1;}
+.ph-tag{display:inline-flex;align-items:center;gap:7px;font-size:0.65rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:50px;padding:4px 13px;margin-bottom:8px;box-shadow:0 3px 0 0 rgba(72,58,180,0.2);}
+.ph-title{font-family:'Sora',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1;text-shadow:0 2px 10px rgba(0,0,0,0.12);}
+.ph-sub{font-size:0.76rem;font-weight:600;color:rgba(255,255,255,0.65);margin-top:5px;}
+.stat-row{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1;}
+.stat-pill{background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.35);border-radius:var(--r-md);padding:10px 18px;display:flex;flex-direction:column;align-items:center;min-width:72px;box-shadow:0 5px 0 0 rgba(72,58,180,0.2),inset 0 2px 5px rgba(255,255,255,0.35);}
+.stat-pill .num{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;line-height:1;}
+.stat-pill .lbl{font-size:0.58rem;font-weight:800;letter-spacing:0.10em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-top:2px;}
+
+/* ── TOOLBAR ── */
+.toolbar-card{
+  background:linear-gradient(160deg,#ffffff,#f5f4ff);border-radius:var(--r-lg);padding:12px 16px;
+  border:3px solid rgba(255,255,255,0.95);
+  box-shadow:0 8px 0 0 rgba(107,95,232,0.14),0 14px 32px rgba(107,95,232,0.10),inset 0 2px 5px rgba(255,255,255,1);
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:16px;
+}
+.search-wrap{position:relative;flex:1;min-width:160px;}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none;}
+.search-input{width:100%;padding:8px 12px 8px 32px;border:2px solid rgba(107,95,232,0.15);border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:600;color:var(--text);background:rgba(107,95,232,0.04);outline:none;transition:all 0.18s;box-shadow:inset 0 2px 4px rgba(107,95,232,0.06);}
+.search-input:focus{border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(107,95,232,0.12);}
+.search-input::placeholder{color:var(--muted);}
+.filter-btn{padding:7px 16px;border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-size:0.73rem;font-weight:800;border:2.5px solid rgba(107,95,232,0.18);background:rgba(107,95,232,0.06);color:var(--text2);cursor:pointer;transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 3px 0 0 rgba(107,95,232,0.10);}
+.filter-btn:hover{transform:translateY(-2px);background:rgba(107,95,232,0.12);border-color:var(--accent);color:var(--accent);box-shadow:0 5px 0 0 rgba(107,95,232,0.15);}
+.filter-btn:active{transform:translateY(1px);}
+.f-all.active{background:linear-gradient(145deg,#7c6ffe,#5a8fff);border-color:#5a4fcc;color:#fff;box-shadow:0 4px 0 0 #5a4fcc,0 8px 18px rgba(107,95,232,0.3),inset 0 2px 4px rgba(255,255,255,0.3);}
+.f-avail.active{background:linear-gradient(145deg,#44d98e,#24b96e);border-color:var(--avail-bot);color:#fff;box-shadow:0 4px 0 0 var(--avail-bot),0 8px 18px var(--avail-sh),inset 0 2px 4px rgba(255,255,255,0.3);}
+.f-taken.active{background:linear-gradient(145deg,#ff7088,#e84060);border-color:var(--taken-bot);color:#fff;box-shadow:0 4px 0 0 var(--taken-bot),0 8px 18px var(--taken-sh),inset 0 2px 4px rgba(255,255,255,0.3);}
+.reset-btn{padding:7px 14px;border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-size:0.73rem;font-weight:800;border:2.5px solid rgba(240,80,110,0.2);background:rgba(240,80,110,0.06);color:var(--taken);cursor:pointer;transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 3px 0 0 rgba(240,80,110,0.12);margin-left:auto;}
+.reset-btn:hover{transform:translateY(-2px);background:rgba(240,80,110,0.12);box-shadow:0 5px 0 0 rgba(240,80,110,0.18);}
+.export-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:linear-gradient(145deg,#7c6ffe,#5a8fff);color:#fff;border:2.5px solid rgba(255,255,255,0.4);border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-size:0.72rem;font-weight:800;cursor:pointer;box-shadow:0 4px 0 0 #5a4fcc,0 8px 18px rgba(107,95,232,0.3),inset 0 2px 4px rgba(255,255,255,0.25);transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);}
+.export-btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 0 #5a4fcc,0 14px 28px rgba(107,95,232,0.35);}
+.export-btn:active{transform:translateY(2px);box-shadow:0 1px 0 0 #5a4fcc;}
+
+/* ── LEGEND ── */
+.legend-row{display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:0.74rem;font-weight:700;color:var(--text2);}
+.leg-dot{width:12px;height:12px;border-radius:4px;flex-shrink:0;}
+
+/* ── CALENDAR GRID CONTAINER ── */
+.cal-card{
+  background:linear-gradient(160deg,#ffffff,#f8f6ff);border-radius:var(--r-xl);
+  border:3px solid rgba(255,255,255,0.95);overflow:hidden;
+  box-shadow:0 12px 0 0 rgba(107,95,232,0.14),0 20px 48px rgba(107,95,232,0.10),inset 0 2px 6px rgba(255,255,255,1);
+  animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  padding:20px;
+}
+
+/* ── COLUMN HEADERS (like Mon Tue Wed…) ── */
+.cal-headers{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-bottom:8px;}
+.cal-col-hd{text-align:center;font-size:0.60rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:6px 0;}
+
+/* ── CALENDAR GRID ── */
+.cal-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;}
+
+/* ── CALENDAR CELL ── */
+.cal-cell{
+  aspect-ratio:1;
+  border-radius:var(--r-md);
+  border:2.5px solid rgba(255,255,255,0.9);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  min-height:58px;
+}
+.cal-cell::before{content:'';position:absolute;top:0;left:0;right:0;height:45%;background:linear-gradient(180deg,rgba(255,255,255,0.30),transparent);border-radius:var(--r-md) var(--r-md) 60% 60%/var(--r-md) var(--r-md) 20px 20px;pointer-events:none;z-index:1;}
+
+.cal-cell.available{
+  background:linear-gradient(145deg,#f0fdf7,#d0fae8);
+  box-shadow:0 5px 0 0 var(--avail-bot),0 8px 18px var(--avail-sh),inset 0 1px 4px rgba(255,255,255,0.9);
+  border-color:rgba(122,217,176,0.6);
+}
+.cal-cell.taken{
+  background:linear-gradient(145deg,#fff0f3,#ffe0e6);
+  box-shadow:0 5px 0 0 var(--taken-bot),0 8px 18px var(--taken-sh),inset 0 1px 4px rgba(255,255,255,0.9);
+  border-color:rgba(240,159,175,0.6);
+}
+.cal-cell.available:hover{transform:translateY(-5px) scale(1.06);box-shadow:0 9px 0 0 var(--avail-bot),0 16px 30px var(--avail-sh);}
+.cal-cell.taken:hover{transform:translateY(-5px) scale(1.06);box-shadow:0 9px 0 0 var(--taken-bot),0 16px 30px var(--taken-sh);}
+.cal-cell:active{transform:translateY(2px) scale(0.96);}
+.cal-cell.hidden-cell{display:none;}
+
+.cell-num{
+  position:relative;z-index:2;
+  font-family:'Sora',sans-serif;font-size:1.05rem;font-weight:800;line-height:1;
+  letter-spacing:-0.02em;
+}
+.available .cell-num{color:#1a7a4a;}
+.taken .cell-num{color:#a82040;}
+
+.cell-status{
+  position:relative;z-index:2;
+  font-size:0.50rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;margin-top:4px;
+}
+.available .cell-status{color:var(--avail);}
+.taken .cell-status{color:var(--taken);}
+
+/* Remark indicator dot */
+.cell-dot{
+  position:absolute;top:6px;right:7px;z-index:3;
+  width:7px;height:7px;border-radius:50%;
+  background:#7c6ffe;
+  box-shadow:0 0 6px rgba(124,111,254,0.7);
+  display:none;
+}
+.has-remark .cell-dot{display:block;}
+
+/* ── NO RESULTS ── */
+.no-results{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:0.86rem;font-weight:700;display:none;}
+.no-results i{font-size:2rem;margin-bottom:10px;opacity:0.3;display:block;}
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:200;
+  background:rgba(30,35,64,0.45);
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-overlay.open{display:flex;}
+
+.modal-box{
+  background:linear-gradient(160deg,#ffffff,#f5f4ff);
+  border-radius:var(--r-xl);border:3px solid rgba(255,255,255,0.95);
+  box-shadow:0 20px 0 0 rgba(107,95,232,0.2),0 32px 64px rgba(107,95,232,0.25),inset 0 2px 8px rgba(255,255,255,1);
+  padding:28px 26px 22px;width:100%;max-width:360px;
+  animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  position:relative;overflow:hidden;
+}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:45%;background:linear-gradient(180deg,rgba(255,255,255,0.3),transparent);border-radius:var(--r-xl) var(--r-xl) 60% 60%/var(--r-xl) var(--r-xl) 30px 30px;pointer-events:none;}
+.modal-box::after{content:'';position:absolute;bottom:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(107,95,232,0.06);pointer-events:none;}
+
+.modal-tag{display:inline-flex;align-items:center;gap:6px;font-size:0.60rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:rgba(107,95,232,0.6);background:rgba(107,95,232,0.08);border:2px solid rgba(107,95,232,0.15);border-radius:50px;padding:4px 12px;margin-bottom:10px;}
+.modal-title{font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);letter-spacing:-0.02em;margin-bottom:4px;position:relative;z-index:1;}
+.modal-sub{font-size:0.74rem;font-weight:600;color:var(--text2);margin-bottom:18px;position:relative;z-index:1;}
+
+.modal-status-row{display:flex;gap:10px;margin-bottom:18px;position:relative;z-index:1;}
+.modal-status-btn{
+  flex:1;padding:10px;border-radius:var(--r-md);
+  font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:800;
+  border:2.5px solid transparent;cursor:pointer;
+  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.modal-status-btn.avail-btn{background:var(--avail-bg);color:var(--avail);border-color:var(--avail-bd);box-shadow:0 3px 0 0 var(--avail-bot),0 5px 12px var(--avail-sh);}
+.modal-status-btn.avail-btn.sel,
+.modal-status-btn.avail-btn:hover{background:linear-gradient(145deg,#44d98e,#24b96e);color:#fff;border-color:var(--avail-bot);box-shadow:0 5px 0 0 var(--avail-bot),0 10px 20px var(--avail-sh),inset 0 1px 4px rgba(255,255,255,0.3);}
+.modal-status-btn.taken-btn{background:var(--taken-bg);color:var(--taken);border-color:var(--taken-bd);box-shadow:0 3px 0 0 var(--taken-bot),0 5px 12px var(--taken-sh);}
+.modal-status-btn.taken-btn.sel,
+.modal-status-btn.taken-btn:hover{background:linear-gradient(145deg,#ff7088,#e84060);color:#fff;border-color:var(--taken-bot);box-shadow:0 5px 0 0 var(--taken-bot),0 10px 20px var(--taken-sh),inset 0 1px 4px rgba(255,255,255,0.3);}
+
+.modal-lbl{font-size:0.68rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;position:relative;z-index:1;}
+.modal-textarea{
+  width:100%;padding:10px 13px;border:2px solid rgba(107,95,232,0.15);border-radius:var(--r-md);
+  font-family:'Nunito',sans-serif;font-size:0.83rem;font-weight:600;color:var(--text);
+  background:rgba(107,95,232,0.04);outline:none;resize:none;height:80px;
+  transition:all 0.18s;position:relative;z-index:1;
+  box-shadow:inset 0 2px 5px rgba(107,95,232,0.06);
+}
+.modal-textarea:focus{border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(107,95,232,0.12);}
+.modal-textarea::placeholder{color:var(--muted);}
+
+.modal-btns{display:flex;gap:10px;margin-top:16px;position:relative;z-index:1;}
+.modal-save{
+  flex:1;padding:11px;background:linear-gradient(145deg,#7c6ffe,#5a8fff);color:#fff;
+  border:2.5px solid rgba(255,255,255,0.4);border-radius:var(--r-md);
+  font-family:'Nunito',sans-serif;font-size:0.80rem;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 0 0 #5a4fcc,0 8px 18px rgba(107,95,232,0.3),inset 0 2px 4px rgba(255,255,255,0.25);
+  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-save:hover{transform:translateY(-2px);box-shadow:0 7px 0 0 #5a4fcc,0 14px 28px rgba(107,95,232,0.35);}
+.modal-cancel{
+  padding:11px 18px;background:rgba(107,95,232,0.07);color:var(--text2);
+  border:2.5px solid rgba(107,95,232,0.15);border-radius:var(--r-md);
+  font-family:'Nunito',sans-serif;font-size:0.80rem;font-weight:800;cursor:pointer;
+  transition:all 0.18s;box-shadow:0 3px 0 0 rgba(107,95,232,0.10);
+}
+.modal-cancel:hover{background:rgba(107,95,232,0.13);border-color:var(--accent);color:var(--accent);}
+
+@keyframes popIn{from{opacity:0;transform:translateY(16px) scale(0.93)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px) scale(0.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+@media(max-width:700px){
+  body{padding:14px 10px 40px;}
+  .ph-title{font-size:1.3rem;}
+  .cal-grid,.cal-headers{grid-template-columns:repeat(5,1fr);}
+  .cal-cell{min-height:52px;}
+}
+@media(max-width:400px){
+  .cal-grid,.cal-headers{grid-template-columns:repeat(5,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="ph-left">
+    <div class="ph-tag"><i class="fas fa-calendar-days" style="font-size:0.65rem"></i> Registry Calendar</div>
+    <div class="ph-title">DF Number System</div>
+    <div class="ph-sub">Click any cell to set status &amp; add remarks &nbsp;·&nbsp; Purple dot = has remark</div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-pill"><span class="num" id="stat-total">100</span><span class="lbl">Total</span></div>
+    <div class="stat-pill" style="background:rgba(52,201,126,0.25);border-color:rgba(52,201,126,0.4);">
+      <span class="num" id="stat-available" style="color:#d0fae8">100</span><span class="lbl">Available</span>
+    </div>
+    <div class="stat-pill" style="background:rgba(240,80,110,0.25);border-color:rgba(240,80,110,0.4);">
+      <span class="num" id="stat-taken" style="color:#ffe0e6">0</span><span class="lbl">Taken</span>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar-card">
+  <div class="search-wrap">
+    <i class="fas fa-search search-icon"></i>
+    <input class="search-input" type="text" id="searchInput" placeholder="Search DF number or remark…" oninput="applyFilter()"/>
+  </div>
+  <button class="filter-btn f-all active" id="btn-all" onclick="setFilter('all')">All</button>
+  <button class="filter-btn f-avail" id="btn-available" onclick="setFilter('available')">Available</button>
+  <button class="filter-btn f-taken" id="btn-taken" onclick="setFilter('taken')">Taken</button>
+  <button class="reset-btn" onclick="resetAll()"><i class="fas fa-rotate-left" style="margin-right:4px;font-size:0.68rem"></i>Reset</button>
+  <button class="export-btn" onclick="exportCSV()"><i class="fas fa-file-arrow-down"></i> Export</button>
+</div>
+
+<!-- CALENDAR CARD -->
+<div class="cal-card">
+  <!-- Legend -->
+  <div class="legend-row">
+    <div class="leg-item"><div class="leg-dot" style="background:linear-gradient(145deg,#44d98e,#24b96e);box-shadow:0 2px 6px rgba(52,201,126,0.4)"></div>Available</div>
+    <div class="leg-item"><div class="leg-dot" style="background:linear-gradient(145deg,#ff7088,#e84060);box-shadow:0 2px 6px rgba(240,80,110,0.4)"></div>Taken</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#7c6ffe;box-shadow:0 0 6px rgba(124,111,254,0.7)"></div>Has Remark</div>
+    <div style="margin-left:auto;font-size:0.70rem;font-weight:700;color:var(--muted);" id="visible-count">Showing 100 cells</div>
+  </div>
+
+  <!-- Column headers: 01–10 ... 91–100 row labels -->
+  <div class="cal-headers" id="calHeaders">
+    <div class="cal-col-hd">01–10</div>
+    <div class="cal-col-hd">11–20</div>
+    <div class="cal-col-hd">21–30</div>
+    <div class="cal-col-hd">31–40</div>
+    <div class="cal-col-hd">41–50</div>
+    <div class="cal-col-hd">51–60</div>
+    <div class="cal-col-hd">61–70</div>
+    <div class="cal-col-hd">71–80</div>
+    <div class="cal-col-hd">81–90</div>
+    <div class="cal-col-hd">91–100</div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="no-results" id="noResults"><i class="fas fa-magnifying-glass"></i>No matching cells found.</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal-box">
+    <div class="modal-tag"><i class="fas fa-hashtag" style="font-size:0.58rem"></i> DF Registry</div>
+    <div class="modal-title" id="modal-title">DF-001</div>
+    <div class="modal-sub" id="modal-sub">Set status and add remarks below</div>
+
+    <div class="modal-status-row">
+      <button class="modal-status-btn avail-btn sel" id="btn-avail" onclick="selectModalStatus('available')">
+        <i class="fas fa-circle-check" style="font-size:0.85rem"></i> Available
+      </button>
+      <button class="modal-status-btn taken-btn" id="btn-taken-m" onclick="selectModalStatus('taken')">
+        <i class="fas fa-circle-xmark" style="font-size:0.85rem"></i> Taken
+      </button>
+    </div>
+
+    <div class="modal-lbl">Remarks</div>
+    <textarea class="modal-textarea" id="modal-remarks" placeholder="Add a remark, name, or note…"></textarea>
+
+    <div class="modal-btns">
+      <button class="modal-save" onclick="saveModal()"><i class="fas fa-floppy-disk" style="margin-right:6px"></i>Save</button>
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const data = Array.from({length:100},(_,i)=>({
+    num: String(i+1).padStart(3,'0'),
+    status: 'available',
+    remarks: ''
+  }));
+
+  let currentFilter = 'all';
+  let activeIdx = null;
+  let modalStatus = 'available';
+
+  function buildGrid() {
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    data.forEach((row, idx) => {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell ' + row.status + (row.remarks ? ' has-remark' : '');
+      cell.id = 'cell-' + idx;
+      cell.style.animationDelay = (idx * 0.006) + 's';
+      cell.title = row.remarks || (row.status === 'available' ? 'Available — click to manage' : 'Taken — click to manage');
+      cell.innerHTML = `
+        <div class="cell-dot"></div>
+        <div class="cell-num">${row.num}</div>
+        <div class="cell-status">${row.status === 'available' ? 'Free' : 'Taken'}</div>
+      `;
+      cell.addEventListener('click', () => openModal(idx));
+      grid.appendChild(cell);
+    });
+    applyFilter();
+  }
+
+  function openModal(idx) {
+    activeIdx = idx;
+    const row = data[idx];
+    modalStatus = row.status;
+    document.getElementById('modal-title').textContent = 'DF-' + row.num;
+    document.getElementById('modal-sub').textContent = row.status === 'available' ? 'Currently marked as Available' : 'Currently marked as Taken';
+    document.getElementById('modal-remarks').value = row.remarks;
+    document.getElementById('btn-avail').classList.toggle('sel', row.status === 'available');
+    document.getElementById('btn-taken-m').classList.toggle('sel', row.status === 'taken');
+    document.getElementById('modalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('modal-remarks').focus(), 120);
+  }
+
+  function selectModalStatus(s) {
+    modalStatus = s;
+    document.getElementById('btn-avail').classList.toggle('sel', s === 'available');
+    document.getElementById('btn-taken-m').classList.toggle('sel', s === 'taken');
+  }
+
+  function saveModal() {
+    if (activeIdx === null) return;
+    data[activeIdx].status = modalStatus;
+    data[activeIdx].remarks = document.getElementById('modal-remarks').value.trim();
+    refreshCell(activeIdx);
+    updateStats();
+    applyFilter();
+    closeModal();
+  }
+
+  function refreshCell(idx) {
+    const row = data[idx];
+    const cell = document.getElementById('cell-' + idx);
+    if (!cell) return;
+    cell.className = 'cal-cell ' + row.status + (row.remarks ? ' has-remark' : '');
+    cell.title = row.remarks || (row.status === 'available' ? 'Available — click to manage' : 'Taken — click to manage');
+    cell.innerHTML = `
+      <div class="cell-dot"></div>
+      <div class="cell-num">${row.num}</div>
+      <div class="cell-status">${row.status === 'available' ? 'Free' : 'Taken'}</div>
+    `;
+    cell.addEventListener('click', () => openModal(idx));
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    activeIdx = null;
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  function setFilter(f) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + f).classList.add('active');
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    let visible = 0;
+    data.forEach((row, idx) => {
+      const cell = document.getElementById('cell-' + idx);
+      if (!cell) return;
+      const mF = currentFilter === 'all' || row.status === currentFilter;
+      const mS = row.num.includes(q) || row.remarks.toLowerCase().includes(q) || ('df-' + row.num).includes(q);
+      const show = mF && (!q || mS);
+      cell.classList.toggle('hidden-cell', !show);
+      if (show) visible++;
+    });
+    document.getElementById('visible-count').textContent = 'Showing ' + visible + ' cells';
+    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  function updateStats() {
+    const taken = data.filter(d => d.status === 'taken').length;
+    document.getElementById('stat-taken').textContent = taken;
+    document.getElementById('stat-available').textContent = 100 - taken;
+  }
+
+  function resetAll() {
+    if (!confirm('Reset all statuses and remarks to default?')) return;
+    data.forEach(d => { d.status = 'available'; d.remarks = ''; });
+    currentFilter = 'all';
+    document.getElementById('searchInput').value = '';
+    buildGrid(); setFilter('all'); updateStats();
+  }
+
+  function exportCSV() {
+    const rows = [['DF Number','Status','Remarks']];
+    data.forEach(d => rows.push([d.num, d.status === 'available' ? 'Available' : 'Taken', d.remarks]));
+    const csv = rows.map(r => r.map(v => '"' + v.replace(/"/g,'""') + '"').join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'DF_Number_System.csv'; a.click();
+  }
+
+  buildGrid();
+</script>
+</body>
+</html>
