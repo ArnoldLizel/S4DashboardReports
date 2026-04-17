@@ -6,7 +6,6 @@
 <title>DF Number System</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg:#e8eef8;
@@ -43,23 +42,6 @@ body{
 .stat-pill{background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.35);border-radius:var(--r-md);padding:10px 18px;display:flex;flex-direction:column;align-items:center;min-width:72px;box-shadow:0 5px 0 0 rgba(72,58,180,0.2),inset 0 2px 5px rgba(255,255,255,0.35);}
 .stat-pill .num{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;line-height:1;}
 .stat-pill .lbl{font-size:0.58rem;font-weight:800;letter-spacing:0.10em;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-top:2px;}
-
-/* ── DB STATUS BADGE ── */
-.db-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:0.62rem;font-weight:800;letter-spacing:0.10em;text-transform:uppercase;
-  padding:5px 13px;border-radius:50px;
-  border:2px solid rgba(255,255,255,0.3);
-  background:rgba(255,255,255,0.15);
-  color:rgba(255,255,255,0.8);
-  position:relative;z-index:1;
-  transition:all 0.3s;
-}
-.db-badge.connected{background:rgba(52,201,126,0.25);border-color:rgba(52,201,126,0.5);color:#d0fae8;}
-.db-badge.error{background:rgba(240,80,110,0.25);border-color:rgba(240,80,110,0.5);color:#ffe0e6;}
-.db-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.5);flex-shrink:0;transition:all 0.3s;}
-.db-badge.connected .db-dot{background:#44d98e;box-shadow:0 0 8px rgba(68,217,142,0.8);}
-.db-badge.error .db-dot{background:#ff7088;box-shadow:0 0 8px rgba(255,112,136,0.8);}
 
 /* ── TOOLBAR ── */
 .toolbar-card{
@@ -99,39 +81,7 @@ body{
   padding:20px;
 }
 
-/* ── LOADING OVERLAY ── */
-.loading-overlay{
-  position:fixed;inset:0;z-index:500;
-  background:rgba(232,238,248,0.92);
-  backdrop-filter:blur(6px);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-  transition:opacity 0.4s;
-}
-.loading-overlay.hidden{opacity:0;pointer-events:none;}
-.loading-spinner{
-  width:52px;height:52px;border-radius:50%;
-  border:4px solid rgba(107,95,232,0.15);
-  border-top-color:#7c6ffe;
-  animation:spin 0.8s linear infinite;
-}
-.loading-text{font-family:'Sora',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent);letter-spacing:0.05em;}
-
-/* ── TOAST ── */
-.toast{
-  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);
-  background:#1e2340;color:#fff;border-radius:var(--r-md);
-  padding:11px 22px;font-size:0.80rem;font-weight:700;
-  display:flex;align-items:center;gap:9px;
-  box-shadow:0 8px 32px rgba(30,35,64,0.35);
-  transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;
-  z-index:999;opacity:0;white-space:nowrap;
-}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-.toast.success{background:linear-gradient(135deg,#24b96e,#1fa85e);}
-.toast.error{background:linear-gradient(135deg,#e84060,#c82d4a);}
-.toast.info{background:linear-gradient(135deg,#7c6ffe,#5a8fff);}
-
-/* ── COLUMN HEADERS ── */
+/* ── COLUMN HEADERS (like Mon Tue Wed…) ── */
 .cal-headers{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-bottom:8px;}
 .cal-col-hd{text-align:center;font-size:0.60rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:6px 0;}
 
@@ -161,21 +111,34 @@ body{
   box-shadow:0 5px 0 0 var(--taken-bot),0 8px 18px var(--taken-sh),inset 0 1px 4px rgba(255,255,255,0.9);
   border-color:rgba(240,159,175,0.6);
 }
-.cal-cell.saving{opacity:0.6;pointer-events:none;}
 .cal-cell.available:hover{transform:translateY(-5px) scale(1.06);box-shadow:0 9px 0 0 var(--avail-bot),0 16px 30px var(--avail-sh);}
 .cal-cell.taken:hover{transform:translateY(-5px) scale(1.06);box-shadow:0 9px 0 0 var(--taken-bot),0 16px 30px var(--taken-sh);}
 .cal-cell:active{transform:translateY(2px) scale(0.96);}
 .cal-cell.hidden-cell{display:none;}
 
-.cell-num{position:relative;z-index:2;font-family:'Sora',sans-serif;font-size:1.05rem;font-weight:800;line-height:1;letter-spacing:-0.02em;}
+.cell-num{
+  position:relative;z-index:2;
+  font-family:'Sora',sans-serif;font-size:1.05rem;font-weight:800;line-height:1;
+  letter-spacing:-0.02em;
+}
 .available .cell-num{color:#1a7a4a;}
 .taken .cell-num{color:#a82040;}
 
-.cell-status{position:relative;z-index:2;font-size:0.50rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;margin-top:4px;}
+.cell-status{
+  position:relative;z-index:2;
+  font-size:0.50rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;margin-top:4px;
+}
 .available .cell-status{color:var(--avail);}
 .taken .cell-status{color:var(--taken);}
 
-.cell-dot{position:absolute;top:6px;right:7px;z-index:3;width:7px;height:7px;border-radius:50%;background:#7c6ffe;box-shadow:0 0 6px rgba(124,111,254,0.7);display:none;}
+/* Remark indicator dot */
+.cell-dot{
+  position:absolute;top:6px;right:7px;z-index:3;
+  width:7px;height:7px;border-radius:50%;
+  background:#7c6ffe;
+  box-shadow:0 0 6px rgba(124,111,254,0.7);
+  display:none;
+}
 .has-remark .cell-dot{display:block;}
 
 /* ── NO RESULTS ── */
@@ -183,8 +146,15 @@ body{
 .no-results i{font-size:2rem;margin-bottom:10px;opacity:0.3;display:block;}
 
 /* ── MODAL OVERLAY ── */
-.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(30,35,64,0.45);align-items:center;justify-content:center;padding:20px;}
+.modal-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:200;
+  background:rgba(30,35,64,0.45);
+  align-items:center;justify-content:center;
+  padding:20px;
+}
 .modal-overlay.open{display:flex;}
+
 .modal-box{
   background:linear-gradient(160deg,#ffffff,#f5f4ff);
   border-radius:var(--r-xl);border:3px solid rgba(255,255,255,0.95);
@@ -201,27 +171,50 @@ body{
 .modal-sub{font-size:0.74rem;font-weight:600;color:var(--text2);margin-bottom:18px;position:relative;z-index:1;}
 
 .modal-status-row{display:flex;gap:10px;margin-bottom:18px;position:relative;z-index:1;}
-.modal-status-btn{flex:1;padding:10px;border-radius:var(--r-md);font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:800;border:2.5px solid transparent;cursor:pointer;transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;justify-content:center;gap:7px;}
+.modal-status-btn{
+  flex:1;padding:10px;border-radius:var(--r-md);
+  font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:800;
+  border:2.5px solid transparent;cursor:pointer;
+  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
 .modal-status-btn.avail-btn{background:var(--avail-bg);color:var(--avail);border-color:var(--avail-bd);box-shadow:0 3px 0 0 var(--avail-bot),0 5px 12px var(--avail-sh);}
-.modal-status-btn.avail-btn.sel,.modal-status-btn.avail-btn:hover{background:linear-gradient(145deg,#44d98e,#24b96e);color:#fff;border-color:var(--avail-bot);box-shadow:0 5px 0 0 var(--avail-bot),0 10px 20px var(--avail-sh),inset 0 1px 4px rgba(255,255,255,0.3);}
+.modal-status-btn.avail-btn.sel,
+.modal-status-btn.avail-btn:hover{background:linear-gradient(145deg,#44d98e,#24b96e);color:#fff;border-color:var(--avail-bot);box-shadow:0 5px 0 0 var(--avail-bot),0 10px 20px var(--avail-sh),inset 0 1px 4px rgba(255,255,255,0.3);}
 .modal-status-btn.taken-btn{background:var(--taken-bg);color:var(--taken);border-color:var(--taken-bd);box-shadow:0 3px 0 0 var(--taken-bot),0 5px 12px var(--taken-sh);}
-.modal-status-btn.taken-btn.sel,.modal-status-btn.taken-btn:hover{background:linear-gradient(145deg,#ff7088,#e84060);color:#fff;border-color:var(--taken-bot);box-shadow:0 5px 0 0 var(--taken-bot),0 10px 20px var(--taken-sh),inset 0 1px 4px rgba(255,255,255,0.3);}
+.modal-status-btn.taken-btn.sel,
+.modal-status-btn.taken-btn:hover{background:linear-gradient(145deg,#ff7088,#e84060);color:#fff;border-color:var(--taken-bot);box-shadow:0 5px 0 0 var(--taken-bot),0 10px 20px var(--taken-sh),inset 0 1px 4px rgba(255,255,255,0.3);}
 
 .modal-lbl{font-size:0.68rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;position:relative;z-index:1;}
-.modal-textarea{width:100%;padding:10px 13px;border:2px solid rgba(107,95,232,0.15);border-radius:var(--r-md);font-family:'Nunito',sans-serif;font-size:0.83rem;font-weight:600;color:var(--text);background:rgba(107,95,232,0.04);outline:none;resize:none;height:80px;transition:all 0.18s;position:relative;z-index:1;box-shadow:inset 0 2px 5px rgba(107,95,232,0.06);}
+.modal-textarea{
+  width:100%;padding:10px 13px;border:2px solid rgba(107,95,232,0.15);border-radius:var(--r-md);
+  font-family:'Nunito',sans-serif;font-size:0.83rem;font-weight:600;color:var(--text);
+  background:rgba(107,95,232,0.04);outline:none;resize:none;height:80px;
+  transition:all 0.18s;position:relative;z-index:1;
+  box-shadow:inset 0 2px 5px rgba(107,95,232,0.06);
+}
 .modal-textarea:focus{border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(107,95,232,0.12);}
 .modal-textarea::placeholder{color:var(--muted);}
 
 .modal-btns{display:flex;gap:10px;margin-top:16px;position:relative;z-index:1;}
-.modal-save{flex:1;padding:11px;background:linear-gradient(145deg,#7c6ffe,#5a8fff);color:#fff;border:2.5px solid rgba(255,255,255,0.4);border-radius:var(--r-md);font-family:'Nunito',sans-serif;font-size:0.80rem;font-weight:800;cursor:pointer;box-shadow:0 4px 0 0 #5a4fcc,0 8px 18px rgba(107,95,232,0.3),inset 0 2px 4px rgba(255,255,255,0.25);transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);}
+.modal-save{
+  flex:1;padding:11px;background:linear-gradient(145deg,#7c6ffe,#5a8fff);color:#fff;
+  border:2.5px solid rgba(255,255,255,0.4);border-radius:var(--r-md);
+  font-family:'Nunito',sans-serif;font-size:0.80rem;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 0 0 #5a4fcc,0 8px 18px rgba(107,95,232,0.3),inset 0 2px 4px rgba(255,255,255,0.25);
+  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
 .modal-save:hover{transform:translateY(-2px);box-shadow:0 7px 0 0 #5a4fcc,0 14px 28px rgba(107,95,232,0.35);}
-.modal-save:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
-.modal-cancel{padding:11px 18px;background:rgba(107,95,232,0.07);color:var(--text2);border:2.5px solid rgba(107,95,232,0.15);border-radius:var(--r-md);font-family:'Nunito',sans-serif;font-size:0.80rem;font-weight:800;cursor:pointer;transition:all 0.18s;box-shadow:0 3px 0 0 rgba(107,95,232,0.10);}
+.modal-cancel{
+  padding:11px 18px;background:rgba(107,95,232,0.07);color:var(--text2);
+  border:2.5px solid rgba(107,95,232,0.15);border-radius:var(--r-md);
+  font-family:'Nunito',sans-serif;font-size:0.80rem;font-weight:800;cursor:pointer;
+  transition:all 0.18s;box-shadow:0 3px 0 0 rgba(107,95,232,0.10);
+}
 .modal-cancel:hover{background:rgba(107,95,232,0.13);border-color:var(--accent);color:var(--accent);}
 
 @keyframes popIn{from{opacity:0;transform:translateY(16px) scale(0.93)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(24px) scale(0.94)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes spin{to{transform:rotate(360deg)}}
 
 @media(max-width:700px){
   body{padding:14px 10px 40px;}
@@ -236,35 +229,20 @@ body{
 </head>
 <body>
 
-<!-- LOADING OVERLAY -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">Loading from Supabase…</div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
 <!-- PAGE HEADER -->
 <div class="page-header">
   <div class="ph-left">
     <div class="ph-tag"><i class="fas fa-calendar-days" style="font-size:0.65rem"></i> Registry Calendar</div>
     <div class="ph-title">DF Number System</div>
     <div class="ph-sub">Click any cell to set status &amp; add remarks &nbsp;·&nbsp; Purple dot = has remark</div>
-    <div style="margin-top:10px;">
-      <div class="db-badge" id="dbBadge">
-        <div class="db-dot"></div>
-        <span id="dbStatus">Connecting…</span>
-      </div>
-    </div>
   </div>
   <div class="stat-row">
     <div class="stat-pill"><span class="num" id="stat-total">100</span><span class="lbl">Total</span></div>
     <div class="stat-pill" style="background:rgba(52,201,126,0.25);border-color:rgba(52,201,126,0.4);">
-      <span class="num" id="stat-available" style="color:#d0fae8">—</span><span class="lbl">Available</span>
+      <span class="num" id="stat-available" style="color:#d0fae8">100</span><span class="lbl">Available</span>
     </div>
     <div class="stat-pill" style="background:rgba(240,80,110,0.25);border-color:rgba(240,80,110,0.4);">
-      <span class="num" id="stat-taken" style="color:#ffe0e6">—</span><span class="lbl">Taken</span>
+      <span class="num" id="stat-taken" style="color:#ffe0e6">0</span><span class="lbl">Taken</span>
     </div>
   </div>
 </div>
@@ -284,6 +262,7 @@ body{
 
 <!-- CALENDAR CARD -->
 <div class="cal-card">
+  <!-- Legend -->
   <div class="legend-row">
     <div class="leg-item"><div class="leg-dot" style="background:linear-gradient(145deg,#44d98e,#24b96e);box-shadow:0 2px 6px rgba(52,201,126,0.4)"></div>Available</div>
     <div class="leg-item"><div class="leg-dot" style="background:linear-gradient(145deg,#ff7088,#e84060);box-shadow:0 2px 6px rgba(240,80,110,0.4)"></div>Taken</div>
@@ -291,6 +270,7 @@ body{
     <div style="margin-left:auto;font-size:0.70rem;font-weight:700;color:var(--muted);" id="visible-count">Showing 100 cells</div>
   </div>
 
+  <!-- Column headers: 01–10 ... 91–100 row labels -->
   <div class="cal-headers" id="calHeaders">
     <div class="cal-col-hd">01–10</div>
     <div class="cal-col-hd">11–20</div>
@@ -304,6 +284,7 @@ body{
     <div class="cal-col-hd">91–100</div>
   </div>
 
+  <!-- Calendar Grid -->
   <div class="cal-grid" id="calGrid"></div>
   <div class="no-results" id="noResults"><i class="fas fa-magnifying-glass"></i>No matching cells found.</div>
 </div>
@@ -328,101 +309,23 @@ body{
     <textarea class="modal-textarea" id="modal-remarks" placeholder="Add a remark, name, or note…"></textarea>
 
     <div class="modal-btns">
-      <button class="modal-save" id="modal-save-btn" onclick="saveModal()">
-        <i class="fas fa-floppy-disk" style="margin-right:6px"></i>Save
-      </button>
+      <button class="modal-save" onclick="saveModal()"><i class="fas fa-floppy-disk" style="margin-right:6px"></i>Save</button>
       <button class="modal-cancel" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 </div>
 
 <script>
-  // ─────────────────────────────────────────
-  // SUPABASE CONFIG
-  // ─────────────────────────────────────────
-  const S_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
-  const S_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-  const supabase = window.supabase.createClient(S_URL, S_KEY);
-
-  // ─────────────────────────────────────────
-  // STATE
-  // ─────────────────────────────────────────
-  let data = Array.from({length:100},(_,i)=>({
+  const data = Array.from({length:100},(_,i)=>({
     num: String(i+1).padStart(3,'0'),
     status: 'available',
     remarks: ''
   }));
+
   let currentFilter = 'all';
   let activeIdx = null;
   let modalStatus = 'available';
 
-  // ─────────────────────────────────────────
-  // TOAST HELPER
-  // ─────────────────────────────────────────
-  let toastTimer;
-  function showToast(msg, type='info') {
-    const t = document.getElementById('toast');
-    t.className = 'toast ' + type;
-    t.innerHTML = `<i class="fas fa-${type==='success'?'circle-check':type==='error'?'circle-xmark':'circle-info'}"></i> ${msg}`;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
-  }
-
-  // ─────────────────────────────────────────
-  // DB STATUS BADGE
-  // ─────────────────────────────────────────
-  function setDbStatus(state, label) {
-    const badge = document.getElementById('dbBadge');
-    const text  = document.getElementById('dbStatus');
-    badge.className = 'db-badge ' + state;
-    text.textContent = label;
-  }
-
-  // ─────────────────────────────────────────
-  // LOAD FROM SUPABASE
-  // ─────────────────────────────────────────
-  async function loadFromSupabase() {
-    try {
-      const { data: rows, error } = await supabase
-        .from('df_numbers')
-        .select('num, status, remarks')
-        .order('num', { ascending: true });
-
-      if (error) throw error;
-
-      if (rows && rows.length > 0) {
-        rows.forEach(row => {
-          const idx = parseInt(row.num, 10) - 1;
-          if (idx >= 0 && idx < 100) {
-            data[idx].status  = row.status;
-            data[idx].remarks = row.remarks || '';
-          }
-        });
-        setDbStatus('connected', 'Supabase Connected');
-        showToast('Data loaded from Supabase ✓', 'success');
-      } else {
-        // Table empty — seed it
-        setDbStatus('connected', 'Supabase Connected');
-        showToast('No data found — using defaults', 'info');
-      }
-    } catch (err) {
-      console.error('Supabase load error:', err);
-      setDbStatus('error', 'DB Error — offline mode');
-      showToast('Could not reach Supabase, using local data', 'error');
-    } finally {
-      buildGrid();
-      updateStats();
-      // Hide loading overlay
-      const ol = document.getElementById('loadingOverlay');
-      ol.classList.add('hidden');
-      setTimeout(()=>ol.style.display='none', 500);
-    }
-  }
-
-  // ─────────────────────────────────────────
-  // BUILD GRID
-  // ─────────────────────────────────────────
   function buildGrid() {
     const grid = document.getElementById('calGrid');
     grid.innerHTML = '';
@@ -443,20 +346,15 @@ body{
     applyFilter();
   }
 
-  // ─────────────────────────────────────────
-  // MODAL
-  // ─────────────────────────────────────────
   function openModal(idx) {
     activeIdx = idx;
     const row = data[idx];
     modalStatus = row.status;
     document.getElementById('modal-title').textContent = 'DF-' + row.num;
-    document.getElementById('modal-sub').textContent   = row.status === 'available' ? 'Currently marked as Available' : 'Currently marked as Taken';
-    document.getElementById('modal-remarks').value     = row.remarks;
+    document.getElementById('modal-sub').textContent = row.status === 'available' ? 'Currently marked as Available' : 'Currently marked as Taken';
+    document.getElementById('modal-remarks').value = row.remarks;
     document.getElementById('btn-avail').classList.toggle('sel', row.status === 'available');
     document.getElementById('btn-taken-m').classList.toggle('sel', row.status === 'taken');
-    document.getElementById('modal-save-btn').disabled = false;
-    document.getElementById('modal-save-btn').innerHTML = '<i class="fas fa-floppy-disk" style="margin-right:6px"></i>Save';
     document.getElementById('modalOverlay').classList.add('open');
     setTimeout(() => document.getElementById('modal-remarks').focus(), 120);
   }
@@ -467,50 +365,22 @@ body{
     document.getElementById('btn-taken-m').classList.toggle('sel', s === 'taken');
   }
 
-  // ─────────────────────────────────────────
-  // SAVE → SUPABASE
-  // ─────────────────────────────────────────
-  async function saveModal() {
+  function saveModal() {
     if (activeIdx === null) return;
-    const btn = document.getElementById('modal-save-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Saving…';
-
-    const row     = data[activeIdx];
-    const newStatus  = modalStatus;
-    const newRemarks = document.getElementById('modal-remarks').value.trim();
-
-    try {
-      const { error } = await supabase
-        .from('df_numbers')
-        .update({ status: newStatus, remarks: newRemarks })
-        .eq('num', row.num);
-
-      if (error) throw error;
-
-      // Update local state
-      data[activeIdx].status  = newStatus;
-      data[activeIdx].remarks = newRemarks;
-      refreshCell(activeIdx);
-      updateStats();
-      applyFilter();
-      closeModal();
-      showToast(`DF-${row.num} saved successfully ✓`, 'success');
-
-    } catch (err) {
-      console.error('Supabase save error:', err);
-      showToast('Save failed — check connection', 'error');
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-floppy-disk" style="margin-right:6px"></i>Retry';
-    }
+    data[activeIdx].status = modalStatus;
+    data[activeIdx].remarks = document.getElementById('modal-remarks').value.trim();
+    refreshCell(activeIdx);
+    updateStats();
+    applyFilter();
+    closeModal();
   }
 
   function refreshCell(idx) {
-    const row  = data[idx];
+    const row = data[idx];
     const cell = document.getElementById('cell-' + idx);
     if (!cell) return;
     cell.className = 'cal-cell ' + row.status + (row.remarks ? ' has-remark' : '');
-    cell.title     = row.remarks || (row.status === 'available' ? 'Available — click to manage' : 'Taken — click to manage');
+    cell.title = row.remarks || (row.status === 'available' ? 'Available — click to manage' : 'Taken — click to manage');
     cell.innerHTML = `
       <div class="cell-dot"></div>
       <div class="cell-num">${row.num}</div>
@@ -528,9 +398,6 @@ body{
     if (e.target === document.getElementById('modalOverlay')) closeModal();
   }
 
-  // ─────────────────────────────────────────
-  // FILTER & SEARCH
-  // ─────────────────────────────────────────
   function setFilter(f) {
     currentFilter = f;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -544,68 +411,40 @@ body{
     data.forEach((row, idx) => {
       const cell = document.getElementById('cell-' + idx);
       if (!cell) return;
-      const mF   = currentFilter === 'all' || row.status === currentFilter;
-      const mS   = row.num.includes(q) || row.remarks.toLowerCase().includes(q) || ('df-' + row.num).includes(q);
+      const mF = currentFilter === 'all' || row.status === currentFilter;
+      const mS = row.num.includes(q) || row.remarks.toLowerCase().includes(q) || ('df-' + row.num).includes(q);
       const show = mF && (!q || mS);
       cell.classList.toggle('hidden-cell', !show);
       if (show) visible++;
     });
     document.getElementById('visible-count').textContent = 'Showing ' + visible + ' cells';
-    document.getElementById('noResults').style.display   = visible === 0 ? 'block' : 'none';
+    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
   }
 
   function updateStats() {
     const taken = data.filter(d => d.status === 'taken').length;
-    document.getElementById('stat-taken').textContent     = taken;
+    document.getElementById('stat-taken').textContent = taken;
     document.getElementById('stat-available').textContent = 100 - taken;
   }
 
-  // ─────────────────────────────────────────
-  // RESET ALL → SUPABASE
-  // ─────────────────────────────────────────
-  async function resetAll() {
-    if (!confirm('Reset ALL DF numbers to Available and clear all remarks? This cannot be undone.')) return;
-
-    showToast('Resetting all records…', 'info');
-
-    try {
-      const { error } = await supabase
-        .from('df_numbers')
-        .update({ status: 'available', remarks: '' })
-        .gte('num', '001');   // matches all rows
-
-      if (error) throw error;
-
-      data.forEach(d => { d.status = 'available'; d.remarks = ''; });
-      currentFilter = 'all';
-      document.getElementById('searchInput').value = '';
-      buildGrid(); setFilter('all'); updateStats();
-      showToast('All records reset ✓', 'success');
-
-    } catch (err) {
-      console.error('Supabase reset error:', err);
-      showToast('Reset failed — check connection', 'error');
-    }
+  function resetAll() {
+    if (!confirm('Reset all statuses and remarks to default?')) return;
+    data.forEach(d => { d.status = 'available'; d.remarks = ''; });
+    currentFilter = 'all';
+    document.getElementById('searchInput').value = '';
+    buildGrid(); setFilter('all'); updateStats();
   }
 
-  // ─────────────────────────────────────────
-  // EXPORT CSV
-  // ─────────────────────────────────────────
   function exportCSV() {
     const rows = [['DF Number','Status','Remarks']];
     data.forEach(d => rows.push([d.num, d.status === 'available' ? 'Available' : 'Taken', d.remarks]));
     const csv = rows.map(r => r.map(v => '"' + v.replace(/"/g,'""') + '"').join(',')).join('\n');
-    const a   = document.createElement('a');
-    a.href    = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-    a.download = 'DF_Number_System.csv';
-    a.click();
-    showToast('CSV exported ✓', 'success');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'DF_Number_System.csv'; a.click();
   }
 
-  // ─────────────────────────────────────────
-  // INIT
-  // ─────────────────────────────────────────
-  loadFromSupabase();
+  buildGrid();
 </script>
 </body>
 </html>
