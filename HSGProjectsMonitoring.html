@@ -142,7 +142,6 @@
     tbody tr:hover{background:rgba(91,127,255,.04);}
     tbody tr:last-child td{border-bottom:none;}
 
-    /* Visual indicator for unsaved new rows */
     tbody tr[data-new="true"]{background:rgba(52,201,126,.06);}
     tbody tr[data-new="true"] .new-badge{
       display:inline-block;font-size:.58rem;font-weight:900;letter-spacing:.1em;
@@ -169,7 +168,6 @@
     }
     select:focus,input[type="date"]:focus{border-color:var(--c1);box-shadow:0 0 0 3px rgba(91,127,255,.12);}
 
-    /* Toast */
     #toast{
       position:fixed;bottom:32px;right:32px;z-index:9999;
       padding:14px 22px;border-radius:var(--r-lg);
@@ -245,14 +243,12 @@
   const saveBtn     = document.getElementById("updateRowBtn");
   let masterData    = [];
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────────
 
   function formatCurrency(num) {
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(num || 0);
   }
 
-  // FIX: Strip ₱ symbols and commas before sending to Postgres NUMERIC columns.
-  // Raw strings like "50,000" cause HTTP 400 Bad Request.
   function toNum(str) {
     const n = parseFloat((str || "").replace(/[^0-9.]/g, ""));
     return isNaN(n) ? null : n;
@@ -274,9 +270,6 @@
     </select>`;
   }
 
-  // FIX: Read cells by role (contenteditable, date input, select) NOT by index.
-  // Index-based reading (cells[4], cells[5]…) breaks when the visible column count
-  // doesn't match the DB schema order — causing the 400 "remarks:1" type error.
   function getRowPayload(tr) {
     const editable = tr.querySelectorAll("td[contenteditable='true']");
     return {
@@ -289,7 +282,7 @@
     };
   }
 
-  // ── Load data ─────────────────────────────────────────────────────────────────
+  // ── Load data ──────────────────────────────────────────────────────────────────
 
   async function loadData() {
     const { data, error } = await supabaseHSG
@@ -306,12 +299,12 @@
     renderFiltered();
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────────
 
   function renderFiltered() {
-    // FIX: Collect and preserve any pending new rows before innerHTML wipe.
-    // Previously, typing in the search box triggered renderFiltered() which
-    // destroyed all unsaved rows — they existed only in the DOM, not in masterData.
+    // Preserve any pending unsaved rows so they survive search-box re-renders.
+    // NOTE: After a successful save, we explicitly remove data-new rows BEFORE
+    // calling loadData(), so this block correctly finds nothing to re-inject.
     const pending = Array.from(tableBody.querySelectorAll("tr[data-new='true']"))
                          .map(tr => tr.cloneNode(true));
 
@@ -360,7 +353,7 @@
 
   searchInput.oninput = renderFiltered;
 
-  // ── Save / Sync ───────────────────────────────────────────────────────────────
+  // ── Save / Sync ────────────────────────────────────────────────────────────────
 
   saveBtn.onclick = async () => {
     saveBtn.disabled = true;
@@ -383,10 +376,6 @@
       console.log(`[HSG] ${isNew ? "INSERT" : "UPDATE id=" + id}`, payload);
 
       if (isNew) {
-        // FIX: Always call .select() on insert.
-        // Without .select(), Supabase v2 returns {data: null, error: null} for BOTH
-        // a successful insert AND a silent RLS block — making failures invisible.
-        // With .select(), a successful insert returns the row; empty array = blocked.
         const { data, error } = await supabaseHSG
           .from("hsg_project_monitoring")
           .insert([payload])
@@ -420,6 +409,11 @@
     saveBtn.disabled = false;
     saveBtn.innerHTML = `<i class="fas fa-save"></i> Sync to Database`;
 
+    // ✅ FIX: Remove all ghost "NEW" rows from the DOM before reloading data.
+    // Without this, renderFiltered() re-injects these stale unsaved rows on top
+    // of the fresh DB data — making saved entries appear to disappear.
+    tableBody.querySelectorAll("tr[data-new='true']").forEach(tr => tr.remove());
+
     if (failed > 0) {
       showToast(`⚠️ ${saved} saved · ${failed} failed — open F12 console for details`, "error");
     } else if (saved > 0) {
@@ -431,13 +425,10 @@
     await loadData();
   };
 
-  // ── Add entry ─────────────────────────────────────────────────────────────────
+  // ── Add entry ──────────────────────────────────────────────────────────────────
 
   document.getElementById("addEmptyRowBtn").onclick = () => {
     const tr = document.createElement("tr");
-    // FIX: data-new="true" serves two purposes:
-    // 1. renderFiltered() clones and re-injects these rows so they survive re-renders
-    // 2. save handler knows to INSERT (not UPDATE) for these rows
     tr.dataset.new = "true";
     tr.innerHTML = `
       <td class="col-id" style="font-weight:800;color:var(--muted);">* <span class="new-badge">NEW</span></td>
@@ -456,7 +447,7 @@
     tr.querySelector("[contenteditable]").focus();
   };
 
-  // ── Delete ────────────────────────────────────────────────────────────────────
+  // ── Delete ─────────────────────────────────────────────────────────────────────
 
   tableBody.onclick = async e => {
     const btn = e.target.closest(".delete-btn");
@@ -484,7 +475,7 @@
     }
   };
 
-  // ── Init ──────────────────────────────────────────────────────────────────────
+  // ── Init ───────────────────────────────────────────────────────────────────────
   loadData();
 </script>
 </body>
