@@ -282,9 +282,12 @@
     };
   }
 
-  // ── Load data ──────────────────────────────────────────────────────────────────
+  // ── Load data ─────────────────────────────────────────────────────────────────
 
-  async function loadData() {
+  // FIX: loadData now accepts a flag to control whether pending new rows
+  // are preserved across re-renders. Pass false after a successful save
+  // so ghost rows don't get re-injected on top of fresh DB data.
+  async function loadData(preservePending = true) {
     const { data, error } = await supabaseHSG
       .from("hsg_project_monitoring")
       .select("*")
@@ -296,17 +299,17 @@
       return;
     }
     masterData = data;
-    renderFiltered();
+    renderFiltered(preservePending);
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────────
 
-  function renderFiltered() {
-    // Preserve any pending unsaved rows so they survive search-box re-renders.
-    // NOTE: After a successful save, we explicitly remove data-new rows BEFORE
-    // calling loadData(), so this block correctly finds nothing to re-inject.
-    const pending = Array.from(tableBody.querySelectorAll("tr[data-new='true']"))
-                         .map(tr => tr.cloneNode(true));
+  // FIX: The preservePending flag is now explicit — during normal search/filter
+  // we keep unsaved rows visible, but after a save we skip re-injecting them.
+  function renderFiltered(preservePending = true) {
+    const pending = preservePending
+      ? Array.from(tableBody.querySelectorAll("tr[data-new='true']")).map(tr => tr.cloneNode(true))
+      : [];
 
     const query    = searchInput.value.toLowerCase();
     const filtered = masterData.filter(r =>
@@ -342,7 +345,7 @@
       tableBody.appendChild(tr);
     });
 
-    // Re-inject preserved unsaved rows back at the top after re-render
+    // Only re-inject unsaved rows when NOT doing a post-save reload
     pending.forEach(tr => tableBody.prepend(tr));
 
     document.getElementById("totalABC").textContent      = formatCurrency(totals.abc);
@@ -351,68 +354,74 @@
     document.getElementById("negotiatedABC").textContent = formatCurrency(totals.nego);
   }
 
-  searchInput.oninput = renderFiltered;
+  searchInput.oninput = () => renderFiltered(true);
 
-  // ── Save / Sync ────────────────────────────────────────────────────────────────
+  // ── Save / Sync ───────────────────────────────────────────────────────────────
 
   saveBtn.onclick = async () => {
     saveBtn.disabled = true;
     saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving…`;
 
-    const rows  = tableBody.querySelectorAll("tr");
-    let saved   = 0;
-    let failed  = 0;
+    let saved  = 0;
+    let failed = 0;
 
-    for (const tr of rows) {
-      const isNew = tr.dataset.new === "true";
-      const id    = tr.dataset.id;
+    // ── Step 1: Collect and insert all NEW rows first ─────────────────────────
+    // We grab them before clearing, then remove them from the DOM immediately
+    // so renderFiltered() cannot re-inject them after the reload.
+    const newRows = Array.from(tableBody.querySelectorAll("tr[data-new='true']"));
+
+    for (const tr of newRows) {
       const payload = getRowPayload(tr);
 
-      // Skip completely empty unsaved rows
-      if (isNew && !payload.item_description && payload.abc === null && payload.bid_amount === null) {
+      // Skip completely empty rows
+      if (!payload.item_description && payload.abc === null && payload.bid_amount === null) {
+        tr.remove();
         continue;
       }
 
-      console.log(`[HSG] ${isNew ? "INSERT" : "UPDATE id=" + id}`, payload);
+      console.log("[HSG] INSERT", payload);
+      const { data, error } = await supabaseHSG
+        .from("hsg_project_monitoring")
+        .insert([payload])
+        .select();
 
-      if (isNew) {
-        const { data, error } = await supabaseHSG
-          .from("hsg_project_monitoring")
-          .insert([payload])
-          .select();
+      if (error) {
+        console.error("Insert error:", error.message, "| Details:", error.details, "| Hint:", error.hint);
+        failed++;
+      } else if (!data || data.length === 0) {
+        console.error("Insert silently blocked — verify Supabase RLS has anon INSERT policy.");
+        failed++;
+      } else {
+        saved++;
+        // Promote the row to a normal saved row so it doesn't get re-injected
+        tr.dataset.id  = data[0].id;
+        delete tr.dataset.new;
+      }
+    }
 
-        if (error) {
-          console.error("Insert error:", error.message, "| Details:", error.details, "| Hint:", error.hint);
-          failed++;
-        } else if (!data || data.length === 0) {
-          console.error("Insert silently blocked — verify Supabase RLS has anon INSERT policy.");
-          failed++;
-        } else {
-          saved++;
-        }
+    // ── Step 2: Update all existing (non-new) rows ────────────────────────────
+    const existingRows = Array.from(tableBody.querySelectorAll("tr[data-id]:not([data-new])"));
 
-      } else if (id) {
-        const { error } = await supabaseHSG
-          .from("hsg_project_monitoring")
-          .update(payload)
-          .eq("id", id);
+    for (const tr of existingRows) {
+      const id      = tr.dataset.id;
+      const payload = getRowPayload(tr);
 
-        if (error) {
-          console.error("Update error:", error.message, "| Details:", error.details, "| Hint:", error.hint);
-          failed++;
-        } else {
-          saved++;
-        }
+      console.log(`[HSG] UPDATE id=${id}`, payload);
+      const { error } = await supabaseHSG
+        .from("hsg_project_monitoring")
+        .update(payload)
+        .eq("id", id);
+
+      if (error) {
+        console.error("Update error:", error.message, "| Details:", error.details, "| Hint:", error.hint);
+        failed++;
+      } else {
+        saved++;
       }
     }
 
     saveBtn.disabled = false;
     saveBtn.innerHTML = `<i class="fas fa-save"></i> Sync to Database`;
-
-    // ✅ FIX: Remove all ghost "NEW" rows from the DOM before reloading data.
-    // Without this, renderFiltered() re-injects these stale unsaved rows on top
-    // of the fresh DB data — making saved entries appear to disappear.
-    tableBody.querySelectorAll("tr[data-new='true']").forEach(tr => tr.remove());
 
     if (failed > 0) {
       showToast(`⚠️ ${saved} saved · ${failed} failed — open F12 console for details`, "error");
@@ -422,10 +431,11 @@
       showToast("No changes to save.", "success");
     }
 
-    await loadData();
+    // FIX: Pass false so renderFiltered skips re-injecting any ghost rows
+    await loadData(false);
   };
 
-  // ── Add entry ──────────────────────────────────────────────────────────────────
+  // ── Add entry ─────────────────────────────────────────────────────────────────
 
   document.getElementById("addEmptyRowBtn").onclick = () => {
     const tr = document.createElement("tr");
@@ -447,7 +457,7 @@
     tr.querySelector("[contenteditable]").focus();
   };
 
-  // ── Delete ─────────────────────────────────────────────────────────────────────
+  // ── Delete ────────────────────────────────────────────────────────────────────
 
   tableBody.onclick = async e => {
     const btn = e.target.closest(".delete-btn");
@@ -468,15 +478,15 @@
         showToast("Failed to delete record.", "error");
       } else {
         showToast("Record deleted.", "success");
-        await loadData();
+        await loadData(false);
       }
     } else {
       tr.remove(); // Unsaved new row — just remove from DOM
     }
   };
 
-  // ── Init ───────────────────────────────────────────────────────────────────────
-  loadData();
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  loadData(false);
 </script>
 </body>
 </html>
