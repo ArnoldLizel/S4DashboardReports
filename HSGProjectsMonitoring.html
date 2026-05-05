@@ -130,8 +130,9 @@
     thead th:last-child{border-radius:0 var(--r-md) 0 0;}
 
     .col-id{width:50px;text-align:center;}
-    .col-date{width:160px;} .col-mode{width:220px;} .col-money{width:150px;}
-    .col-action{width:60px;text-align:center;} .col-desc{min-width:350px;} .col-remarks{min-width:300px;}
+    .col-nr{width:100px;} .col-date{width:150px;} .col-ors{width:120px;}
+    .col-mode{width:210px;} .col-money{width:130px;} .col-proponent{min-width:160px;}
+    .col-action{width:60px;text-align:center;} .col-desc{min-width:280px;} .col-remarks{min-width:220px;}
 
     td{
       padding:1.1rem .875rem;border-bottom:1px solid rgba(91,127,255,.07);
@@ -219,11 +220,14 @@
       <thead>
         <tr>
           <th class="col-id">#</th>
+          <th class="col-nr">NR</th>
           <th class="col-date">Date Out</th>
+          <th class="col-ors">ORS</th>
           <th class="col-desc">Item Description</th>
           <th class="col-mode">Procurement Mode</th>
           <th class="col-money">ABC</th>
           <th class="col-money">Bid Amount</th>
+          <th class="col-proponent">Proponent</th>
           <th class="col-remarks">Remarks</th>
           <th class="col-action"></th>
         </tr>
@@ -236,7 +240,9 @@
 <script>
   const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-  const supabaseHSG = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const supabaseHSG = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    realtime: { params: { eventsPerSecond: 0 } }
+  });
 
   const tableBody   = document.getElementById("tableBody");
   const searchInput = document.getElementById("searchInput");
@@ -273,12 +279,15 @@
   function getRowPayload(tr) {
     const editable = tr.querySelectorAll("td[contenteditable='true']");
     return {
+      nr:                  editable[0]?.innerText.trim() || null,
       date_out:            tr.querySelector("input[type='date']")?.value || null,
-      item_description:    editable[0]?.innerText.trim() || null,
+      ors:                 editable[1]?.innerText.trim() || null,
+      item_description:    editable[2]?.innerText.trim() || null,
       mode_of_procurement: tr.querySelector("select")?.value || null,
-      abc:                 toNum(editable[1]?.innerText),
-      bid_amount:          toNum(editable[2]?.innerText),
-      remarks:             editable[3]?.innerText.trim() || null,
+      abc:                 toNum(editable[3]?.innerText),
+      bid_amount:          toNum(editable[4]?.innerText),
+      proponent:           editable[5]?.innerText.trim() || null,
+      remarks:             editable[6]?.innerText.trim() || null,
     };
   }
 
@@ -290,12 +299,12 @@
   async function loadData(preservePending = true) {
     const { data, error } = await supabaseHSG
       .from("hsg_project_monitoring")
-      .select("*")
-      .order("id", { ascending: true });
+      .select("id, nr, date_out, ors, item_description, mode_of_procurement, abc, bid_amount, proponent, remarks")
+      .order("id", { ascending: true, nullsFirst: false });
 
     if (error) {
-      console.error("Load error:", error);
-      showToast("Failed to load data from database.", "error");
+      console.error("Load error — code:", error.code, "| message:", error.message, "| hint:", error.hint, "| details:", error.details);
+      showToast(`Load failed: ${error.message || error.code}`, "error");
       return;
     }
     masterData = data;
@@ -331,11 +340,14 @@
       tr.dataset.id = row.id;
       tr.innerHTML = `
         <td class="col-id" style="font-weight:800;color:var(--muted);">${i + 1}</td>
+        <td class="col-nr" contenteditable="true">${row.nr || ""}</td>
         <td class="col-date"><input type="date" value="${row.date_out || ""}"></td>
+        <td class="col-ors" contenteditable="true">${row.ors || ""}</td>
         <td class="col-desc" contenteditable="true">${row.item_description || ""}</td>
         <td class="col-mode">${modeSelect(row.mode_of_procurement)}</td>
         <td class="col-money" contenteditable="true" style="font-weight:800;color:var(--c1);">${row.abc ?? ""}</td>
         <td class="col-money" contenteditable="true" style="color:var(--c3);font-weight:800;">${row.bid_amount ?? ""}</td>
+        <td class="col-proponent" contenteditable="true">${row.proponent || ""}</td>
         <td class="col-remarks" contenteditable="true">${row.remarks || ""}</td>
         <td class="col-action">
           <button class="btn btn-danger delete-btn" data-id="${row.id}">
@@ -364,42 +376,51 @@
 
     let saved  = 0;
     let failed = 0;
+    const failReasons = [];
 
-    // ── Step 1: Collect and insert all NEW rows first ─────────────────────────
-    // We grab them before clearing, then remove them from the DOM immediately
-    // so renderFiltered() cannot re-inject them after the reload.
+    // ── Step 1: INSERT new rows ───────────────────────────────────────────────
     const newRows = Array.from(tableBody.querySelectorAll("tr[data-new='true']"));
 
     for (const tr of newRows) {
       const payload = getRowPayload(tr);
 
-      // Skip completely empty rows
-      if (!payload.item_description && payload.abc === null && payload.bid_amount === null) {
-        tr.remove();
-        continue;
-      }
+      // Skip completely empty rows — just remove them silently
+      const isEmpty = !payload.item_description && !payload.nr && !payload.ors
+                   && payload.abc === null && payload.bid_amount === null
+                   && !payload.proponent && !payload.remarks;
+      if (isEmpty) { tr.remove(); continue; }
 
-      console.log("[HSG] INSERT", payload);
+      console.log("[HSG] INSERT payload:", JSON.stringify(payload, null, 2));
+
       const { data, error } = await supabaseHSG
         .from("hsg_project_monitoring")
         .insert([payload])
-        .select();
+        .select("id");
 
       if (error) {
-        console.error("Insert error:", error.message, "| Details:", error.details, "| Hint:", error.hint);
+        const msg = `Insert failed: ${error.message}${error.hint ? " — " + error.hint : ""}`;
+        console.error("[HSG] INSERT ERROR:", error);
+        failReasons.push(msg);
         failed++;
+        // Keep the row in DOM so user doesn't lose their data
       } else if (!data || data.length === 0) {
-        console.error("Insert silently blocked — verify Supabase RLS has anon INSERT policy.");
+        const msg = "Insert blocked by RLS — check anon INSERT policy in Supabase";
+        console.error("[HSG]", msg);
+        failReasons.push(msg);
         failed++;
+        // Keep the row in DOM
       } else {
+        // ✅ Real success — promote to a saved row
         saved++;
-        // Promote the row to a normal saved row so it doesn't get re-injected
-        tr.dataset.id  = data[0].id;
+        tr.dataset.id = data[0].id;
         delete tr.dataset.new;
+        tr.querySelector(".new-badge")?.remove();
+        tr.querySelector("td:first-child").textContent = "✓";
+        console.log("[HSG] INSERT success, new id:", data[0].id);
       }
     }
 
-    // ── Step 2: Update all existing (non-new) rows ────────────────────────────
+    // ── Step 2: UPDATE existing rows ─────────────────────────────────────────
     const existingRows = Array.from(tableBody.querySelectorAll("tr[data-id]:not([data-new])"));
 
     for (const tr of existingRows) {
@@ -413,7 +434,8 @@
         .eq("id", id);
 
       if (error) {
-        console.error("Update error:", error.message, "| Details:", error.details, "| Hint:", error.hint);
+        console.error("Update error:", error);
+        failReasons.push(`Update id=${id}: ${error.message}`);
         failed++;
       } else {
         saved++;
@@ -423,16 +445,19 @@
     saveBtn.disabled = false;
     saveBtn.innerHTML = `<i class="fas fa-save"></i> Sync to Database`;
 
-    if (failed > 0) {
-      showToast(`⚠️ ${saved} saved · ${failed} failed — open F12 console for details`, "error");
+    if (failed > 0 && saved === 0) {
+      showToast(`❌ Save failed — ${failReasons[0]}`, "error");
+    } else if (failed > 0) {
+      showToast(`⚠️ ${saved} saved · ${failed} failed: ${failReasons[0]}`, "error");
     } else if (saved > 0) {
       showToast(`✅ ${saved} record${saved !== 1 ? "s" : ""} saved successfully!`, "success");
     } else {
       showToast("No changes to save.", "success");
     }
 
-    // FIX: Pass false so renderFiltered skips re-injecting any ghost rows
-    await loadData(false);
+    // Only reload DB data — failed new rows stay in DOM (preservePending=true)
+    // Successful new rows have already been promoted, so they'll appear in DB fetch
+    await loadData(failed === 0);
   };
 
   // ── Add entry ─────────────────────────────────────────────────────────────────
@@ -442,11 +467,14 @@
     tr.dataset.new = "true";
     tr.innerHTML = `
       <td class="col-id" style="font-weight:800;color:var(--muted);">* <span class="new-badge">NEW</span></td>
+      <td class="col-nr" contenteditable="true"></td>
       <td class="col-date"><input type="date"></td>
+      <td class="col-ors" contenteditable="true"></td>
       <td class="col-desc" contenteditable="true"></td>
       <td class="col-mode">${modeSelect()}</td>
       <td class="col-money" contenteditable="true" style="font-weight:800;color:var(--c1);"></td>
       <td class="col-money" contenteditable="true" style="color:var(--c3);font-weight:800;"></td>
+      <td class="col-proponent" contenteditable="true"></td>
       <td class="col-remarks" contenteditable="true"></td>
       <td class="col-action">
         <button class="btn btn-danger delete-btn">
