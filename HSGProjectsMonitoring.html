@@ -256,7 +256,10 @@
   }
 
   function toNum(str) {
-    const n = parseFloat((str || "").replace(/[^0-9.]/g, ""));
+    if (str === null || str === undefined) return null;
+    const cleaned = String(str).replace(/[^0-9.]/g, "");
+    if (cleaned === "" || cleaned === ".") return null;
+    const n = parseFloat(cleaned);
     return isNaN(n) ? null : n;
   }
 
@@ -276,26 +279,35 @@
     </select>`;
   }
 
+  // FIX: Use textContent instead of innerText, and trim whitespace/newlines properly
+  function getCellText(cell) {
+    if (!cell) return null;
+    const text = (cell.textContent || "").replace(/\n/g, " ").trim();
+    return text === "" ? null : text;
+  }
+
   function getRowPayload(tr) {
     const editable = tr.querySelectorAll("td[contenteditable='true']");
-    return {
-      nr:                  editable[0]?.innerText.trim() || null,
+    const payload = {
+      nr:                  getCellText(editable[0]),
       date_out:            tr.querySelector("input[type='date']")?.value || null,
-      ors:                 editable[1]?.innerText.trim() || null,
-      item_description:    editable[2]?.innerText.trim() || null,
+      ors:                 getCellText(editable[1]),
+      item_description:    getCellText(editable[2]),
       mode_of_procurement: tr.querySelector("select")?.value || null,
-      abc:                 toNum(editable[3]?.innerText),
-      bid_amount:          toNum(editable[4]?.innerText),
-      proponent:           editable[5]?.innerText.trim() || null,
-      remarks:             editable[6]?.innerText.trim() || null,
+      abc:                 toNum(getCellText(editable[3])),
+      bid_amount:          toNum(getCellText(editable[4])),
+      proponent:           getCellText(editable[5]),
+      remarks:             getCellText(editable[6]),
     };
+    // Convert empty string mode to null
+    if (payload.mode_of_procurement === "") payload.mode_of_procurement = null;
+    // Convert empty string date to null
+    if (payload.date_out === "") payload.date_out = null;
+    return payload;
   }
 
   // ── Load data ─────────────────────────────────────────────────────────────────
 
-  // FIX: loadData now accepts a flag to control whether pending new rows
-  // are preserved across re-renders. Pass false after a successful save
-  // so ghost rows don't get re-injected on top of fresh DB data.
   async function loadData(preservePending = true) {
     const { data, error } = await supabaseHSG
       .from("hsg_project_monitoring")
@@ -303,7 +315,7 @@
       .order("id", { ascending: true, nullsFirst: false });
 
     if (error) {
-      console.error("Load error — code:", error.code, "| message:", error.message, "| hint:", error.hint, "| details:", error.details);
+      console.error("Load error:", error);
       showToast(`Load failed: ${error.message || error.code}`, "error");
       return;
     }
@@ -313,8 +325,6 @@
 
   // ── Render ────────────────────────────────────────────────────────────────────
 
-  // FIX: The preservePending flag is now explicit — during normal search/filter
-  // we keep unsaved rows visible, but after a save we skip re-injecting them.
   function renderFiltered(preservePending = true) {
     const pending = preservePending
       ? Array.from(tableBody.querySelectorAll("tr[data-new='true']")).map(tr => tr.cloneNode(true))
@@ -357,7 +367,6 @@
       tableBody.appendChild(tr);
     });
 
-    // Only re-inject unsaved rows when NOT doing a post-save reload
     pending.forEach(tr => tableBody.prepend(tr));
 
     document.getElementById("totalABC").textContent      = formatCurrency(totals.abc);
@@ -374,8 +383,7 @@
     saveBtn.disabled = true;
     saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving…`;
 
-    let saved  = 0;
-    let failed = 0;
+    let saved = 0, failed = 0;
     const failReasons = [];
 
     // ── Step 1: INSERT new rows ───────────────────────────────────────────────
@@ -383,14 +391,29 @@
 
     for (const tr of newRows) {
       const payload = getRowPayload(tr);
+      console.log("[HSG] New row payload:", JSON.stringify(payload, null, 2));
 
-      // Skip completely empty rows — just remove them silently
+      // Check if truly empty (all fields null)
       const isEmpty = !payload.item_description && !payload.nr && !payload.ors
                    && payload.abc === null && payload.bid_amount === null
-                   && !payload.proponent && !payload.remarks;
-      if (isEmpty) { tr.remove(); continue; }
+                   && !payload.proponent && !payload.remarks
+                   && !payload.date_out && !payload.mode_of_procurement;
 
-      console.log("[HSG] INSERT payload:", JSON.stringify(payload, null, 2));
+      if (isEmpty) {
+        console.warn("[HSG] Row skipped — all fields are empty, removing from DOM");
+        tr.remove();
+        continue;
+      }
+
+      // Require at minimum an item description
+      if (!payload.item_description) {
+        showToast("⚠️ Item Description is required before saving.", "error");
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<i class="fas fa-save"></i> Sync to Database`;
+        return;
+      }
+
+      console.log("[HSG] Attempting INSERT…");
 
       const { data, error } = await supabaseHSG
         .from("hsg_project_monitoring")
@@ -398,25 +421,20 @@
         .select("id");
 
       if (error) {
-        const msg = `Insert failed: ${error.message}${error.hint ? " — " + error.hint : ""}`;
-        console.error("[HSG] INSERT ERROR:", error);
-        failReasons.push(msg);
+        console.error("[HSG] INSERT ERROR:", JSON.stringify(error, null, 2));
+        failReasons.push(`Insert failed: ${error.message}${error.hint ? " — " + error.hint : ""}`);
         failed++;
-        // Keep the row in DOM so user doesn't lose their data
       } else if (!data || data.length === 0) {
-        const msg = "Insert blocked by RLS — check anon INSERT policy in Supabase";
-        console.error("[HSG]", msg);
-        failReasons.push(msg);
+        console.error("[HSG] INSERT blocked — no data returned (possible RLS issue)");
+        failReasons.push("Insert blocked by RLS — check anon INSERT policy in Supabase");
         failed++;
-        // Keep the row in DOM
       } else {
-        // ✅ Real success — promote to a saved row
         saved++;
         tr.dataset.id = data[0].id;
         delete tr.dataset.new;
         tr.querySelector(".new-badge")?.remove();
         tr.querySelector("td:first-child").textContent = "✓";
-        console.log("[HSG] INSERT success, new id:", data[0].id);
+        console.log("[HSG] INSERT success! New id:", data[0].id);
       }
     }
 
@@ -427,14 +445,13 @@
       const id      = tr.dataset.id;
       const payload = getRowPayload(tr);
 
-      console.log(`[HSG] UPDATE id=${id}`, payload);
       const { error } = await supabaseHSG
         .from("hsg_project_monitoring")
         .update(payload)
         .eq("id", id);
 
       if (error) {
-        console.error("Update error:", error);
+        console.error(`[HSG] UPDATE ERROR id=${id}:`, error);
         failReasons.push(`Update id=${id}: ${error.message}`);
         failed++;
       } else {
@@ -455,8 +472,6 @@
       showToast("No changes to save.", "success");
     }
 
-    // Only reload DB data — failed new rows stay in DOM (preservePending=true)
-    // Successful new rows have already been promoted, so they'll appear in DB fetch
     await loadData(failed === 0);
   };
 
@@ -482,7 +497,8 @@
         </button>
       </td>`;
     tableBody.prepend(tr);
-    tr.querySelector("[contenteditable]").focus();
+    // Focus the Item Description cell (index 2 among contenteditable cells)
+    tr.querySelectorAll("td[contenteditable='true']")[2].focus();
   };
 
   // ── Delete ────────────────────────────────────────────────────────────────────
@@ -509,7 +525,7 @@
         await loadData(false);
       }
     } else {
-      tr.remove(); // Unsaved new row — just remove from DOM
+      tr.remove();
     }
   };
 
