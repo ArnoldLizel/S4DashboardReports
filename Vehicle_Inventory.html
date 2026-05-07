@@ -25,12 +25,10 @@
         --text2:       #3a5070;
         --text3:       #7090b0;
 
-        /* Clay shadow: colored drop + white highlight */
         --sh:     8px 8px 20px rgba(74,127,193,0.28), -4px -4px 12px rgba(255,255,255,0.85);
         --sh-sm:  4px 4px 12px rgba(74,127,193,0.22), -2px -2px 7px rgba(255,255,255,0.80);
         --sh-in:  inset 2px 2px 6px rgba(74,127,193,0.14), inset -2px -2px 6px rgba(255,255,255,0.90);
 
-        /* Plate colours */
         --red-bg:    #fee2e2;
         --red-text:  #991b1b;
         --red-bdr:   #fca5a5;
@@ -119,7 +117,6 @@
 
     .nav-link.active i { color: var(--blue2); }
 
-    /* Sidebar plate legend */
     .sb-legend {
         margin-top: auto; padding: 1rem 0.75rem;
         background: rgba(255,255,255,0.10);
@@ -318,6 +315,27 @@
     .plate-preview.red   { background: linear-gradient(135deg, rgba(255,235,235,0.90), rgba(255,215,215,0.80)); color: var(--red-text); border-color: rgba(252,165,165,0.60); }
     .plate-preview.black { background: linear-gradient(135deg, #1e293b, #2d3d55); color: var(--blk-text); border-color: rgba(71,85,105,0.60); }
 
+    /* ── Insurance badge ── */
+    .ins-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 10px; border-radius: 8px;
+        font-size: 0.76rem; font-weight: 800; border: 1.5px solid;
+        box-shadow: var(--sh-sm); white-space: nowrap;
+    }
+    .ins-badge.comprehensive {
+        background: linear-gradient(135deg,rgba(200,235,210,0.95),rgba(170,225,195,0.88));
+        color: #145a32; border-color: rgba(100,200,140,0.55);
+    }
+    .ins-badge.tpl {
+        background: linear-gradient(135deg,rgba(255,240,190,0.95),rgba(250,220,150,0.88));
+        color: #7a4a10; border-color: rgba(250,204,21,0.55);
+    }
+    .ins-badge.none {
+        background: linear-gradient(135deg,rgba(240,240,248,0.90),rgba(225,230,245,0.80));
+        color: var(--text3); border-color: rgba(200,215,235,0.60);
+        font-style: italic;
+    }
+
     /* ── SUBMIT BUTTONS ── */
     .btn-submit {
         width: 100%; padding: 0.85rem;
@@ -348,6 +366,18 @@
 
     .btn-remove-duplicates { background: linear-gradient(135deg, rgba(208,229,248,0.90), rgba(185,215,245,0.80)); color: var(--navy); padding: 0.5rem 1rem; font-size: 0.76rem; margin-left: 6px; }
     .btn-remove-duplicates:hover { transform: translateY(-1px); }
+
+    /* Excel export button */
+    .btn-excel {
+        background: linear-gradient(135deg, rgba(186,230,200,0.92), rgba(160,220,180,0.82));
+        color: #155724; border: 2px solid rgba(134,239,172,0.55);
+        border-radius: 10px; cursor: pointer;
+        font-weight: 800; font-family: var(--ff);
+        transition: all 0.17s; box-shadow: var(--sh-sm);
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 0.5rem 1rem; font-size: 0.76rem; margin-left: 6px;
+    }
+    .btn-excel:hover { transform: translateY(-1px); box-shadow: 5px 5px 14px rgba(50,150,80,0.25), -2px -2px 8px rgba(255,255,255,0.80); }
 
     /* ── FILTER BUTTONS ── */
     .plate-filter-btns { display: flex; gap: 5px; align-items: center; }
@@ -455,7 +485,7 @@
     input[type="checkbox"] { accent-color: var(--blue2); width: 14px; height: 14px; cursor: pointer; }
 
     /* ══════════════════════════════════════
-       BULK ACTION BAR (clay pill floating)
+       BULK ACTION BAR
     ══════════════════════════════════════ */
     .bulk-bar {
         position: fixed; bottom: -120px; left: 50%;
@@ -696,11 +726,28 @@
                     </div>
 
                     <div style="display:flex;gap:12px;">
-                        <div class="group" style="flex:1"><label>Engine No.</label><input type="text" id="engine_number" class="field"></div>
-                        <div class="group" style="flex:1"><label>Chassis No.</label><input type="text" id="chassis_number" class="field"></div>
+                        <div class="group" style="flex:1">
+                            <label>Official Receipt No.</label>
+                            <input type="text" id="or_number" class="field" placeholder="OR-XXXXXXX">
+                        </div>
+                        <div class="group" style="flex:1">
+                            <label>Certificate of Registration No.</label>
+                            <input type="text" id="cr_number" class="field" placeholder="CR-XXXXXXX">
+                        </div>
                     </div>
 
                     <div class="group"><label>Status / Remarks</label><input type="text" id="remarks" class="field"></div>
+
+                    <!-- ── NEW: Insurance field ── -->
+                    <div class="group">
+                        <label><i class="fas fa-shield-check" style="color:var(--blue2);margin-right:4px;"></i>Insurance Type</label>
+                        <select id="insurance" class="field">
+                            <option value="">— Select Insurance —</option>
+                            <option value="Comprehensive">Comprehensive</option>
+                            <option value="TPL">TPL (Third Party Liability)</option>
+                        </select>
+                    </div>
+
                     <div class="group"><label>Registration Date</label><input type="date" id="date_of_registration" class="field"></div>
 
                     <button class="btn-submit" id="submitBtn" onclick="addData()"><i class="fas fa-plus"></i> &nbsp;Register Asset</button>
@@ -720,6 +767,8 @@
                             <button class="filter-btn red"   onclick="setPlateFilter('red',this)">🔴 Red</button>
                             <button class="filter-btn black" onclick="setPlateFilter('black',this)">⚫ Black</button>
                         </div>
+                        <!-- ✅ NEW: Export to Excel button -->
+                        <button class="btn-excel" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
                         <button class="btn-remove-duplicates" onclick="removeDuplicates()"><i class="fas fa-broom"></i> Dupes</button>
                         <button class="btn-remove-duplicates" style="background:linear-gradient(135deg,rgba(255,200,200,0.90),rgba(245,170,170,0.80));color:var(--red);" onclick="deleteSelected()"><i class="fas fa-trash"></i> Del</button>
                     </div>
@@ -731,8 +780,13 @@
                             <tr>
                                 <th class="badge-print-hide" style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
                                 <th style="width:40px;">#</th>
-                                <th>Office</th><th>Vehicle Model</th><th>Plate Number</th>
-                                <th>Engine No.</th><th>Chassis No.</th><th>Remarks</th>
+                                <th>Office</th>
+                                <th>Vehicle Model</th>
+                                <th>Plate Number</th>
+                                <th>OR No.</th>
+                                <th>CR No.</th>
+                                <th>Remarks</th>
+                                <th>Insurance</th>
                                 <th>Reg. Date</th>
                                 <th class="badge-print-hide">Actions</th>
                             </tr>
@@ -753,6 +807,12 @@
                         <span class="plate-badge black" style="font-size:0.74rem;padding:3px 10px;"><span class="plate-dot"></span>ABC-456</span>
                         <span style="color:#334155;font-weight:800;">Black</span>
                         <span style="color:var(--text3);">— Civilian / Not transferred</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="ins-badge comprehensive" style="font-size:0.74rem;">Comprehensive</span>
+                        <span style="color:var(--text3);">/ </span>
+                        <span class="ins-badge tpl" style="font-size:0.74rem;">TPL</span>
+                        <span style="color:var(--text3);">— Insurance Type</span>
                     </div>
                 </div>
             </div>
@@ -793,12 +853,9 @@
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
            PLATE TYPE STORE
-           • In-memory map (primary) — always works
-           • sessionStorage (secondary, best-effort) — survives page refresh within the same tab
-           • NEVER touches localStorage — avoids Edge Tracking Prevention 400 errors
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        const _plateMemory = {};   // in-memory fallback (always available)
-        const SS_KEY = 'pn_pt';   // sessionStorage key (may be blocked — handled gracefully)
+        const _plateMemory = {};
+        const SS_KEY = 'pn_pt';
 
         function _readStore() {
             try { return JSON.parse(sessionStorage.getItem(SS_KEY) || '{}'); }
@@ -808,11 +865,10 @@
         function savePlateType(id, type) {
             _plateMemory[String(id)] = type;
             try { const s = _readStore(); s[String(id)] = type; sessionStorage.setItem(SS_KEY, JSON.stringify(s)); }
-            catch { /* blocked by Tracking Prevention — in-memory still works */ }
+            catch { /* blocked */ }
         }
 
         function getPlateType(id, dbValue) {
-            // Priority: in-memory → sessionStorage → DB column → default 'black'
             if (_plateMemory[String(id)]) return _plateMemory[String(id)];
             const s = _readStore();
             if (s[String(id)]) return s[String(id)];
@@ -821,13 +877,16 @@
         }
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           SAFE SUPABASE PAYLOAD — strips plate_type column entirely.
-           The vehicles table does NOT have a plate_type column.
-           Plate type is handled client-side only.
+           SAFE SUPABASE PAYLOAD
+           ✅ Updated: or_number, cr_number, insurance
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         function dbPayload(raw) {
-            // Only include columns that actually exist in the vehicles table
-            const allowed = ['office','vehicle_type','plate_number','engine_number','chassis_number','remarks','date_of_registration','year'];
+            const allowed = [
+                'office', 'vehicle_type', 'plate_number',
+                'or_number', 'cr_number',          // ← renamed columns
+                'remarks', 'insurance',             // ← new column
+                'date_of_registration', 'year'
+            ];
             const out = {};
             allowed.forEach(k => { if (raw[k] !== undefined) out[k] = raw[k]; });
             return out;
@@ -870,6 +929,14 @@
             renderTable(allData);
         }
 
+        /* ━━━ INSURANCE BADGE HTML ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function insBadgeHtml(val) {
+            if (!val) return `<span class="ins-badge none">—</span>`;
+            if (val === 'Comprehensive') return `<span class="ins-badge comprehensive"><i class="fas fa-shield-check" style="font-size:0.7rem;"></i>${val}</span>`;
+            if (val === 'TPL') return `<span class="ins-badge tpl"><i class="fas fa-file-shield" style="font-size:0.7rem;"></i>TPL</span>`;
+            return `<span class="ins-badge none">${val}</span>`;
+        }
+
         /* ━━━ RENDER TABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         function renderTable(data) {
             let filtered = data;
@@ -885,7 +952,7 @@
                     currentOffice = v.office;
                     const gr = tbody.insertRow();
                     gr.className = 'office-group-row';
-                    gr.innerHTML = `<td colspan="10" style="padding:8px 16px;">OFFICE: ${currentOffice}</td>`;
+                    gr.innerHTML = `<td colspan="11" style="padding:8px 16px;">OFFICE: ${currentOffice}</td>`;
                 }
 
                 const pt = getPlateType(v.id, v.plate_type);
@@ -902,9 +969,10 @@
                     <td class="office-cell">${v.office||''}</td>
                     <td>${v.vehicle_type||''}</td>
                     <td>${plateHtml}</td>
-                    <td style="font-size:0.82rem;color:var(--text3);">${v.engine_number||'---'}</td>
-                    <td style="font-size:0.82rem;color:var(--text3);">${v.chassis_number||'---'}</td>
+                    <td style="font-size:0.82rem;color:var(--text3);">${v.or_number||'---'}</td>
+                    <td style="font-size:0.82rem;color:var(--text3);">${v.cr_number||'---'}</td>
                     <td style="font-size:0.82rem;color:var(--text3);">${v.remarks||''}</td>
+                    <td>${insBadgeHtml(v.insurance)}</td>
                     <td style="font-size:0.82rem;color:var(--text3);">${v.date_of_registration||'---'}</td>
                     <td class="badge-print-hide">
                         <button class="btn-edit" onclick="editRecord(${v.id})"><i class="fas fa-edit"></i> Edit</button>
@@ -964,9 +1032,10 @@
                 office:               document.getElementById('office').value.trim(),
                 vehicle_type:         document.getElementById('vehicle_type').value.trim(),
                 plate_number:         document.getElementById('plate_number').value.trim(),
-                engine_number:        document.getElementById('engine_number').value.trim(),
-                chassis_number:       document.getElementById('chassis_number').value.trim(),
+                or_number:            document.getElementById('or_number').value.trim(),       // ← renamed
+                cr_number:            document.getElementById('cr_number').value.trim(),       // ← renamed
                 remarks:              document.getElementById('remarks').value.trim(),
+                insurance:            document.getElementById('insurance').value || null,      // ← new
                 date_of_registration: document.getElementById('date_of_registration').value || null,
                 year:                 new Date().getFullYear()
             };
@@ -985,7 +1054,7 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> &nbsp;Saving…';
 
-            const payload = dbPayload(fields);   // ← NEVER includes plate_type
+            const payload = dbPayload(fields);
             const { data: inserted, error } = await db
                 .from('vehicles').insert([payload]).select().single();
 
@@ -997,9 +1066,7 @@
                 return;
             }
 
-            // Store plate type client-side only
             savePlateType(inserted.id, plateType);
-
             showToast('✅ Asset registered successfully!', 'success');
             clearForm();
             refreshData();
@@ -1014,9 +1081,10 @@
             document.getElementById('office').value               = data.office || '';
             document.getElementById('vehicle_type').value         = data.vehicle_type || '';
             document.getElementById('plate_number').value         = data.plate_number || '';
-            document.getElementById('engine_number').value        = data.engine_number || '';
-            document.getElementById('chassis_number').value       = data.chassis_number || '';
+            document.getElementById('or_number').value            = data.or_number || '';       // ← renamed
+            document.getElementById('cr_number').value            = data.cr_number || '';       // ← renamed
             document.getElementById('remarks').value              = data.remarks || '';
+            document.getElementById('insurance').value            = data.insurance || '';       // ← new
             document.getElementById('date_of_registration').value = data.date_of_registration || '';
 
             setPlateTypeInForm(getPlateType(data.id, data.plate_type));
@@ -1035,7 +1103,7 @@
 
             const plateType = getSelectedPlateType();
             const fields    = readFormFields();
-            const payload   = dbPayload(fields);   // ← NEVER includes plate_type
+            const payload   = dbPayload(fields);
 
             const btn = document.getElementById('updateBtn');
             btn.disabled = true;
@@ -1050,7 +1118,6 @@
                 showToast('Update failed: ' + error.message, 'error'); return;
             }
 
-            // Update client-side plate type and in-memory cache
             savePlateType(id, plateType);
             const idx = allData.findIndex(v => String(v.id) === String(id));
             if (idx !== -1) Object.assign(allData[idx], payload);
@@ -1058,6 +1125,81 @@
             showToast('✅ Record updated successfully!', 'success');
             cancelEdit();
             renderTable(allData);
+        }
+
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           ✅ EXPORT TO EXCEL — exports all currently visible data
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        function exportToExcel() {
+            if (!allData.length) { showToast('No data to export.', 'warning'); return; }
+
+            // Determine which rows to export (respects active plate filter)
+            let exportData = allData;
+            if (activePlateFilter !== 'all')
+                exportData = allData.filter(v => getPlateType(v.id, v.plate_type) === activePlateFilter);
+
+            if (!exportData.length) { showToast('No records match the current filter.', 'warning'); return; }
+
+            // Build worksheet rows
+            const header = [
+                '#', 'Office', 'Vehicle Model', 'Plate Type', 'Plate Number',
+                'OR Number (Official Receipt)', 'CR Number (Certificate of Registration)',
+                'Remarks', 'Insurance', 'Registration Date'
+            ];
+
+            const rows = exportData.map((v, idx) => [
+                idx + 1,
+                v.office || '',
+                v.vehicle_type || '',
+                getPlateType(v.id, v.plate_type) === 'red' ? 'Red Plate (PN)' : 'Black Plate (Civilian)',
+                v.plate_number || '',
+                v.or_number || '',
+                v.cr_number || '',
+                v.remarks || '',
+                v.insurance || '',
+                v.date_of_registration || ''
+            ]);
+
+            const wsData = [header, ...rows];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Column widths
+            ws['!cols'] = [
+                { wch: 5 }, { wch: 12 }, { wch: 22 }, { wch: 22 }, { wch: 14 },
+                { wch: 28 }, { wch: 34 }, { wch: 24 }, { wch: 15 }, { wch: 18 }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Fleet Record');
+
+            // Summary sheet
+            const redCount   = allData.filter(v => getPlateType(v.id, v.plate_type) === 'red').length;
+            const blackCount = allData.filter(v => getPlateType(v.id, v.plate_type) === 'black').length;
+            const compCount  = allData.filter(v => v.insurance === 'Comprehensive').length;
+            const tplCount   = allData.filter(v => v.insurance === 'TPL').length;
+            const offices    = [...new Set(allData.map(v => v.office))].length;
+
+            const summaryData = [
+                ['HQ Philippine Navy — Fleet Asset Summary'],
+                ['Generated:', new Date().toLocaleString('en-PH')],
+                [''],
+                ['Metric', 'Count'],
+                ['Total Vehicles', allData.length],
+                ['Offices / Units', offices],
+                ['Red Plates (PN Transfer)', redCount],
+                ['Black Plates (Civilian)', blackCount],
+                ['Comprehensive Insurance', compCount],
+                ['TPL Insurance', tplCount],
+                ['No Insurance Data', allData.length - compCount - tplCount]
+            ];
+
+            const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+            wsSummary['!cols'] = [{ wch: 30 }, { wch: 14 }];
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+            const timestamp = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(wb, `PN_Fleet_Record_${timestamp}.xlsx`);
+            showToast(`✅ Exported ${exportData.length} record(s) to Excel!`, 'success');
         }
 
         /* ━━━ SELECTION / BULK ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -1096,7 +1238,6 @@
             const label = type === 'red' ? '🔴 Red Plate' : '⚫ Black Plate';
             if (!confirm(`Tag ${ids.length} vehicle(s) as ${label}?`)) return;
 
-            // Plate type is client-side only — just update in-memory + sessionStorage
             ids.forEach(id => {
                 savePlateType(id, type);
                 const idx = allData.findIndex(v => String(v.id) === String(id));
@@ -1116,7 +1257,6 @@
             const { error } = await db.from('vehicles').delete().in('id', ids);
             if (error) { showToast('Delete failed: ' + error.message, 'error'); return; }
 
-            // Clean up in-memory store
             ids.forEach(id => delete _plateMemory[String(id)]);
             try {
                 const s = _readStore();
@@ -1154,19 +1294,30 @@
         }
 
         function clearForm() {
-            ['vehicle_type','plate_number','engine_number','chassis_number','remarks','date_of_registration']
+            ['vehicle_type','plate_number','or_number','cr_number','remarks','date_of_registration']
                 .forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('insurance').value = '';
             setPlateTypeInForm('red');
         }
 
+        /* ━━━ TEMPLATE DOWNLOAD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         function downloadTemplate() {
-            const t = [['Office','Vehicle Type','Plate Number','Plate Type (red/black)','Engine Number','Chassis Number','Remarks']];
+            const t = [[
+                'Office', 'Vehicle Type', 'Plate Number', 'Plate Type (red/black)',
+                'OR Number (Official Receipt)', 'CR Number (Certificate of Registration)',
+                'Remarks', 'Insurance (Comprehensive/TPL)', 'Registration Date (YYYY-MM-DD)'
+            ]];
             const ws = XLSX.utils.aoa_to_sheet(t);
+            ws['!cols'] = [
+                {wch:12},{wch:20},{wch:14},{wch:22},
+                {wch:28},{wch:34},{wch:24},{wch:28},{wch:26}
+            ];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Vehicles');
             XLSX.writeFile(wb, 'PN_Fleet_Template.xlsx');
         }
 
+        /* ━━━ IMPORT EXCEL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         async function importExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1179,10 +1330,10 @@
                     office:         (r['Office'] || '').toString().toUpperCase(),
                     vehicle_type:   (r['Vehicle Type'] || r['Vehicle Model'] || '').toString(),
                     plate_number:   (r['Plate Number'] || r['Plate ID'] || '').toString(),
-                    engine_number:  (r['Engine Number'] || '').toString(),
-                    chassis_number: (r['Chassis Number'] || '').toString(),
-                    remarks:        (r['Remarks'] || '').toString()
-                    // date_of_registration intentionally omitted if not in template
+                    or_number:      (r['OR Number (Official Receipt)'] || r['Engine Number'] || '').toString(),
+                    cr_number:      (r['CR Number (Certificate of Registration)'] || r['Chassis Number'] || '').toString(),
+                    remarks:        (r['Remarks'] || '').toString(),
+                    insurance:      (r['Insurance (Comprehensive/TPL)'] || r['Insurance'] || '') || null
                 }));
 
                 const { error } = await db.from('vehicles').insert(vehicles);
