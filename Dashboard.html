@@ -130,7 +130,7 @@ body::after{
 .ctb-ln.r{background:linear-gradient(90deg,rgba(201,162,39,.4),transparent)}
 .ctb-txt{font-family:'Cinzel',serif;font-size:.78rem;font-weight:900;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;text-shadow:0 0 20px var(--gold-glow);white-space:nowrap}
 
-/* ── GRID: 6 columns to match reference ── */
+/* ── GRID: 6 columns ── */
 #grid{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 10px 6px;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-content:start}
 #grid::-webkit-scrollbar{width:4px}
 #grid::-webkit-scrollbar-thumb{background:rgba(201,162,39,.2);border-radius:50px}
@@ -402,7 +402,7 @@ body::after{
       <span class="sp" style="font-size:.68rem;--d:3.8s;--dl:.7s">✦</span>
     </div>
 
-    <!-- ✦ CENTER GOLD EMBLEM (matches reference image) ✦ -->
+    <!-- CENTER GOLD EMBLEM -->
     <div class="hdr-center-emblem">
       <svg class="hdr-emblem-svg" width="72" height="62" viewBox="0 0 72 62" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -417,26 +417,18 @@ body::after{
             <stop offset="100%" stop-color="#c9a227" stop-opacity="0.4"/>
           </linearGradient>
         </defs>
-        <!-- Left wing -->
-        <path d="M36 14 L6 8 L10 20 L2 24 L10 26 L4 36 L14 32 L12 44 L22 36 L24 48 L32 38 L36 50" 
+        <path d="M36 14 L6 8 L10 20 L2 24 L10 26 L4 36 L14 32 L12 44 L22 36 L24 48 L32 38 L36 50"
               fill="url(#eg2)" stroke="url(#eg1)" stroke-width="0.8" stroke-linejoin="round"/>
-        <!-- Right wing (mirrored) -->
-        <path d="M36 14 L66 8 L62 20 L70 24 L62 26 L68 36 L58 32 L60 44 L50 36 L48 48 L40 38 L36 50" 
+        <path d="M36 14 L66 8 L62 20 L70 24 L62 26 L68 36 L58 32 L60 44 L50 36 L48 48 L40 38 L36 50"
               fill="url(#eg2)" stroke="url(#eg1)" stroke-width="0.8" stroke-linejoin="round"/>
-        <!-- Center diamond -->
         <path d="M36 8 L42 18 L36 28 L30 18 Z" fill="url(#eg1)" opacity="0.95"/>
-        <!-- Center circle -->
         <circle cx="36" cy="34" r="7" fill="none" stroke="url(#eg1)" stroke-width="1.5"/>
         <circle cx="36" cy="34" r="3.5" fill="url(#eg1)" opacity="0.85"/>
-        <!-- Top star points -->
         <path d="M36 4 L37.2 7.6 L36 11 L34.8 7.6 Z" fill="url(#eg1)"/>
-        <!-- Bottom accent -->
         <path d="M28 50 L36 54 L44 50 L36 56 Z" fill="url(#eg1)" opacity="0.7"/>
-        <!-- Wing feather lines - left -->
         <line x1="10" y1="22" x2="26" y2="28" stroke="url(#eg1)" stroke-width="0.6" opacity="0.6"/>
         <line x1="8" y1="30" x2="22" y2="33" stroke="url(#eg1)" stroke-width="0.6" opacity="0.5"/>
         <line x1="14" y1="38" x2="26" y2="38" stroke="url(#eg1)" stroke-width="0.6" opacity="0.4"/>
-        <!-- Wing feather lines - right -->
         <line x1="62" y1="22" x2="46" y2="28" stroke="url(#eg1)" stroke-width="0.6" opacity="0.6"/>
         <line x1="64" y1="30" x2="50" y2="33" stroke="url(#eg1)" stroke-width="0.6" opacity="0.5"/>
         <line x1="58" y1="38" x2="46" y2="38" stroke="url(#eg1)" stroke-width="0.6" opacity="0.4"/>
@@ -670,9 +662,7 @@ const PC=[
   {badge:'rgba(232,64,96,.13)', bt:'#e84060',gr:'linear-gradient(90deg,#e84060,#ff7088)'},
 ];
 const state={q1:[],q2:[],q3:[],q4:[]};
-
 const imgs={};
-
 let selMod=null,pendingId=null,toastTmr;
 
 function toast(msg){
@@ -681,27 +671,32 @@ function toast(msg){
   clearTimeout(toastTmr);toastTmr=setTimeout(()=>el.classList.remove('on'),2500);
 }
 
+// ── FIXED UPLOAD HANDLER: remove-then-upload instead of upsert ──
 document.getElementById('file-input').addEventListener('change',async e=>{
   const f=e.target.files[0];if(!f||!pendingId)return;
   const id=pendingId;
   toast('⏳ Uploading image…');
   e.target.value='';
 
-  // 1. Upload file to Supabase Storage (upsert so re-uploads overwrite)
   const ext=f.name.split('.').pop()||'jpg';
   const path=`${id}.${ext}`;
-  const{error:upErr}=await sb.storage.from('module-images').upload(path,f,{upsert:true,contentType:f.type});
+
+  // 1. Remove old file first (silently ignore if it doesn't exist)
+  await sb.storage.from('module-images').remove([path]);
+
+  // 2. Fresh upload — no upsert, so only INSERT policy is needed
+  const{error:upErr}=await sb.storage.from('module-images').upload(path,f,{contentType:f.type});
   if(upErr){toast('✖ Upload failed: '+upErr.message);pendingId=null;return}
 
-  // 2. Get the public URL
+  // 3. Get the public URL
   const{data:urlData}=sb.storage.from('module-images').getPublicUrl(path);
   const url=urlData.publicUrl;
 
-  // 3. Save URL to module_images table
+  // 4. Save URL to module_images table (upsert is fine here — table RLS is disabled)
   const{error:dbErr}=await sb.from('module_images').upsert({module_id:id,image_url:url},{onConflict:'module_id'});
   if(dbErr){toast('✖ DB save failed: '+dbErr.message);pendingId=null;return}
 
-  // 4. Update in-memory cache and UI
+  // 5. Update in-memory cache and UI
   imgs[id]=url;
   const ci=document.getElementById(`ci-${id}`);
   const cf=document.getElementById(`cf-${id}`);
