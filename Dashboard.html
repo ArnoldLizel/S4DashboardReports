@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <title>HSG Logistics Data Hub</title>
 <link rel="icon" type="image/png" href="image/hsg1.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,9 +15,28 @@
   --bg:#06070f;--panel:rgba(8,10,22,.96);--card:#0a0d1e;
   --border:rgba(201,162,39,.3);--border-hi:rgba(201,162,39,.75);
   --shadow-gold:0 0 32px rgba(201,162,39,.35);
+  --hdr-h:78px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;color:#fff;background:var(--bg)}
+
+/* ── CRITICAL: true full-screen, no overflow ── */
+html{
+  width:100%;height:100%;
+  overflow:hidden;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+body{
+  width:100%;
+  height:100dvh; /* dynamic viewport height — accounts for mobile browser chrome */
+  overflow:hidden;
+  font-family:'Rajdhani',sans-serif;
+  color:#fff;
+  background:var(--bg);
+  position:fixed; /* prevents rubber-band scroll on iOS */
+  inset:0;
+  touch-action:pan-y; /* allow vertical pan for scrollable inner containers */
+}
 
 /* ── BG ── */
 body::before{
@@ -55,16 +74,30 @@ body::after{
 .star{position:fixed;z-index:1;pointer-events:none;border-radius:50%;background:radial-gradient(circle,#e8c84a,transparent 70%);opacity:0;animation:tw var(--d,3s) var(--dl,0s) ease-in-out infinite}
 @keyframes tw{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:.9;transform:scale(1)}}
 
-/* ════ FRAME ════ */
-#frame{position:relative;z-index:2;width:100%;height:100vh;display:flex;flex-direction:column}
+/* ════ FRAME: fills exactly 100dvh ════ */
+#frame{
+  position:fixed;inset:0;z-index:2;
+  display:flex;flex-direction:column;
+  height:100dvh;
+  overflow:hidden;
+}
 
 /* ── Header ── */
 #hdr{
-  flex-shrink:0;height:78px;display:flex;align-items:center;padding:0 16px 0 12px;gap:10px;
+  flex-shrink:0;height:var(--hdr-h);display:flex;align-items:center;padding:0 16px 0 12px;gap:10px;
   background:linear-gradient(180deg,rgba(5,6,14,.99),rgba(7,9,20,.94));
   border-bottom:1px solid rgba(201,162,39,.15);position:relative;z-index:10;
 }
 #hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold) 18%,var(--gold-lt) 50%,var(--gold) 82%,transparent)}
+
+/* Mobile hamburger */
+.mob-menu-btn{
+  display:none;background:transparent;border:1px solid rgba(201,162,39,.35);
+  color:var(--gold);width:34px;height:34px;border-radius:4px;cursor:pointer;
+  align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;
+  transition:all .15s;
+}
+.mob-menu-btn:hover{background:rgba(201,162,39,.1);}
 
 /* Center emblem in header */
 .hdr-center-emblem{
@@ -89,12 +122,31 @@ body::after{
 .out-btn:hover{background:rgba(201,162,39,.1);border-color:var(--gold);box-shadow:0 0 14px rgba(201,162,39,.16)}
 
 /* ── Body 3-col ── */
-#body{flex:1;overflow:hidden;display:grid;grid-template-columns:175px 1fr 242px}
+#body{
+  flex:1;
+  min-height:0; /* critical: allows flex children to shrink below content */
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:175px 1fr 242px;
+}
 
 /* ════ LEFT ════ */
-#left{background:rgba(5,7,18,.92);border-right:1px solid rgba(201,162,39,.18);display:flex;flex-direction:column;padding:10px 8px 12px;overflow-y:auto;overflow-x:hidden}
+#left{
+  background:rgba(5,7,18,.92);border-right:1px solid rgba(201,162,39,.18);
+  display:flex;flex-direction:column;padding:10px 8px 12px;
+  overflow-y:auto;overflow-x:hidden;
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
 #left::-webkit-scrollbar{width:3px}
 #left::-webkit-scrollbar-thumb{background:rgba(201,162,39,.16)}
+
+/* Drawer backdrop (mobile only) */
+#left-backdrop{
+  display:none;position:fixed;inset:0;z-index:49;
+  background:rgba(0,0,0,.6);opacity:0;
+  transition:opacity .25s;pointer-events:none;
+}
+#left-backdrop.vis{opacity:1;pointer-events:auto;}
 
 /* Data reviews */
 .dr{border:1px solid rgba(201,162,39,.28);border-radius:7px;overflow:hidden;margin-bottom:10px;flex-shrink:0}
@@ -122,7 +174,7 @@ body::after{
 .cb-cnt{position:absolute;top:4px;right:6px;font-size:.42rem;color:rgba(255,255,255,.28);font-family:'Orbitron',sans-serif;font-weight:700}
 
 /* ════ CENTER ════ */
-#center{display:flex;flex-direction:column;overflow:hidden}
+#center{display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
 .ctb{flex-shrink:0;padding:10px 0 7px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative}
 .ctb::after{content:'';position:absolute;bottom:0;left:4%;right:4%;height:1px;background:linear-gradient(90deg,transparent,rgba(201,162,39,.36),transparent)}
@@ -130,8 +182,14 @@ body::after{
 .ctb-ln.r{background:linear-gradient(90deg,rgba(201,162,39,.4),transparent)}
 .ctb-txt{font-family:'Cinzel',serif;font-size:.78rem;font-weight:900;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;text-shadow:0 0 20px var(--gold-glow);white-space:nowrap}
 
-/* ── GRID: 6 columns to match reference ── */
-#grid{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 10px 6px;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-content:start}
+/* ── GRID: 6 columns ── */
+#grid{
+  flex:1;min-height:0;
+  overflow-y:auto;overflow-x:hidden;
+  padding:8px 10px 6px;
+  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-content:start;
+  -webkit-overflow-scrolling:touch;
+}
 #grid::-webkit-scrollbar{width:4px}
 #grid::-webkit-scrollbar-thumb{background:rgba(201,162,39,.2);border-radius:50px}
 
@@ -150,7 +208,6 @@ body::after{
 .cc:hover{border-color:rgba(201,162,39,.75);transform:translateY(-6px) scale(1.045);box-shadow:0 0 24px rgba(201,162,39,.4),0 14px 28px rgba(0,0,0,.7);z-index:5}
 .cc.sel{border-color:var(--gold-lt);transform:translateY(-4px) scale(1.03);box-shadow:0 0 32px rgba(201,162,39,.65),0 0 60px rgba(201,162,39,.12),0 12px 28px rgba(0,0,0,.7);z-index:6}
 
-/* SELECTED banner */
 .cc-sel-banner{
   position:absolute;top:0;left:0;right:0;z-index:20;display:none;
   background:linear-gradient(135deg,var(--gold),#9a7010,var(--gold-lt));
@@ -160,7 +217,6 @@ body::after{
 }
 .cc.sel .cc-sel-banner{display:block}
 
-/* Portrait */
 .cc-port{position:relative;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#0d1020,#080b1a)}
 .cc-img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;transition:transform .3s ease}
 .cc:hover .cc-img{transform:scale(1.07)}
@@ -171,11 +227,9 @@ body::after{
 .cc-fb{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none}
 .cc-fb.hide{display:none}
 
-/* Diamond badge top-right */
 .cc-dia{position:absolute;top:5px;right:5px;z-index:10;width:17px;height:17px}
 .cc-dia svg{filter:drop-shadow(0 0 6px rgba(201,162,39,.75))}
 
-/* Upload overlay */
 .cc-up{position:absolute;inset:0;z-index:15;background:rgba(0,0,0,.48);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;opacity:0;transition:opacity .17s;pointer-events:none}
 .cc:hover .cc-up{opacity:1;pointer-events:auto}
 .cc.sel .cc-up{opacity:0!important;pointer-events:none!important}
@@ -183,7 +237,6 @@ body::after{
 .up-circle:hover{transform:scale(1.16);box-shadow:0 0 20px rgba(201,162,39,.55)}
 .up-lbl{font-family:'Orbitron',sans-serif;font-size:.38rem;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.6);text-transform:uppercase}
 
-/* Card footer */
 .cc-ft{position:absolute;bottom:0;left:0;right:0;z-index:5;padding:12px 5px 5px;background:linear-gradient(transparent,rgba(0,0,0,.88));text-align:center;pointer-events:none}
 .cc-name{font-family:'Rajdhani',sans-serif;font-size:.72rem;font-weight:700;color:#fff;letter-spacing:.05em;text-shadow:0 1px 8px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
 .cc-rank{font-size:.4rem;color:rgba(201,162,39,.6);letter-spacing:.1em;text-transform:uppercase;margin-top:1px;font-family:'Orbitron',sans-serif;font-weight:600}
@@ -193,7 +246,14 @@ body::after{
 .rp-hdr{flex-shrink:0;padding:8px 14px 7px;border-bottom:1px solid rgba(201,162,39,.16);font-family:'Cinzel',serif;font-size:.64rem;font-weight:700;letter-spacing:.2em;color:var(--gold);text-align:center;text-transform:uppercase;background:linear-gradient(180deg,rgba(201,162,39,.05),transparent);position:relative}
 .rp-hdr::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(201,162,39,.44),transparent)}
 
-/* Portrait box */
+/* Mobile right close btn */
+.rp-close-btn{
+  display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:transparent;border:1px solid rgba(201,162,39,.35);color:var(--gold);
+  width:24px;height:24px;border-radius:3px;cursor:pointer;font-size:.7rem;
+  align-items:center;justify-content:center;
+}
+
 .rp-box{margin:8px 8px 5px;border-radius:7px;overflow:hidden;border:1.5px solid rgba(201,162,39,.35);flex-shrink:0;position:relative;aspect-ratio:.75/1;background:linear-gradient(145deg,#0d1020,#060810);box-shadow:0 0 24px rgba(201,162,39,.09),inset 0 0 26px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
 .rp-box::before{content:'';position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.72))}
 .rp-port-img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;z-index:1}
@@ -205,7 +265,7 @@ body::after{
 .rp-upload-btn{position:absolute;top:5px;left:5px;z-index:8;width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(201,162,39,.55);background:rgba(0,0,0,.58);display:flex;align-items:center;justify-content:center;font-size:.62rem;color:var(--gold);cursor:pointer;transition:all .15s;box-shadow:0 0 10px rgba(201,162,39,.28)}
 .rp-upload-btn:hover{background:rgba(201,162,39,.14);box-shadow:0 0 18px rgba(201,162,39,.48);transform:scale(1.1)}
 
-.rp-body{flex:1;overflow-y:auto;padding:0 10px 6px}
+.rp-body{flex:1;overflow-y:auto;padding:0 10px 6px;-webkit-overflow-scrolling:touch}
 .rp-body::-webkit-scrollbar{width:3px}
 .rp-body::-webkit-scrollbar-thumb{background:rgba(201,162,39,.16)}
 .rp-cname{font-family:'Cinzel',serif;font-size:.9rem;font-weight:800;letter-spacing:.04em;color:var(--gold-lt);margin:5px 0 2px}
@@ -236,7 +296,7 @@ body::after{
 #main-ifr{flex:1;border:none;width:100%}
 
 /* Dashboard */
-.dash-body{flex:1;overflow-y:auto;padding:18px 22px 34px}
+.dash-body{flex:1;overflow-y:auto;padding:18px 22px 34px;-webkit-overflow-scrolling:touch}
 .dash-body::-webkit-scrollbar{width:4px}
 .dash-body::-webkit-scrollbar-thumb{background:rgba(201,162,39,.2);border-radius:50px}
 .dp-hdr{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
@@ -298,7 +358,7 @@ body::after{
 .dp-pf{height:100%;border-radius:50px;transition:width .7s cubic-bezier(.4,0,.2,1)}
 .dp-pp{font-size:.5rem;font-weight:700;color:rgba(255,255,255,.38);min-width:22px;text-align:right}
 .dp-pc{font-size:.5rem;font-weight:700;background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.12);color:rgba(255,255,255,.38);padding:2px 6px;border-radius:3px}
-.dp-tlist{flex:1;overflow-y:auto;padding:3px;max-height:185px}
+.dp-tlist{flex:1;overflow-y:auto;padding:3px;max-height:185px;-webkit-overflow-scrolling:touch}
 .dp-tlist::-webkit-scrollbar{width:2px}
 .dp-tlist::-webkit-scrollbar-thumb{background:rgba(201,162,39,.13)}
 .dp-trow{display:flex;align-items:center;gap:5px;padding:4px 6px;border-radius:4px;margin-bottom:2px;border:1px solid transparent;transition:all .11s}
@@ -352,6 +412,117 @@ body::after{
 @keyframes shim{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 
 #file-input{display:none}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE: Tablet (≤1024px)
+══════════════════════════════════════════ */
+@media (max-width:1024px){
+  :root{--hdr-h:64px}
+  #body{grid-template-columns:152px 1fr 210px}
+  #grid{grid-template-columns:repeat(5,1fr)}
+  .hdr-center-emblem{display:none}
+  .live-badge .live-txt{display:none}
+  .dp-panels{grid-template-columns:repeat(2,1fr)}
+  .dp-stats{grid-template-columns:repeat(2,1fr)}
+  .dp-analytics{grid-template-columns:1fr}
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE: Mobile (≤768px)
+   - Left panel → slide-in drawer (z:50)
+   - Right panel → bottom-sheet (z:50)
+   - Center → full width
+══════════════════════════════════════════ */
+@media (max-width:768px){
+  :root{--hdr-h:56px}
+
+  .mob-menu-btn{display:flex}
+  .hdr-sub{display:none}
+  .hdr-name{font-size:.9rem}
+  .hdr-logo{width:40px;height:40px}
+  .hdr-logo img{width:34px;height:34px}
+  .hdr-sparks{display:none}
+  .hdr-center-emblem{display:none}
+  .live-badge{padding:4px 8px;font-size:.42rem}
+  .live-badge .live-txt{display:none}
+  .out-btn .out-txt{display:none}
+  .out-btn{padding:5px 8px}
+
+  /* Body: single column, left+right are drawers */
+  #body{
+    grid-template-columns:1fr;
+    position:relative;
+  }
+
+  /* LEFT: slide-in drawer from left */
+  #left{
+    position:fixed;
+    top:var(--hdr-h);
+    left:0;
+    bottom:0;
+    width:220px;
+    z-index:50;
+    transform:translateX(-100%);
+    box-shadow:4px 0 24px rgba(0,0,0,.6);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  #left.open{transform:translateX(0)}
+  #left-backdrop{display:block;}
+
+  /* RIGHT: slide-in from right as a bottom sheet */
+  #right{
+    position:fixed;
+    right:0;
+    top:var(--hdr-h);
+    bottom:0;
+    width:280px;
+    z-index:50;
+    transform:translateX(100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow:-4px 0 24px rgba(0,0,0,.6);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  #right.open{transform:translateX(0)}
+  .rp-close-btn{display:flex}
+
+  /* Center: full width, full height */
+  #center{
+    grid-column:1;
+    width:100%;
+  }
+  #grid{grid-template-columns:repeat(3,1fr);gap:5px;padding:6px 8px}
+
+  .ctb-txt{font-size:.6rem;letter-spacing:.1em}
+  .ctb-ln{margin:0 6px}
+
+  /* Deploy button: floating at bottom of right drawer */
+  .dep-wrap{padding:6px 8px calc(8px + env(safe-area-inset-bottom))}
+
+  /* Dashboard responsive */
+  .dp-hdr{flex-direction:column;align-items:flex-start}
+  .dp-title{font-size:1.2rem}
+  .dp-stats{grid-template-columns:repeat(2,1fr)}
+  .dp-panels{grid-template-columns:1fr}
+  .dp-analytics{grid-template-columns:1fr}
+  .donut-wrap{flex-direction:column;align-items:flex-start}
+  .dash-body{padding:12px 14px 24px}
+
+  /* Overlay adjustments */
+  .ov-bar{padding:0 10px;height:40px}
+  .ov-lbl{font-size:.5rem}
+}
+
+/* Extra small (≤480px) */
+@media (max-width:480px){
+  #grid{grid-template-columns:repeat(3,1fr);gap:4px}
+  .hdr-name{font-size:.78rem}
+}
+
+/* Safe area padding for notch/island devices */
+@supports (padding-top: env(safe-area-inset-top)){
+  #hdr{padding-top:env(safe-area-inset-top)}
+  #frame{height:calc(100dvh)}
+}
 </style>
 </head>
 <body>
@@ -378,11 +549,19 @@ body::after{
 <div id="toast"></div>
 <input type="file" id="file-input" accept="image/*"/>
 
+<!-- Left drawer backdrop (mobile) -->
+<div id="left-backdrop"></div>
+
 <!-- ══ MAIN FRAME ══ -->
 <div id="frame">
 
   <!-- HEADER -->
   <header id="hdr">
+    <!-- Mobile hamburger (left nav toggle) -->
+    <button class="mob-menu-btn" id="mob-nav-btn" title="Toggle Navigation">
+      <i class="fas fa-bars"></i>
+    </button>
+
     <div class="hdr-logo">
       <div class="hdr-logo-ring"></div>
       <img src="image/hsg1.png" alt="HSG"
@@ -402,7 +581,7 @@ body::after{
       <span class="sp" style="font-size:.68rem;--d:3.8s;--dl:.7s">✦</span>
     </div>
 
-    <!-- ✦ CENTER GOLD EMBLEM (matches reference image) ✦ -->
+    <!-- Center Gold Emblem -->
     <div class="hdr-center-emblem">
       <svg class="hdr-emblem-svg" width="72" height="62" viewBox="0 0 72 62" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -417,26 +596,16 @@ body::after{
             <stop offset="100%" stop-color="#c9a227" stop-opacity="0.4"/>
           </linearGradient>
         </defs>
-        <!-- Left wing -->
-        <path d="M36 14 L6 8 L10 20 L2 24 L10 26 L4 36 L14 32 L12 44 L22 36 L24 48 L32 38 L36 50" 
-              fill="url(#eg2)" stroke="url(#eg1)" stroke-width="0.8" stroke-linejoin="round"/>
-        <!-- Right wing (mirrored) -->
-        <path d="M36 14 L66 8 L62 20 L70 24 L62 26 L68 36 L58 32 L60 44 L50 36 L48 48 L40 38 L36 50" 
-              fill="url(#eg2)" stroke="url(#eg1)" stroke-width="0.8" stroke-linejoin="round"/>
-        <!-- Center diamond -->
+        <path d="M36 14 L6 8 L10 20 L2 24 L10 26 L4 36 L14 32 L12 44 L22 36 L24 48 L32 38 L36 50" fill="url(#eg2)" stroke="url(#eg1)" stroke-width="0.8" stroke-linejoin="round"/>
+        <path d="M36 14 L66 8 L62 20 L70 24 L62 26 L68 36 L58 32 L60 44 L50 36 L48 48 L40 38 L36 50" fill="url(#eg2)" stroke="url(#eg1)" stroke-width="0.8" stroke-linejoin="round"/>
         <path d="M36 8 L42 18 L36 28 L30 18 Z" fill="url(#eg1)" opacity="0.95"/>
-        <!-- Center circle -->
         <circle cx="36" cy="34" r="7" fill="none" stroke="url(#eg1)" stroke-width="1.5"/>
         <circle cx="36" cy="34" r="3.5" fill="url(#eg1)" opacity="0.85"/>
-        <!-- Top star points -->
         <path d="M36 4 L37.2 7.6 L36 11 L34.8 7.6 Z" fill="url(#eg1)"/>
-        <!-- Bottom accent -->
         <path d="M28 50 L36 54 L44 50 L36 56 Z" fill="url(#eg1)" opacity="0.7"/>
-        <!-- Wing feather lines - left -->
         <line x1="10" y1="22" x2="26" y2="28" stroke="url(#eg1)" stroke-width="0.6" opacity="0.6"/>
         <line x1="8" y1="30" x2="22" y2="33" stroke="url(#eg1)" stroke-width="0.6" opacity="0.5"/>
         <line x1="14" y1="38" x2="26" y2="38" stroke="url(#eg1)" stroke-width="0.6" opacity="0.4"/>
-        <!-- Wing feather lines - right -->
         <line x1="62" y1="22" x2="46" y2="28" stroke="url(#eg1)" stroke-width="0.6" opacity="0.6"/>
         <line x1="64" y1="30" x2="50" y2="33" stroke="url(#eg1)" stroke-width="0.6" opacity="0.5"/>
         <line x1="58" y1="38" x2="46" y2="38" stroke="url(#eg1)" stroke-width="0.6" opacity="0.4"/>
@@ -444,8 +613,8 @@ body::after{
     </div>
 
     <div class="hdr-right">
-      <div class="live-badge"><div class="ldot"></div>Live DB Sync · iAPB 2026</div>
-      <button class="out-btn" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      <div class="live-badge"><div class="ldot"></div><span class="live-txt">Live DB Sync · iAPB 2026</span></div>
+      <button class="out-btn" id="logout-btn"><i class="fas fa-sign-out-alt"></i><span class="out-txt"> Logout</span></button>
     </div>
   </header>
 
@@ -528,7 +697,10 @@ body::after{
 
     <!-- RIGHT -->
     <div id="right">
-      <div class="rp-hdr">Character Details</div>
+      <div class="rp-hdr" style="position:relative">
+        Character Details
+        <button class="rp-close-btn" id="rp-close-btn"><i class="fas fa-times"></i></button>
+      </div>
       <div id="rp-content" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
         <div class="rp-empty">
           <i class="fas fa-crosshairs"></i>
@@ -670,10 +842,35 @@ const PC=[
   {badge:'rgba(232,64,96,.13)', bt:'#e84060',gr:'linear-gradient(90deg,#e84060,#ff7088)'},
 ];
 const state={q1:[],q2:[],q3:[],q4:[]};
-
 const imgs={};
-
 let selMod=null,pendingId=null,toastTmr;
+
+/* ── Mobile drawer helpers ── */
+const isMobile=()=>window.innerWidth<=768;
+
+function openLeftDrawer(){
+  document.getElementById('left').classList.add('open');
+  const bd=document.getElementById('left-backdrop');
+  bd.classList.add('vis');
+}
+function closeLeftDrawer(){
+  document.getElementById('left').classList.remove('open');
+  document.getElementById('left-backdrop').classList.remove('vis');
+}
+function openRightPanel(){
+  if(isMobile()) document.getElementById('right').classList.add('open');
+}
+function closeRightPanel(){
+  document.getElementById('right').classList.remove('open');
+}
+
+document.getElementById('mob-nav-btn').addEventListener('click',()=>{
+  const left=document.getElementById('left');
+  if(left.classList.contains('open')) closeLeftDrawer();
+  else openLeftDrawer();
+});
+document.getElementById('left-backdrop').addEventListener('click',closeLeftDrawer);
+document.getElementById('rp-close-btn').addEventListener('click',closeRightPanel);
 
 function toast(msg){
   const el=document.getElementById('toast');
@@ -686,8 +883,6 @@ document.getElementById('file-input').addEventListener('change',e=>{
   const id=pendingId;
   toast('⏳ Saving image…');
   e.target.value='';
-
-  // Compress image via canvas before saving
   const img=new Image();
   const objectUrl=URL.createObjectURL(f);
   img.onload=async()=>{
@@ -700,13 +895,10 @@ document.getElementById('file-input').addEventListener('change',e=>{
     canvas.width=w;canvas.height=h;
     canvas.getContext('2d').drawImage(img,0,0,w,h);
     const base64=canvas.toDataURL('image/jpeg',0.72);
-
     const{error:dbErr}=await sb.from('module_images').upsert(
-      {module_id:id,image_url:base64},
-      {onConflict:'module_id'}
+      {module_id:id,image_url:base64},{onConflict:'module_id'}
     );
     if(dbErr){toast('✖ Save failed: '+dbErr.message);pendingId=null;return}
-
     imgs[id]=base64;
     const ci=document.getElementById(`ci-${id}`);
     const cf=document.getElementById(`cf-${id}`);
@@ -765,6 +957,8 @@ function selectMod(id){
   const c=document.querySelector(`[data-id="${id}"]`);if(c)c.classList.add('sel');
   renderRight(m);
   document.getElementById('dep-btn').disabled=false;
+  openRightPanel(); // auto-open right panel on mobile
+  if(isMobile()) closeLeftDrawer(); // close left drawer on mobile when card selected
 }
 
 function renderRight(m){
@@ -824,7 +1018,9 @@ document.getElementById('bk-btn').addEventListener('click',()=>{
 document.querySelectorAll('.cb').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.cb').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');renderGrid(btn.dataset.cat);
+    btn.classList.add('active');
+    renderGrid(btn.dataset.cat);
+    if(isMobile()) closeLeftDrawer();
   });
 });
 
