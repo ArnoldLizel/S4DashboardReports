@@ -196,6 +196,10 @@ body::after{
   font-family:'Exo 2',sans-serif;font-size:.6rem;font-weight:600;letter-spacing:.08em;
   color:rgba(201,162,39,.5);text-transform:uppercase;
   position:relative;overflow:hidden;transition:all .2s cubic-bezier(.34,1.56,.64,1);flex-shrink:0;margin-bottom:6px;gap:9px;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-user-select:none;
 }
 .cb::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,162,39,.2),transparent)}
 .cb:hover{background:rgba(201,162,39,.07);border-color:rgba(201,162,39,.35);color:rgba(201,162,39,.85);transform:translateX(2px)}
@@ -620,18 +624,6 @@ body::after{
   #hdr{padding-top:env(safe-area-inset-top)}
   #frame{height:calc(100dvh)}
 }
-/* Fix touch targets and prevent backdrop ghost-click issues on mobile */
-#left-backdrop {
-  -webkit-tap-highlight-color: transparent;
-}
-.cb {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-#mob-nav-btn {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
 </style>
 </head>
 <body>
@@ -995,7 +987,7 @@ function updateBadge(){
 
 const isMobile=()=>window.innerWidth<=768;
 
-// Notification bell
+// ── Notification bell
 document.getElementById('notif-btn').addEventListener('click',e=>{
   e.stopPropagation();
   const drop=document.getElementById('notif-drop');
@@ -1010,6 +1002,7 @@ document.getElementById('nd-clear').addEventListener('click',()=>{
   NOTIFS.length=0;renderNotifs();
 });
 
+// ── Drawer helpers
 function openLeftDrawer(){
   document.getElementById('left').classList.add('open');
   document.getElementById('left-backdrop').classList.add('vis');
@@ -1021,21 +1014,24 @@ function closeLeftDrawer(){
 function openRightPanel(){if(isMobile())document.getElementById('right').classList.add('open')}
 function closeRightPanel(){document.getElementById('right').classList.remove('open')}
 
+// ── Hamburger menu button
 document.getElementById('mob-nav-btn').addEventListener('click', e => {
   e.stopPropagation();
   const left = document.getElementById('left');
   if (left.classList.contains('open')) closeLeftDrawer(); else openLeftDrawer();
 });
 
-// Use both touchend and click for backdrop — prevent ghost clicks
+// ── Backdrop — close drawer on tap/click outside
 const backdrop = document.getElementById('left-backdrop');
-function handleBackdropClose(e) {
+backdrop.addEventListener('touchend', e => {
   e.preventDefault();
   e.stopPropagation();
   closeLeftDrawer();
-}
-backdrop.addEventListener('touchend', handleBackdropClose, { passive: false });
-backdrop.addEventListener('click', closeLeftDrawer);
+}, { passive: false });
+backdrop.addEventListener('click', e => {
+  e.stopPropagation();
+  closeLeftDrawer();
+});
 
 document.getElementById('rp-close-btn').addEventListener('click', closeRightPanel);
 
@@ -1165,29 +1161,16 @@ document.getElementById('bk-btn').addEventListener('click',()=>{
   document.getElementById('ifr-ov').classList.remove('show');document.getElementById('main-ifr').src='';
 });
 
+// ── FIX: Category nav buttons — single clean click handler
+// user-scalable=no in viewport eliminates the 300ms tap delay,
+// so plain click events work instantly on mobile too.
 document.querySelectorAll('.cb').forEach(btn => {
-  // Use touchend for snappy mobile response, fallback to click on desktop
-  let touchHandled = false;
-
-  btn.addEventListener('touchend', e => {
-    e.preventDefault(); // prevent ghost click
-    touchHandled = true;
+  btn.addEventListener('click', e => {
+    e.stopPropagation(); // prevent event from reaching backdrop or other handlers
     document.querySelectorAll('.cb').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderGrid(btn.dataset.cat);
-    // Delay close so user sees the active state change
-    setTimeout(() => {
-      closeLeftDrawer();
-      touchHandled = false;
-    }, 120);
-  }, { passive: false });
-
-  btn.addEventListener('click', () => {
-    if (touchHandled) return; // already handled by touchend
-    document.querySelectorAll('.cb').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderGrid(btn.dataset.cat);
-    if (isMobile()) closeLeftDrawer();
+    if (isMobile()) setTimeout(closeLeftDrawer, 80); // slight delay so active state is visible before drawer closes
   });
 });
 
@@ -1203,7 +1186,6 @@ document.getElementById('dash-bk').addEventListener('click',()=>document.getElem
 function buildTimeline(){
   const entries=[];
   QS.forEach((q,qi)=>{
-    const types=['done','pend','info','warn'];
     state[q.id].slice(0,3).forEach((a,i)=>{
       entries.push({
         type:a.done?'done':'pend',
@@ -1214,7 +1196,6 @@ function buildTimeline(){
       });
     });
   });
-  // Sort and take most recent 8
   return entries.slice(0,8);
 }
 
@@ -1357,9 +1338,7 @@ function renderDash(){
       </div>
     </div>`;
 
-  // Render Q1+Q2 in mid row, Q3+Q4 in bottom row
   QS.forEach((q,qi)=>{
-    const wrapId=qi<2?`dpnl-${q.id.replace('q','q')}-wrap`:'';
     const targetWrap=qi===0?document.getElementById('dpnl-q1-wrap'):
                      qi===1?document.getElementById('dpnl-q2-wrap'):
                      qi===2?document.getElementById('dpnl-q3-wrap'):
