@@ -620,6 +620,18 @@ body::after{
   #hdr{padding-top:env(safe-area-inset-top)}
   #frame{height:calc(100dvh)}
 }
+/* Fix touch targets and prevent backdrop ghost-click issues on mobile */
+#left-backdrop {
+  -webkit-tap-highlight-color: transparent;
+}
+.cb {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+#mob-nav-btn {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
 </style>
 </head>
 <body>
@@ -644,7 +656,7 @@ body::after{
 <!-- Toast -->
 <div id="toast"></div>
 <input type="file" id="file-input" accept="image/*"/>
-<div id="left-backdrop"></div>
+<div id="left-backdrop" style="touch-action:none"></div>
 
 <!-- Notification Dropdown -->
 <div class="notif-drop" id="notif-drop">
@@ -1009,12 +1021,23 @@ function closeLeftDrawer(){
 function openRightPanel(){if(isMobile())document.getElementById('right').classList.add('open')}
 function closeRightPanel(){document.getElementById('right').classList.remove('open')}
 
-document.getElementById('mob-nav-btn').addEventListener('click',()=>{
-  const left=document.getElementById('left');
-  if(left.classList.contains('open'))closeLeftDrawer();else openLeftDrawer();
+document.getElementById('mob-nav-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  const left = document.getElementById('left');
+  if (left.classList.contains('open')) closeLeftDrawer(); else openLeftDrawer();
 });
-document.getElementById('left-backdrop').addEventListener('click',closeLeftDrawer);
-document.getElementById('rp-close-btn').addEventListener('click',closeRightPanel);
+
+// Use both touchend and click for backdrop — prevent ghost clicks
+const backdrop = document.getElementById('left-backdrop');
+function handleBackdropClose(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  closeLeftDrawer();
+}
+backdrop.addEventListener('touchend', handleBackdropClose, { passive: false });
+backdrop.addEventListener('click', closeLeftDrawer);
+
+document.getElementById('rp-close-btn').addEventListener('click', closeRightPanel);
 
 function toast(msg){
   const el=document.getElementById('toast');
@@ -1142,11 +1165,29 @@ document.getElementById('bk-btn').addEventListener('click',()=>{
   document.getElementById('ifr-ov').classList.remove('show');document.getElementById('main-ifr').src='';
 });
 
-document.querySelectorAll('.cb').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.cb').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');renderGrid(btn.dataset.cat);
-    if(isMobile())closeLeftDrawer();
+document.querySelectorAll('.cb').forEach(btn => {
+  // Use touchend for snappy mobile response, fallback to click on desktop
+  let touchHandled = false;
+
+  btn.addEventListener('touchend', e => {
+    e.preventDefault(); // prevent ghost click
+    touchHandled = true;
+    document.querySelectorAll('.cb').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid(btn.dataset.cat);
+    // Delay close so user sees the active state change
+    setTimeout(() => {
+      closeLeftDrawer();
+      touchHandled = false;
+    }, 120);
+  }, { passive: false });
+
+  btn.addEventListener('click', () => {
+    if (touchHandled) return; // already handled by touchend
+    document.querySelectorAll('.cb').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid(btn.dataset.cat);
+    if (isMobile()) closeLeftDrawer();
   });
 });
 
