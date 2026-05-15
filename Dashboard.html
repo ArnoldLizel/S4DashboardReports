@@ -862,7 +862,7 @@ const PL=`<svg width="10"height="10"viewBox="0 0 24 24"fill="none"stroke="curren
 const MODS=[
   {id:'command',name:'Command Center',rank:'Admiral',role:'Chief Operations Officer',
    desc:'Annual activity monitoring, strategic goal tracking, and live iAPB 2026 database synchronization across all four operational quarters.',
-   page:'Activity_Tracker_Widget.html',cat:'command',icon:'fa-chess-king',color:'#c9a227',
+   page:'Activity_Widget_Tracker.html',isCmd:true,cat:'command',icon:'fa-chess-king',color:'#c9a227',
    tags:['HEADQUARTERS','LIVE','ANALYTICS','iAPB 2026']},
   {id:'hsg-mon',name:'HSG Monitoring',rank:'Captain',role:'Project Analyst',
    desc:'Real-time project monitoring for HSG initiatives — tracks milestones, deliverables, and implementation status.',
@@ -1024,13 +1024,17 @@ document.getElementById('mob-nav-btn').addEventListener('click', e => {
 // ── Backdrop — close drawer on tap/click outside
 const backdrop = document.getElementById('left-backdrop');
 backdrop.addEventListener('touchend', e => {
-  e.preventDefault();
-  e.stopPropagation();
-  closeLeftDrawer();
+  // Only close if the touch target is actually the backdrop
+  if (e.target === backdrop) {
+    e.preventDefault();
+    closeLeftDrawer();
+  }
 }, { passive: false });
+
 backdrop.addEventListener('click', e => {
-  e.stopPropagation();
-  closeLeftDrawer();
+  if (e.target === backdrop) {
+    closeLeftDrawer();
+  }
 });
 
 document.getElementById('rp-close-btn').addEventListener('click', closeRightPanel);
@@ -1164,13 +1168,27 @@ document.getElementById('bk-btn').addEventListener('click',()=>{
 // ── FIX: Category nav buttons — single clean click handler
 // user-scalable=no in viewport eliminates the 300ms tap delay,
 // so plain click events work instantly on mobile too.
+// ── Category nav buttons — mobile-safe
 document.querySelectorAll('.cb').forEach(btn => {
-  btn.addEventListener('click', e => {
-    e.stopPropagation(); // prevent event from reaching backdrop or other handlers
+  // Use touchend for instant mobile response, fallback to click
+  let touchHandled = false;
+
+  btn.addEventListener('touchend', e => {
+    e.stopPropagation();
+    touchHandled = true;
     document.querySelectorAll('.cb').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderGrid(btn.dataset.cat);
-    if (isMobile()) setTimeout(closeLeftDrawer, 80); // slight delay so active state is visible before drawer closes
+    if (isMobile()) setTimeout(closeLeftDrawer, 120);
+  }, { passive: true });
+
+  btn.addEventListener('click', e => {
+    if (touchHandled) { touchHandled = false; return; } // prevent double-fire
+    e.stopPropagation();
+    document.querySelectorAll('.cb').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid(btn.dataset.cat);
+    if (isMobile()) setTimeout(closeLeftDrawer, 120);
   });
 });
 
