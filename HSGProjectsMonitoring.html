@@ -857,6 +857,37 @@
     return new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(num || 0);
   }
 
+  // Format a raw number string with commas, preserving decimals
+  function formatWithCommas(val) {
+    const str = String(val ?? "").trim();
+    if (!str) return "";
+    const num = parseFloat(str.replace(/,/g, ""));
+    if (isNaN(num)) return str;
+    return new Intl.NumberFormat("en-PH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(num);
+  }
+
+  // Strip commas to get raw number for saving
+  function stripCommas(val) {
+    return String(val ?? "").replace(/,/g, "").trim();
+  }
+
+  function attachMoneyCell(td) {
+    // Format on blur
+    td.addEventListener("blur", () => {
+      const raw = td.innerText.replace(/,/g, "").trim();
+      const num = parseFloat(raw);
+      td.innerText = isNaN(num) ? raw : formatWithCommas(num);
+    });
+    // Allow only numbers, dot, backspace etc while typing
+    td.addEventListener("keydown", (e) => {
+      const allowed = ["Backspace","Delete","ArrowLeft","ArrowRight","Home","End","Tab","."];
+      if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) e.preventDefault();
+    });
+  }
+
   function escapeHtml(str) {
     return String(str ?? "")
       .replace(/&/g, "&amp;")
@@ -906,11 +937,13 @@
             <option ${row.mode_of_procurement === "Shopping" ? "selected" : ""}>Shopping</option>
             <option ${row.mode_of_procurement === "Negotiated" ? "selected" : ""}>Negotiated</option>
           </select></td>
-          <td class="col-money money-abc" contenteditable="true">${escapeHtml(row.abc || "")}</td>
-          <td class="col-money money-bid" contenteditable="true">${escapeHtml(row.bid_amount || "")}</td>
+          <td class="col-money money-abc" contenteditable="true">${escapeHtml(formatWithCommas(row.abc))}</td>
+          <td class="col-money money-bid" contenteditable="true">${escapeHtml(formatWithCommas(row.bid_amount))}</td>
           <td class="col-remarks" contenteditable="true">${escapeHtml(row.remarks || "")}</td>
           <td class="col-action"><button type="button" class="btn btn-danger delete-btn" data-id="${row.id}" aria-label="Delete"><i class="fas fa-trash-alt"></i></button></td>`;
         tableBody.appendChild(tr);
+        attachMoneyCell(tr.querySelector('.money-abc'));
+        attachMoneyCell(tr.querySelector('.money-bid'));
       });
       rowCount.textContent = filtered.length;
     }
@@ -934,8 +967,8 @@
         date_out: cells[1].querySelector("input").value,
         item_description: cells[2].innerText.trim(),
         mode_of_procurement: cells[3].querySelector("select").value,
-        abc: cells[4].innerText.trim(),
-        bid_amount: cells[5].innerText.trim(),
+        abc: stripCommas(cells[4].innerText),
+        bid_amount: stripCommas(cells[5].innerText),
         remarks: cells[6].innerText.trim()
       };
       if (id) await supabaseHSG.from("hsg_project_monitoring").update(payload).eq("id", id);
@@ -965,6 +998,8 @@
       <td class="col-action"><button type="button" class="btn btn-danger delete-btn" aria-label="Remove"><i class="fas fa-trash-alt"></i></button></td>`;
     tableBody.prepend(tr);
     tr.querySelector('[contenteditable]').focus();
+    attachMoneyCell(tr.querySelector('.money-abc'));
+    attachMoneyCell(tr.querySelector('.money-bid'));
   };
 
   tableBody.onclick = async e => {
