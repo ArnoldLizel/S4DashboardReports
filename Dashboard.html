@@ -368,6 +368,8 @@ body::after{
   overflow-y:auto;overflow-x:hidden;
   transition:transform .28s cubic-bezier(.4,0,.2,1);
   position:relative;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 }
 #left::before{
   content:'';position:absolute;top:0;right:0;bottom:0;width:1px;
@@ -1053,6 +1055,7 @@ body::after{
   .rp-close-btn{display:flex}
   #center{grid-column:1;width:100%}
   #grid{grid-template-columns:repeat(3,1fr);gap:5px;padding:6px 8px}
+  .cb{min-height:44px;padding:10px 10px;}
   .ctb-txt{font-size:.5rem;letter-spacing:.16em}
   .dep-wrap{padding:6px 8px calc(8px + env(safe-area-inset-bottom))}
   .dp-hdr{flex-direction:column;align-items:flex-start}
@@ -1573,8 +1576,24 @@ document.getElementById('bk-btn').addEventListener('click',()=>{
   document.getElementById('ifr-ov').classList.remove('show');document.getElementById('main-ifr').src='';
 });
 
+/* ── ANDROID-SAFE CATEGORY BUTTON HANDLER ── */
 document.querySelectorAll('.cb').forEach(btn=>{
-  btn.addEventListener('click',e=>{
+  let _touched=false;
+  /* touchstart: passive, just primes the gesture recogniser */
+  btn.addEventListener('touchstart',function(){},{passive:true});
+  /* touchend: preventDefault stops the 300ms synthetic click AND
+     prevents scroll-misfire on the translated drawer */
+  btn.addEventListener('touchend',function(e){
+    e.preventDefault();
+    _touched=true;
+    document.querySelectorAll('.cb').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid(btn.dataset.cat);
+    if(isMobile())setTimeout(closeLeftDrawer,180);
+  },{passive:false});
+  /* click: fallback for desktop / non-touch */
+  btn.addEventListener('click',function(e){
+    if(_touched){_touched=false;return;}
     e.stopPropagation();
     document.querySelectorAll('.cb').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
