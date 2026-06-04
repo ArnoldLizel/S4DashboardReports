@@ -1,1352 +1,584 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fleet Intel | HPN Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-    /* ═══════════════════════════════════════════════════════
-       CLAY MORPHISM  —  Fleet Intel / HPN Dashboard
-       Palette: soft blue-lavender clay
-    ═══════════════════════════════════════════════════════ */
-    :root {
-        --bg:          #dce8f8;
-        --border:      rgba(255,255,255,0.90);
-        --blue:        #3567ae;
-        --blue2:       #4a7fc1;
-        --purple:      #6248C8;
-        --navy:        #2D3580;
-        --green:       #2d9460;
-        --red:         #c04040;
-        --amber:       #ca8a04;
-        --text:        #1a2e4a;
-        --text2:       #3a5070;
-        --text3:       #7090b0;
-
-        --sh:     8px 8px 20px rgba(74,127,193,0.28), -4px -4px 12px rgba(255,255,255,0.85);
-        --sh-sm:  4px 4px 12px rgba(74,127,193,0.22), -2px -2px 7px rgba(255,255,255,0.80);
-        --sh-in:  inset 2px 2px 6px rgba(74,127,193,0.14), inset -2px -2px 6px rgba(255,255,255,0.90);
-
-        --red-bg:    #fee2e2;
-        --red-text:  #991b1b;
-        --red-bdr:   #fca5a5;
-        --blk-bg:    #1e293b;
-        --blk-text:  #f8fafc;
-        --blk-bdr:   #475569;
-
-        --ff:   'Nunito', sans-serif;
-        --r:    14px;
-        --r-lg: 22px;
-        --sb-w: 280px;
-    }
-
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-    body {
-        font-family: var(--ff);
-        background: linear-gradient(135deg, #c8daf0 0%, #dce8f5 40%, #e8f0fb 70%, #d5e5f8 100%);
-        background-attachment: fixed;
-        color: var(--text);
-        display: flex; min-height: 100vh;
-    }
-
-    body::before {
-        content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-        background-image:
-            radial-gradient(ellipse 60% 50% at 20% 20%, rgba(255,255,255,0.45) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 80% 80%, rgba(168,200,240,0.35) 0%, transparent 55%);
-    }
-
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #d0e5f8; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: #4a7fc1; border-radius: 10px; }
-
-    /* ══════════════════════════════════════
-       SIDEBAR
-    ══════════════════════════════════════ */
-    .sidebar {
-        width: var(--sb-w); flex-shrink: 0;
-        background: linear-gradient(175deg, var(--navy) 0%, var(--blue2) 55%, var(--purple) 100%);
-        color: white;
-        padding: 2rem 1.25rem;
-        position: fixed; height: 100vh;
-        display: flex; flex-direction: column;
-        z-index: 100;
-        box-shadow: 8px 0 30px rgba(74,127,193,0.30);
-        overflow-y: auto;
-        border-right: 3px solid rgba(255,255,255,0.20);
-    }
-
-    .brand {
-        display: flex; align-items: center; gap: 14px;
-        margin-bottom: 2.5rem; padding: 0 6px;
-    }
-
-    .brand-icon {
-        width: 50px; height: 50px; border-radius: 14px;
-        background: rgba(255,255,255,0.20);
-        border: 2px solid rgba(255,255,255,0.35);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem; flex-shrink: 0;
-        box-shadow: 4px 4px 12px rgba(0,0,0,0.20), -1px -1px 6px rgba(255,255,255,0.15);
-    }
-
-    .brand-text .title { font-size: 1.0rem; font-weight: 900; line-height: 1.2; }
-    .brand-text .sub   { font-size: 0.72rem; opacity: 0.65; font-weight: 600; margin-top: 2px; }
-
-    .nav-link {
-        padding: 0.95rem 1rem; margin-bottom: 5px;
-        border-radius: var(--r); cursor: pointer;
-        display: flex; align-items: center; gap: 13px;
-        transition: all 0.2s; font-weight: 700;
-        color: rgba(255,255,255,0.72); text-decoration: none; font-size: 0.92rem;
-        border: 2px solid transparent;
-    }
-
-    .nav-link:hover {
-        background: rgba(255,255,255,0.16); color: white;
-        border-color: rgba(255,255,255,0.25);
-    }
-
-    .nav-link.active {
-        background: white; color: var(--navy);
-        box-shadow: var(--sh-sm); border-color: rgba(255,255,255,0.90);
-    }
-
-    .nav-link.active i { color: var(--blue2); }
-
-    .sb-legend {
-        margin-top: auto; padding: 1rem 0.75rem;
-        background: rgba(255,255,255,0.10);
-        border: 1.5px solid rgba(255,255,255,0.18);
-        border-radius: var(--r); font-size: 0.82rem;
-    }
-
-    .sb-legend-title {
-        color: rgba(255,255,255,0.55); font-weight: 800;
-        text-transform: uppercase; letter-spacing: 1.5px;
-        font-size: 0.65rem; margin-bottom: 10px;
-    }
-
-    .sb-legend-row {
-        display: flex; align-items: center; gap: 9px; margin-bottom: 7px;
-    }
-
-    .sb-legend-swatch {
-        width: 30px; height: 18px; border-radius: 5px; border: 2px solid; flex-shrink: 0;
-    }
-
-    .sb-legend-swatch.red   { background: var(--red-bg);  border-color: var(--red-bdr); }
-    .sb-legend-swatch.black { background: var(--blk-bg);  border-color: var(--blk-bdr); }
-
-    .sb-legend-lbl { color: rgba(255,255,255,0.82); font-weight: 700; font-size: 0.80rem; }
-
-    /* ══════════════════════════════════════
-       MAIN CONTENT
-    ══════════════════════════════════════ */
-    .content {
-        margin-left: var(--sb-w); flex-grow: 1;
-        padding: 2.5rem; width: calc(100% - var(--sb-w));
-        position: relative; z-index: 1;
-    }
-
-    header {
-        margin-bottom: 2rem; padding-bottom: 1.5rem;
-        border-bottom: 3px solid rgba(255,255,255,0.60);
-    }
-
-    h1 {
-        font-size: 2rem; font-weight: 900; color: var(--navy);
-        text-shadow: 2px 2px 4px rgba(255,255,255,0.7); margin-bottom: 0.3rem;
-    }
-
-    .subtitle { color: var(--text3); font-weight: 700; font-size: 0.88rem; }
-
-    /* ── STAT CARDS ── */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 1.25rem; margin-bottom: 2.5rem;
-    }
-
-    .stat-card {
-        background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(220,235,250,0.75));
-        padding: 1.5rem; border-radius: var(--r-lg);
-        border: 2px solid var(--border);
-        display: flex; justify-content: space-between; align-items: center;
-        box-shadow: var(--sh);
-        transition: transform 0.2s, box-shadow 0.2s;
-        position: relative; overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-        border-radius: var(--r-lg) var(--r-lg) 0 0;
-    }
-
-    .stat-card.default::before { background: linear-gradient(90deg, var(--blue2), var(--navy)); }
-    .stat-card.red-card::before { background: linear-gradient(90deg, var(--red-bdr), var(--red-text)); }
-    .stat-card.black-card::before { background: linear-gradient(90deg, #64748b, #1e293b); }
-    .stat-card.cta::before { background: linear-gradient(90deg, white, rgba(255,255,255,0.5)); }
-
-    .stat-card:hover { transform: translateY(-3px); box-shadow: 10px 10px 28px rgba(74,127,193,0.30), -4px -4px 14px rgba(255,255,255,0.88); }
-
-    .stat-card.red-card   { background: linear-gradient(135deg, rgba(255,235,235,0.90), rgba(255,220,220,0.80)); border-color: rgba(252,165,165,0.60); }
-    .stat-card.black-card { background: linear-gradient(135deg, rgba(230,235,245,0.90), rgba(215,225,240,0.80)); border-color: rgba(148,163,184,0.50); }
-    .stat-card.cta        { background: linear-gradient(135deg, var(--navy), var(--blue2)); cursor: pointer; border-color: rgba(255,255,255,0.3); }
-
-    .stat-label  { font-size: 0.68rem; color: var(--text3); text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 4px; }
-    .stat-value  { font-size: 2.3rem; font-weight: 900; color: var(--navy); text-shadow: 2px 2px 4px rgba(255,255,255,0.7); }
-    .stat-note   { font-size: 0.70rem; font-weight: 700; margin-top: 3px; }
-    .stat-card i { font-size: 1.8rem; color: rgba(74,127,193,0.18); }
-
-    .stat-card.red-card   .stat-value  { color: var(--red-text); }
-    .stat-card.red-card   .stat-label  { color: var(--red-text); }
-    .stat-card.red-card   .stat-note   { color: #b91c1c; }
-    .stat-card.red-card   i            { color: rgba(252,165,165,0.60); }
-    .stat-card.black-card .stat-value  { color: var(--blk-bg); }
-    .stat-card.black-card .stat-label  { color: #334155; }
-    .stat-card.black-card .stat-note   { color: #475569; }
-    .stat-card.black-card i            { color: rgba(148,163,184,0.50); }
-    .stat-card.cta .stat-value         { color: white; font-size: 1.3rem; }
-    .stat-card.cta .stat-label         { color: rgba(255,255,255,0.75); }
-    .stat-card.cta i                   { color: rgba(255,255,255,0.35); }
-
-    /* ── MAIN GRID ── */
-    .main-grid {
-        display: grid;
-        grid-template-columns: 380px 1fr;
-        gap: 2rem; align-items: start;
-    }
-
-    /* ── CLAY CARD ── */
-    .card {
-        background: linear-gradient(135deg, rgba(255,255,255,0.82), rgba(220,235,250,0.70));
-        border-radius: var(--r-lg); border: 2px solid var(--border);
-        overflow: hidden; box-shadow: var(--sh); backdrop-filter: blur(8px);
-    }
-
-    .card-header {
-        background: linear-gradient(135deg, rgba(255,255,255,0.72), rgba(208,229,248,0.65));
-        padding: 1.1rem 1.5rem;
-        border-bottom: 2px solid rgba(255,255,255,0.80);
-        font-weight: 900; font-size: 0.95rem; color: var(--navy);
-        display: flex; justify-content: space-between; align-items: center;
-        flex-wrap: wrap; gap: 10px;
-    }
-
-    /* ── FORM ── */
-    .form-container { padding: 1.5rem; }
-    .group { margin-bottom: 1.1rem; }
-
-    label {
-        display: block; font-weight: 800; font-size: 0.78rem;
-        margin-bottom: 6px; color: var(--text2); letter-spacing: 0.3px;
-    }
-
-    .field {
-        width: 100%; padding: 0.7rem 0.9rem;
-        border: 2px solid rgba(255,255,255,0.85); border-radius: 12px;
-        font-size: 0.90rem; font-family: var(--ff); font-weight: 600;
-        background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(235,245,255,0.75));
-        color: var(--text); box-shadow: var(--sh-in); outline: none;
-        transition: all 0.15s; appearance: none;
-    }
-
-    .field:focus { border-color: var(--blue2); box-shadow: var(--sh-in), 0 0 0 3px rgba(74,127,193,0.15); }
-    .field option { background: #e8f2fb; }
-
-    /* ── PLATE TYPE TOGGLE (clay style) ── */
-    .plate-type-group { margin-bottom: 1.1rem; }
-
-    .plate-toggle {
-        display: flex; border-radius: 14px;
-        border: 2px solid rgba(255,255,255,0.80);
-        overflow: hidden;
-        background: linear-gradient(135deg, rgba(255,255,255,0.60), rgba(220,235,250,0.55));
-        box-shadow: var(--sh-in);
-    }
-
-    .plate-toggle input[type="radio"] { display: none; }
-
-    .plate-toggle label {
-        flex: 1; padding: 0.8rem 0.75rem; text-align: center;
-        cursor: pointer; font-weight: 800; font-size: 0.82rem;
-        transition: all 0.22s; margin: 0;
-        display: flex; align-items: center; justify-content: center; gap: 7px;
-        border: none;
-    }
-
-    #plate_red + label {
-        color: var(--red-text);
-        background: linear-gradient(135deg, rgba(255,235,235,0.80), rgba(255,220,220,0.70));
-    }
-
-    #plate_red:checked + label {
-        background: linear-gradient(135deg, var(--red-text), #b91c1c);
-        color: white;
-        box-shadow: 3px 3px 10px rgba(192,64,64,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
-        border-radius: 12px;
-    }
-
-    #plate_black + label {
-        color: #334155;
-        background: linear-gradient(135deg, rgba(225,232,245,0.80), rgba(210,220,240,0.70));
-        border-left: 2px solid rgba(255,255,255,0.55);
-    }
-
-    #plate_black:checked + label {
-        background: linear-gradient(135deg, #1e293b, #334155);
-        color: white;
-        box-shadow: 3px 3px 10px rgba(30,41,59,0.40), inset 0 1px 0 rgba(255,255,255,0.10);
-        border-radius: 12px;
-    }
-
-    /* Plate preview hint */
-    .plate-preview {
-        margin-top: 8px; padding: 7px 13px; border-radius: 10px;
-        font-size: 0.80rem; font-weight: 700;
-        display: inline-flex; align-items: center; gap: 7px;
-        border: 2px solid; box-shadow: var(--sh-sm);
-    }
-
-    .plate-preview.red   { background: linear-gradient(135deg, rgba(255,235,235,0.90), rgba(255,215,215,0.80)); color: var(--red-text); border-color: rgba(252,165,165,0.60); }
-    .plate-preview.black { background: linear-gradient(135deg, #1e293b, #2d3d55); color: var(--blk-text); border-color: rgba(71,85,105,0.60); }
-
-    /* ── Insurance badge ── */
-    .ins-badge {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 3px 10px; border-radius: 8px;
-        font-size: 0.76rem; font-weight: 800; border: 1.5px solid;
-        box-shadow: var(--sh-sm); white-space: nowrap;
-    }
-    .ins-badge.comprehensive {
-        background: linear-gradient(135deg,rgba(200,235,210,0.95),rgba(170,225,195,0.88));
-        color: #145a32; border-color: rgba(100,200,140,0.55);
-    }
-    .ins-badge.tpl {
-        background: linear-gradient(135deg,rgba(255,240,190,0.95),rgba(250,220,150,0.88));
-        color: #7a4a10; border-color: rgba(250,204,21,0.55);
-    }
-    .ins-badge.none {
-        background: linear-gradient(135deg,rgba(240,240,248,0.90),rgba(225,230,245,0.80));
-        color: var(--text3); border-color: rgba(200,215,235,0.60);
-        font-style: italic;
-    }
-
-    /* ── SUBMIT BUTTONS ── */
-    .btn-submit {
-        width: 100%; padding: 0.85rem;
-        background: linear-gradient(135deg, var(--navy), var(--blue2));
-        color: white; border: 2px solid rgba(255,255,255,0.30);
-        border-radius: 14px; font-size: 0.88rem; font-weight: 900;
-        cursor: pointer; font-family: var(--ff); letter-spacing: 0.3px;
-        box-shadow: var(--sh-sm); transition: all 0.18s;
-    }
-
-    .btn-submit:hover { transform: translateY(-2px); box-shadow: 6px 6px 18px rgba(74,127,193,0.35), -2px -2px 8px rgba(255,255,255,0.7); }
-    .btn-submit:active { transform: scale(0.97); }
-
-    /* ── TABLE BUTTONS ── */
-    .btn-edit, .btn-delete, .btn-remove-duplicates, .filter-btn {
-        border: 2px solid rgba(255,255,255,0.80);
-        border-radius: 10px; cursor: pointer;
-        font-weight: 800; font-family: var(--ff);
-        transition: all 0.17s; box-shadow: var(--sh-sm);
-        display: inline-flex; align-items: center; gap: 5px;
-    }
-
-    .btn-edit { background: linear-gradient(135deg, rgba(200,215,250,0.90), rgba(180,205,245,0.80)); color: var(--navy); padding: 0.4rem 0.85rem; font-size: 0.76rem; }
-    .btn-edit:hover { transform: translateY(-1px); }
-
-    .btn-delete { background: linear-gradient(135deg, rgba(255,200,200,0.90), rgba(245,170,170,0.80)); color: var(--red); padding: 0.4rem 0.85rem; font-size: 0.76rem; margin-left: 5px; }
-    .btn-delete:hover { transform: translateY(-1px); }
-
-    .btn-remove-duplicates { background: linear-gradient(135deg, rgba(208,229,248,0.90), rgba(185,215,245,0.80)); color: var(--navy); padding: 0.5rem 1rem; font-size: 0.76rem; margin-left: 6px; }
-    .btn-remove-duplicates:hover { transform: translateY(-1px); }
-
-    /* Excel export button */
-    .btn-excel {
-        background: linear-gradient(135deg, rgba(186,230,200,0.92), rgba(160,220,180,0.82));
-        color: #155724; border: 2px solid rgba(134,239,172,0.55);
-        border-radius: 10px; cursor: pointer;
-        font-weight: 800; font-family: var(--ff);
-        transition: all 0.17s; box-shadow: var(--sh-sm);
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 0.5rem 1rem; font-size: 0.76rem; margin-left: 6px;
-    }
-    .btn-excel:hover { transform: translateY(-1px); box-shadow: 5px 5px 14px rgba(50,150,80,0.25), -2px -2px 8px rgba(255,255,255,0.80); }
-
-    /* ── FILTER BUTTONS ── */
-    .plate-filter-btns { display: flex; gap: 5px; align-items: center; }
-
-    .filter-btn { padding: 5px 13px; border-radius: 20px; font-size: 0.76rem; }
-
-    .filter-btn.all   { background: linear-gradient(135deg, rgba(220,230,245,0.90), rgba(205,220,240,0.80)); color: var(--text2); }
-    .filter-btn.red   { background: linear-gradient(135deg, rgba(255,235,235,0.90), rgba(255,215,215,0.80)); color: var(--red-text); border-color: rgba(252,165,165,0.60); }
-    .filter-btn.black { background: linear-gradient(135deg, #2d3d55, #1e293b); color: var(--blk-text); border-color: rgba(71,85,105,0.60); }
-
-    .filter-btn.active, .filter-btn:hover { transform: scale(1.06); box-shadow: 5px 5px 14px rgba(74,127,193,0.25), -2px -2px 8px rgba(255,255,255,0.80); }
-    .filter-btn.all.active   { background: linear-gradient(135deg, var(--navy), var(--blue2)); color: white; border-color: rgba(255,255,255,0.30); }
-    .filter-btn.red.active   { background: linear-gradient(135deg, var(--red-text), #b91c1c); color: white; border-color: rgba(252,165,165,0.40); }
-    .filter-btn.black.active { box-shadow: 5px 5px 14px rgba(30,41,59,0.35), -2px -2px 8px rgba(255,255,255,0.80); }
-
-    /* ── SEARCH ── */
-    .search-input {
-        padding: 0.55rem 1rem; border-radius: 20px;
-        border: 2px solid rgba(255,255,255,0.85);
-        background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(235,245,255,0.75));
-        font-size: 0.84rem; font-family: var(--ff); font-weight: 600;
-        color: var(--text); box-shadow: var(--sh-in); outline: none; width: 200px;
-    }
-
-    .search-input:focus { border-color: var(--blue2); }
-
-    /* ── TABLE ── */
-    .table-wrap { width: 100%; overflow-x: auto; padding: 1.25rem; }
-    .table-wrap::-webkit-scrollbar { height: 5px; }
-
-    table { width: 100%; border-collapse: separate; border-spacing: 0; }
-
-    th {
-        background: linear-gradient(135deg, var(--navy), var(--blue2));
-        color: white; text-align: left; padding: 0.85rem 1rem;
-        font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px;
-        border-bottom: none; font-weight: 800; white-space: nowrap;
-    }
-
-    th:first-child { border-radius: var(--r) 0 0 0; }
-    th:last-child  { border-radius: 0 var(--r) 0 0; }
-
-    td {
-        padding: 0.8rem 1rem; border-bottom: 1px solid rgba(200,220,240,0.50);
-        font-size: 0.85rem; vertical-align: middle; color: var(--text2); transition: background 0.12s;
-    }
-
-    tr:hover td { background: rgba(208,229,248,0.35); }
-
-    .office-cell { font-weight: 900; color: var(--navy); }
-
-    /* ── PLATE BADGES (clay version) ── */
-    .plate-badge {
-        display: inline-flex; align-items: center; gap: 7px;
-        padding: 5px 12px; border-radius: 10px;
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: 800; font-size: 0.88rem; letter-spacing: 0.5px;
-        border: 2px solid; white-space: nowrap; box-shadow: var(--sh-sm);
-    }
-
-    .plate-badge.red {
-        background: linear-gradient(135deg, rgba(255,235,235,0.95), rgba(255,215,215,0.90));
-        color: var(--red-text); border-color: rgba(252,165,165,0.60);
-    }
-
-    .plate-badge.black {
-        background: linear-gradient(135deg, #1e293b, #2d3d55);
-        color: var(--blk-text); border-color: rgba(71,85,105,0.60);
-    }
-
-    .plate-badge.unknown {
-        background: linear-gradient(135deg, rgba(245,248,255,0.90), rgba(230,240,255,0.80));
-        color: var(--text3); border-color: rgba(200,215,235,0.70);
-        font-style: italic;
-    }
-
-    .plate-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .plate-badge.red   .plate-dot { background: var(--red-text); }
-    .plate-badge.black .plate-dot { background: #94a3b8; }
-
-    /* Office group rows */
-    .office-group-row { pointer-events: none; }
-    .office-group-row td {
-        background: linear-gradient(90deg, rgba(74,127,193,0.12), rgba(74,127,193,0.05)) !important;
-        font-weight: 900; color: var(--blue); text-transform: uppercase;
-        letter-spacing: 1px; font-size: 0.78rem;
-        border-left: 4px solid var(--blue2);
-    }
-
-    /* Selected row highlight */
-    tr.row-selected td { background: rgba(74,127,193,0.10) !important; }
-    tr.row-selected:hover td { background: rgba(74,127,193,0.14) !important; }
-
-    /* ── PLATE LEGEND STRIP ── */
-    .plate-legend {
-        display: flex; gap: 20px; align-items: center;
-        padding: 10px 16px;
-        background: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(208,229,248,0.50));
-        border-top: 2px solid rgba(255,255,255,0.70);
-        font-size: 0.82rem; font-weight: 700; flex-wrap: wrap;
-    }
-
-    .legend-item { display: flex; align-items: center; gap: 8px; }
-
-    input[type="checkbox"] { accent-color: var(--blue2); width: 14px; height: 14px; cursor: pointer; }
-
-    /* ══════════════════════════════════════
-       BULK ACTION BAR
-    ══════════════════════════════════════ */
-    .bulk-bar {
-        position: fixed; bottom: -120px; left: 50%;
-        transform: translateX(-50%);
-        z-index: 2000;
-        background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(220,235,250,0.88));
-        border: 2px solid rgba(255,255,255,0.90);
-        border-radius: 24px; padding: 14px 22px;
-        display: flex; align-items: center; gap: 12px;
-        box-shadow: 0 12px 40px rgba(74,127,193,0.30), -4px -4px 14px rgba(255,255,255,0.85);
-        transition: bottom 0.35s cubic-bezier(.4,0,.2,1), opacity 0.3s;
-        opacity: 0; white-space: nowrap; flex-wrap: wrap; justify-content: center;
-        backdrop-filter: blur(12px);
-    }
-
-    .bulk-bar.visible { bottom: 28px; opacity: 1; }
-
-    .bulk-bar-count {
-        background: linear-gradient(135deg, rgba(74,127,193,0.15), rgba(74,127,193,0.08));
-        border: 2px solid rgba(255,255,255,0.80);
-        border-radius: 30px; padding: 5px 14px;
-        font-size: 0.82rem; font-weight: 800;
-        display: flex; align-items: center; gap: 7px; color: var(--navy);
-        box-shadow: var(--sh-sm);
-    }
-
-    .bulk-bar-count .count-num {
-        background: linear-gradient(135deg, var(--navy), var(--blue2));
-        color: white; border-radius: 20px; padding: 1px 9px;
-        font-size: 0.82rem; font-weight: 900;
-    }
-
-    .bulk-sep { width: 1px; height: 28px; background: rgba(74,127,193,0.20); }
-
-    .bulk-label {
-        font-size: 0.76rem; font-weight: 800; color: var(--text3);
-        text-transform: uppercase; letter-spacing: 0.8px;
-    }
-
-    .bulk-btn {
-        padding: 9px 18px; border-radius: 12px; border: 2px solid;
-        font-family: var(--ff); font-size: 0.82rem; font-weight: 900;
-        cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
-        transition: all 0.18s; box-shadow: var(--sh-sm);
-    }
-
-    .bulk-btn:hover { transform: translateY(-2px); box-shadow: 6px 6px 18px rgba(74,127,193,0.30), -2px -2px 8px rgba(255,255,255,0.80); }
-    .bulk-btn:active { transform: scale(0.97); }
-
-    .bulk-btn-red {
-        background: linear-gradient(135deg, rgba(255,235,235,0.95), rgba(255,215,215,0.88));
-        color: var(--red-text); border-color: rgba(252,165,165,0.70);
-    }
-
-    .bulk-btn-black {
-        background: linear-gradient(135deg, #2d3d55, #1e293b);
-        color: var(--blk-text); border-color: rgba(71,85,105,0.70);
-    }
-
-    .bulk-btn-cancel {
-        background: linear-gradient(135deg, rgba(220,230,245,0.90), rgba(205,220,240,0.80));
-        color: var(--text3); border-color: rgba(255,255,255,0.75); font-size: 0.78rem;
-    }
-
-    .bulk-btn-cancel:hover { color: var(--red); }
-
-    /* ══════════════════════════════════════
-       TOAST NOTIFICATIONS
-    ══════════════════════════════════════ */
-    .toast-clay {
-        position: fixed; top: 24px; right: 24px; z-index: 9999;
-        padding: 14px 20px; border-radius: 16px;
-        font-family: var(--ff); font-size: 0.88rem; font-weight: 800;
-        display: flex; align-items: center; gap: 10px;
-        border: 2px solid; box-shadow: var(--sh);
-        max-width: 380px; backdrop-filter: blur(10px);
-        animation: toastIn .3s cubic-bezier(.4,0,.2,1) both;
-    }
-
-    .toast-clay.success { background: linear-gradient(135deg, rgba(200,240,220,0.95), rgba(170,230,200,0.88)); color: #1a5a30; border-color: rgba(134,239,172,0.60); }
-    .toast-clay.error   { background: linear-gradient(135deg, rgba(255,220,220,0.95), rgba(245,190,190,0.88)); color: var(--red); border-color: rgba(252,165,165,0.60); }
-    .toast-clay.info    { background: linear-gradient(135deg, rgba(208,229,248,0.95), rgba(185,215,245,0.88)); color: var(--navy); border-color: rgba(147,197,253,0.60); }
-    .toast-clay.warning { background: linear-gradient(135deg, rgba(255,240,195,0.95), rgba(245,220,160,0.88)); color: #7a4a10; border-color: rgba(253,224,71,0.60); }
-
-    @keyframes toastIn  { from{opacity:0;transform:translateY(-14px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
-    @keyframes toastOut { from{opacity:1;transform:translateY(0) scale(1)} to{opacity:0;transform:translateY(-10px) scale(.95)} }
-
-    /* ── Print ── */
-    @media print {
-        .sidebar,.stats-grid,.card:first-child,.btn-remove-duplicates,
-        .search-input,.btn-edit,.badge-print-hide,
-        .plate-filter-btns,.plate-legend,.bulk-bar { display: none !important; }
-        body { background: white !important; color: #000; }
-        .content { margin-left: 0 !important; width: 100% !important; padding: 0; }
-        .main-grid { grid-template-columns: 1fr !important; }
-        h1 { color: #000; text-shadow: none; }
-        .card { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; }
-        th { background: #2D3580 !important; color: white !important; -webkit-print-color-adjust: exact; }
-        .plate-badge { border: 1.5px solid !important; }
-    }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSG Logistics Data Hub</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=IM+Fell+English:ital@0;1&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#c9a84c;--gold2:#f0c96e;--gold-dark:#7a5c1e;--glow:#4ee4d4;--glow2:#2bc5b4;
+  --red:#c0392b;--red2:#e74c3c;--navy:#0a0e1a;--dark1:#0d1525;--dark2:#111a2e;
+  --text-light:#f0e6c8;--text-dim:#a89060;
+  --ff-serif:"Cinzel",serif;--ff-body:"Nunito",sans-serif;--ff-italic:"IM Fell English",serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#0d1525}
+::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:4px}
+body{font-family:var(--ff-body);background:var(--navy);color:var(--text-light);min-height:100vh;position:relative;overflow-x:hidden}
+
+.wallpaper-right{
+  position:fixed;right:0;top:0;bottom:0;width:52%;z-index:0;
+  background:url("data:image/jpeg;base64,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") no-repeat center top / cover;
+}
+.wallpaper-right::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(to right,rgba(10,14,26,1) 0%,rgba(10,14,26,0.55) 30%,rgba(10,14,26,0.10) 65%,transparent 100%);
+}
+.wallpaper-right::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(10,14,26,0.95) 0%,rgba(10,14,26,0.30) 20%,transparent 50%);
+}
+
+/* TOP NAV */
+.topnav{
+  position:relative;z-index:100;display:flex;align-items:center;
+  justify-content:space-between;padding:0 1.5rem;height:58px;
+  background:rgba(5,8,20,0.97);
+  border-bottom:1.5px solid;
+  border-image:linear-gradient(90deg,transparent,var(--gold),var(--glow),var(--gold),transparent) 1;
+}
+.nav-left{display:flex;align-items:center;gap:8px}
+.nav-btn{
+  display:flex;align-items:center;gap:7px;padding:7px 15px;
+  background:rgba(201,168,76,0.10);border:1.5px solid rgba(201,168,76,0.35);
+  border-radius:4px;color:var(--gold);font-family:var(--ff-serif);
+  font-size:0.68rem;font-weight:600;letter-spacing:1px;cursor:pointer;
+  text-transform:uppercase;transition:all .2s;white-space:nowrap
+}
+.nav-btn:hover{background:rgba(201,168,76,0.22);border-color:var(--gold)}
+.nav-btn.active{background:rgba(78,228,212,0.15);border-color:var(--glow);color:var(--glow)}
+.topnav-brand{position:absolute;left:50%;transform:translateX(-50%);text-align:center}
+.brand-title{font-family:var(--ff-serif);font-size:1rem;font-weight:900;letter-spacing:3px;color:var(--gold2);text-transform:uppercase}
+.brand-sub{font-size:0.60rem;letter-spacing:4px;color:var(--text-dim);text-transform:uppercase;font-family:var(--ff-serif)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.btn-logout{display:flex;align-items:center;gap:6px;padding:7px 14px;background:transparent;border:1.5px solid rgba(201,168,76,.30);border-radius:4px;color:var(--text-dim);font-family:var(--ff-serif);font-size:0.68rem;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.btn-logout:hover{border-color:var(--red2);color:var(--red2)}
+
+/* TOOLBAR */
+.toolbar{
+  position:relative;z-index:10;display:flex;gap:7px;align-items:center;
+  padding:0.55rem 1.5rem;background:rgba(5,8,20,0.90);
+  border-bottom:1px solid rgba(201,168,76,0.12);flex-wrap:wrap
+}
+
+/* HERO */
+.hero{position:relative;z-index:10;padding:1.8rem 1.8rem 0.8rem;max-width:680px}
+.hero h1{font-family:var(--ff-serif);font-size:2.4rem;font-weight:900;color:var(--gold2);letter-spacing:2px;text-shadow:0 0 30px rgba(201,168,76,.45),0 2px 8px rgba(0,0,0,.8);line-height:1.1;margin-bottom:.3rem}
+.hero .subtitle{font-family:var(--ff-italic);font-style:italic;color:var(--text-dim);font-size:.85rem;letter-spacing:1px}
+.deco-line{display:flex;align-items:center;gap:10px;margin:8px 0 1.2rem}
+.deco-line::before{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+.deco-line::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dark))}
+.deco-diamond{width:8px;height:8px;background:var(--gold);transform:rotate(45deg);box-shadow:0 0 8px var(--gold)}
+
+/* MAIN */
+.main-wrap{position:relative;z-index:10;padding:0 1.2rem 2rem;display:flex;flex-direction:column;gap:1rem;width:100%}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.9rem;max-width:820px}
+.stat-card{
+  position:relative;padding:1.1rem 1rem 0.9rem;
+  background:linear-gradient(145deg,rgba(12,18,38,0.94),rgba(8,12,28,0.97));
+  border:1.5px solid rgba(201,168,76,0.32);border-radius:6px;overflow:hidden;transition:all .25s
+}
+.stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--glow),transparent);opacity:.7}
+.corner{position:absolute;width:10px;height:10px;border-color:var(--gold);border-style:solid}
+.c-tl{top:4px;left:4px;border-width:1.5px 0 0 1.5px}
+.c-tr{top:4px;right:4px;border-width:1.5px 1.5px 0 0}
+.c-bl{bottom:4px;left:4px;border-width:0 0 1.5px 1.5px}
+.c-br{bottom:4px;right:4px;border-width:0 1.5px 1.5px 0}
+.stat-card:hover{border-color:rgba(201,168,76,.60);box-shadow:0 0 20px rgba(78,228,212,.10);transform:translateY(-2px)}
+.stat-label{font-family:var(--ff-serif);font-size:.60rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.stat-value{font-family:var(--ff-serif);font-size:2.2rem;font-weight:900;color:var(--gold2);text-shadow:0 0 20px rgba(201,168,76,.40);line-height:1}
+.stat-note{font-size:.63rem;color:var(--text-dim);margin-top:3px;letter-spacing:.5px}
+.stat-card.red-card .stat-value{color:var(--red2);text-shadow:0 0 18px rgba(231,76,60,.40)}
+.stat-card.red-card::before{background:linear-gradient(90deg,transparent,var(--red2),transparent)}
+.stat-card.red-card .corner{border-color:var(--red2)}
+.stat-card.red-card .stat-label{color:rgba(231,76,60,.75)}
+.stat-card.red-card{border-color:rgba(192,57,43,.40)}
+.stat-card.black-card .stat-value{color:#aabbd8}
+.stat-card.black-card .stat-label{color:#6a8aaa}
+.stat-card.black-card::before{background:linear-gradient(90deg,transparent,#6a8aaa,transparent)}
+.stat-card.cta-card{cursor:pointer;text-align:center;background:linear-gradient(145deg,rgba(20,12,6,.94),rgba(12,8,4,.97))}
+.stat-card.cta-card .stat-value{font-size:.95rem;color:var(--gold2);letter-spacing:1px}
+.glow-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.glow-dot.red{background:var(--red2);box-shadow:0 0 8px var(--red2)}
+.glow-dot.black{background:#7a8aaa}
+.glow-dot.teal{background:var(--glow);box-shadow:0 0 8px var(--glow)}
+
+/* TWO-COL */
+.two-col{display:grid;grid-template-columns:310px 1fr;gap:1rem;align-items:start;min-width:0}
+
+/* ORNATE CARD */
+.ornate-card{
+  min-width:0;
+  background:linear-gradient(160deg,rgba(10,14,26,.96),rgba(7,10,20,.99));
+  border:1.5px solid rgba(201,168,76,.28);border-radius:6px;overflow:hidden;position:relative
+}
+.ornate-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold2),var(--glow),var(--gold2),transparent)}
+.card-header{
+  padding:.80rem 1.25rem;border-bottom:1px solid rgba(201,168,76,.18);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  background:linear-gradient(180deg,rgba(201,168,76,.06) 0%,transparent 100%)
+}
+.card-title{font-family:var(--ff-serif);font-size:.78rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--glow)}
+
+/* FORM */
+.form-container{padding:1.1rem}
+.group{margin-bottom:.85rem}
+label{display:block;font-family:var(--ff-serif);font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
+.field{width:100%;padding:.60rem .85rem;background:rgba(5,8,18,.82);border:1px solid rgba(201,168,76,.22);border-radius:4px;font-size:.83rem;font-family:var(--ff-body);font-weight:600;color:var(--text-light);outline:none;transition:all .15s;appearance:none}
+.field:focus{border-color:var(--glow);box-shadow:0 0 10px rgba(78,228,212,.14);background:rgba(8,14,30,.92)}
+.field option{background:#0d1525;color:var(--text-light)}
+.plate-toggle{display:flex;border:1px solid rgba(201,168,76,.22);border-radius:4px;overflow:hidden;background:rgba(5,8,18,.82)}
+.plate-toggle input[type="radio"]{display:none}
+.plate-toggle label{flex:1;padding:.60rem .70rem;text-align:center;cursor:pointer;font-family:var(--ff-serif);font-size:.60rem;letter-spacing:1.5px;text-transform:uppercase;margin:0;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--text-dim);transition:all .18s;border:none}
+#plate_red+label{color:rgba(192,57,43,.80);border-right:1px solid rgba(201,168,76,.18)}
+#plate_red:checked+label{background:linear-gradient(135deg,rgba(192,57,43,.28),rgba(139,0,0,.22));color:var(--red2)}
+#plate_black:checked+label{background:linear-gradient(135deg,rgba(50,65,100,.38),rgba(30,45,75,.32));color:#aabbd8}
+.plate-preview{margin-top:5px;padding:4px 9px;border-radius:4px;font-size:.70rem;font-family:var(--ff-serif);letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;border:1px solid}
+.plate-preview.red{background:rgba(192,57,43,.14);color:var(--red2);border-color:rgba(192,57,43,.32)}
+.plate-preview.black{background:rgba(50,65,100,.18);color:#8aa0c0;border-color:rgba(80,100,140,.32)}
+.ins-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-family:var(--ff-serif);font-size:.63rem;letter-spacing:1px;font-weight:600;border:1px solid}
+.ins-badge.comprehensive{background:rgba(46,204,113,.12);color:#2ecc71;border-color:rgba(46,204,113,.28)}
+.ins-badge.tpl{background:rgba(243,156,18,.12);color:#f39c12;border-color:rgba(243,156,18,.28)}
+.ins-badge.none{background:transparent;color:var(--text-dim);border-color:rgba(201,168,76,.12);font-style:italic}
+.btn-submit{width:100%;padding:.75rem;background:linear-gradient(135deg,rgba(201,168,76,.16),rgba(201,168,76,.09));border:1.5px solid rgba(201,168,76,.48);border-radius:4px;color:var(--gold2);font-family:var(--ff-serif);font-size:.70rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;transition:all .20s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-submit:hover{background:linear-gradient(135deg,rgba(201,168,76,.28),rgba(201,168,76,.16));border-color:var(--gold2);box-shadow:0 0 16px rgba(201,168,76,.20);transform:translateY(-1px)}
+.btn-submit.update{background:linear-gradient(135deg,rgba(78,228,212,.14),rgba(78,228,212,.07));border-color:rgba(78,228,212,.42);color:var(--glow);margin-top:6px}
+.btn-submit.cancel{background:rgba(5,8,18,.58);border-color:rgba(201,168,76,.18);color:var(--text-dim);margin-top:6px}
+
+/* TABLE CONTROLS */
+.table-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.search-input{padding:.46rem .85rem;background:rgba(5,8,18,.82);border:1px solid rgba(201,168,76,.22);border-radius:4px;color:var(--text-light);font-family:var(--ff-body);font-size:.78rem;font-weight:600;outline:none;width:165px;transition:all .15s}
+.search-input:focus{border-color:var(--glow);box-shadow:0 0 9px rgba(78,228,212,.12)}
+.search-input::placeholder{color:var(--text-dim)}
+.filter-btn{padding:4px 12px;border-radius:3px;border:1px solid;font-family:var(--ff-serif);font-size:.60rem;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:5px}
+.filter-btn.all{background:rgba(201,168,76,.09);border-color:rgba(201,168,76,.28);color:var(--text-dim)}
+.filter-btn.red{background:rgba(192,57,43,.11);border-color:rgba(192,57,43,.32);color:var(--red2)}
+.filter-btn.black{background:rgba(50,65,100,.18);border-color:rgba(80,100,140,.32);color:#8aa0c0}
+.filter-btn.all.active{background:rgba(201,168,76,.20);border-color:var(--gold);color:var(--gold2)}
+.filter-btn.red.active{background:rgba(192,57,43,.22);border-color:var(--red2)}
+.filter-btn.black.active{background:rgba(50,65,100,.32);border-color:#6a8aaa}
+.filter-btn:hover{transform:scale(1.04)}
+.btn-util{padding:4px 11px;border-radius:3px;border:1px solid;font-family:var(--ff-serif);font-size:.60rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .17s;display:inline-flex;align-items:center;gap:5px}
+.btn-excel{background:rgba(46,204,113,.11);border-color:rgba(46,204,113,.32);color:#2ecc71}
+.btn-dupe{background:rgba(78,228,212,.09);border-color:rgba(78,228,212,.28);color:var(--glow2)}
+.btn-del{background:rgba(192,57,43,.11);border-color:rgba(192,57,43,.32);color:var(--red2)}
+.btn-util:hover{transform:translateY(-1px);filter:brightness(1.2)}
+
+/* ── TABLE: no horizontal scroll, all columns visible ── */
+.table-wrap{width:100%;overflow:hidden;padding:0 0.75rem 1rem}
+
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 2px;
+  table-layout:fixed;   /* fixed layout = we control every col width */
+}
+
+/* Column widths as percentages → always fits the container */
+.col-chk  {width:28px}
+.col-num  {width:28px}
+.col-office{width:7%}
+.col-model {width:17%}
+.col-plate {width:12%}
+.col-or    {width:13%}
+.col-ins   {width:9%}
+.col-status{width:11%}
+.col-date  {width:9%}
+.col-act   {width:10%}
+
+thead tr{background:linear-gradient(90deg,rgba(201,168,76,.16),rgba(201,168,76,.09),rgba(201,168,76,.16))}
+
+th{
+  padding:.55rem .45rem;
+  font-family:var(--ff-serif);font-size:.56rem;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--gold2);
+  border-bottom:1px solid rgba(201,168,76,.28);
+  border-top:1px solid rgba(201,168,76,.18);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+th:first-child{border-left:1px solid rgba(201,168,76,.18);border-radius:4px 0 0 0}
+th:last-child {border-right:1px solid rgba(201,168,76,.18);border-radius:0 4px 0 0}
+
+td{
+  padding:.50rem .45rem;
+  font-size:.74rem;color:#b0c0d8;
+  border-bottom:1px solid rgba(201,168,76,.07);
+  vertical-align:middle;
+  background:rgba(5,8,18,.55);
+  transition:background .12s;
+  overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;          /* keep rows single-line */
+  max-width:0;                 /* force ellipsis in fixed-layout */
+}
+tr:hover td{background:rgba(201,168,76,.055)}
+.office-cell{font-family:var(--ff-serif);font-weight:700;color:var(--gold2);font-size:.74rem;letter-spacing:.5px}
+.office-group-row td{
+  background:linear-gradient(90deg,rgba(201,168,76,.11),rgba(201,168,76,.04))!important;
+  color:var(--gold);font-family:var(--ff-serif);font-size:.62rem;
+  letter-spacing:2.5px;text-transform:uppercase;
+  border-left:3px solid rgba(201,168,76,.48);padding:5px 14px;font-weight:700;
+  white-space:nowrap;overflow:visible;max-width:none
+}
+.office-group-row{pointer-events:none}
+tr.row-selected td{background:rgba(78,228,212,.065)!important}
+
+.plate-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 6px;border-radius:3px;
+  font-family:"Courier New",monospace;font-size:.72rem;font-weight:700;
+  letter-spacing:.5px;border:1px solid;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:100%
+}
+.plate-badge.red{background:rgba(192,57,43,.17);color:#e07070;border-color:rgba(192,57,43,.42)}
+.plate-badge.black{background:rgba(30,45,70,.58);color:#8aaace;border-color:rgba(80,100,140,.38)}
+.plate-badge.unknown{background:transparent;color:var(--text-dim);border-color:rgba(201,168,76,.12);font-style:italic}
+.plate-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.plate-badge.red .plate-dot{background:var(--red2);box-shadow:0 0 5px var(--red2)}
+.plate-badge.black .plate-dot{background:#6a8aaa}
+
+.btn-edit,.btn-tbl-del{
+  padding:2px 5px;border-radius:3px;
+  font-family:var(--ff-serif);font-size:.52rem;letter-spacing:.5px;
+  text-transform:uppercase;cursor:pointer;transition:all .15s;
+  display:inline-flex;align-items:center;gap:3px;white-space:nowrap
+}
+.btn-edit{background:rgba(78,228,212,.09);border:1px solid rgba(78,228,212,.28);color:var(--glow2)}
+.btn-tbl-del{background:rgba(192,57,43,.11);border:1px solid rgba(192,57,43,.28);color:var(--red2);margin-left:2px}
+.btn-edit:hover,.btn-tbl-del:hover{filter:brightness(1.3);transform:translateY(-1px)}
+
+/* LEGEND */
+.legend-strip{padding:7px 1.15rem;border-top:1px solid rgba(201,168,76,.14);display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:.70rem}
+.legend-strip .l-label{font-family:var(--ff-serif);font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+.legend-item{display:flex;align-items:center;gap:6px;color:var(--text-dim)}
+input[type="checkbox"]{accent-color:var(--glow);width:13px;height:13px;cursor:pointer}
+
+/* BULK BAR */
+.bulk-bar{
+  position:fixed;bottom:-120px;left:50%;transform:translateX(-50%);z-index:2000;
+  background:linear-gradient(135deg,rgba(10,14,26,.97),rgba(7,10,20,.98));
+  border:1.5px solid rgba(201,168,76,.38);border-radius:8px;
+  padding:11px 18px;display:flex;align-items:center;gap:11px;
+  box-shadow:0 0 28px rgba(201,168,76,.16),0 20px 60px rgba(0,0,0,.60);
+  transition:bottom .35s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;
+  flex-wrap:wrap;justify-content:center;backdrop-filter:blur(12px)
+}
+.bulk-bar::before{content:"";position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--glow),var(--gold),var(--glow),transparent)}
+.bulk-bar.visible{bottom:24px;opacity:1}
+.bulk-count{font-family:var(--ff-serif);font-size:.70rem;letter-spacing:1px;color:var(--gold);display:flex;align-items:center;gap:7px;padding:4px 11px;background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.22);border-radius:4px}
+.bulk-count .num{font-size:1.05rem;font-weight:900;color:var(--glow);text-shadow:0 0 10px var(--glow)}
+.bulk-sep{width:1px;height:26px;background:rgba(201,168,76,.18)}
+.bulk-label{font-family:var(--ff-serif);font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+.bulk-btn{padding:7px 14px;border-radius:4px;font-family:var(--ff-serif);font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .18s;border:1.5px solid}
+.bulk-btn:hover{transform:translateY(-1px);filter:brightness(1.2)}
+.bulk-btn.red-bulk{background:rgba(192,57,43,.17);border-color:rgba(192,57,43,.48);color:var(--red2)}
+.bulk-btn.black-bulk{background:rgba(50,65,100,.28);border-color:rgba(80,100,140,.48);color:#8aaace}
+.bulk-btn.cancel-bulk{background:transparent;border-color:rgba(201,168,76,.18);color:var(--text-dim)}
+
+/* TOAST */
+.toast-rpg{position:fixed;top:76px;right:22px;z-index:9999;padding:11px 16px;border-radius:4px;font-family:var(--ff-serif);font-size:.78rem;letter-spacing:.5px;display:flex;align-items:center;gap:9px;border:1.5px solid;max-width:340px;backdrop-filter:blur(12px);animation:toastIn .3s cubic-bezier(.4,0,.2,1) both}
+.toast-rpg.success{background:rgba(10,30,20,.96);color:#2ecc71;border-color:rgba(46,204,113,.38)}
+.toast-rpg.error{background:rgba(30,8,8,.96);color:var(--red2);border-color:rgba(192,57,43,.38)}
+.toast-rpg.info{background:rgba(8,14,30,.96);color:var(--glow);border-color:rgba(78,228,212,.38)}
+.toast-rpg.warning{background:rgba(28,20,4,.96);color:var(--gold2);border-color:rgba(201,168,76,.38)}
+@keyframes toastIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(12px)}}
+
+.auth-footer{position:relative;z-index:10;text-align:center;padding:.85rem;font-family:var(--ff-serif);font-size:.58rem;letter-spacing:3px;color:rgba(201,168,76,.28);text-transform:uppercase;border-top:1px solid rgba(201,168,76,.09)}
+
+@media print{
+  .topnav,.wallpaper-right,.bulk-bar,.auth-footer,.badge-print-hide{display:none!important}
+  body{background:white;color:#000}
+  .main-wrap{padding:0}
+  .two-col{grid-template-columns:1fr!important}
+  .ornate-card{background:white;border:1px solid #ccc}
+  th{background:#2D3580!important;color:white!important;-webkit-print-color-adjust:exact}
+}
+</style>
 </head>
 <body>
 
-    <!-- ═══ SIDEBAR ═══ -->
-    <nav class="sidebar">
-        <div class="brand">
-            <div class="brand-icon"><i class="fas fa-shield-halved"></i></div>
-            <div class="brand-text">
-                <div class="title">Unit Mobility Assets</div>
-                <div class="sub">Philippine Navy</div>
-            </div>
+<div class="wallpaper-right"></div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="nav-left">
+    <button class="nav-btn" style="background:rgba(78,228,212,.10);border-color:rgba(78,228,212,.32);color:var(--glow);">
+      <i class="fas fa-chevron-left"></i> Return to Hub
+    </button>
+    <button class="nav-btn"><i class="fas fa-terminal"></i> Command Center <i class="fas fa-chevron-right" style="font-size:.58rem;"></i></button>
+  </div>
+  <div class="topnav-brand">
+    <div class="brand-title">HSG Logistics</div>
+    <div class="brand-sub">Data Hub</div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-logout"><i class="fas fa-arrow-right-from-bracket"></i> Logout</button>
+  </div>
+</nav>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="nav-btn active"><i class="fas fa-layer-group"></i> Fleet Monitor</div>
+  <div class="nav-btn" onclick="window.print()"><i class="fas fa-print"></i> Print Report</div>
+  <div class="nav-btn" onclick="downloadTemplate()"><i class="fas fa-download"></i> Download Template</div>
+  <div class="nav-btn" onclick="document.getElementById('excelUpload').click()"><i class="fas fa-upload"></i> Import Panel</div>
+  <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Asset Inventory Command</h1>
+  <div class="deco-line"><div class="deco-diamond"></div></div>
+  <p class="subtitle">Logistics &amp; Fleet Tracking System &nbsp;|&nbsp; HQ Philippine Navy</p>
+</div>
+
+<div class="main-wrap">
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+      <div class="stat-label"><span class="glow-dot teal"></span> Total Inventory</div>
+      <div class="stat-value" id="statTotal">0</div>
+    </div>
+    <div class="stat-card red-card">
+      <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+      <div class="stat-label"><span class="glow-dot red"></span> Red Plates (PN)</div>
+      <div class="stat-value" id="statRedPlates">0</div>
+      <div class="stat-note">Transferred to Philippine Navy</div>
+    </div>
+    <div class="stat-card black-card">
+      <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+      <div class="stat-label"><span class="glow-dot black"></span> Black Plates</div>
+      <div class="stat-value" id="statBlackPlates">0</div>
+      <div class="stat-note">Civilian / Not yet transferred</div>
+    </div>
+    <div class="stat-card cta-card badge-print-hide" onclick="window.print()">
+      <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+      <div class="stat-label"><i class="fas fa-file-pdf" style="color:var(--gold);"></i> Reports</div>
+      <div class="stat-value"><i class="fas fa-print" style="font-size:1.4rem;color:var(--glow);"></i></div>
+      <div class="stat-note">Generate PDF</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+
+    <!-- FORM -->
+    <div class="ornate-card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-plus-circle"></i> Register New Asset</span>
+      </div>
+      <div class="form-container">
+        <input type="hidden" id="edit_id">
+        <div class="group">
+          <label>Assigned Office</label>
+          <select id="office" class="field">
+            <option value="FOIC">FOIC</option><option value="VCOM">VCOM</option><option value="CNS">CNS</option>
+            <option value="N1">N1</option><option value="N2">N2</option><option value="N3">N3</option>
+            <option value="N4">N4</option><option value="N5">N5</option><option value="N6">N6</option>
+            <option value="N7">N7</option><option value="N8">N8</option><option value="N9">N9</option>
+            <option value="N10">N10</option><option value="N11">N11</option><option value="HSG">HSG</option>
+            <option value="NIOFC">NIOFC</option><option value="CMCPO">CMCPO</option><option value="CRDO">CRDO</option>
+            <option value="CNLE">CNLE</option><option value="NSPAO">NSPAO</option><option value="NPAO">NPAO</option>
+            <option value="ONSSSM">ONSSSM</option><option value="TNJA">TNJA</option><option value="TNCH">TNCH</option>
+            <option value="TCSN">TCSN</option><option value="TCNN">TCNN</option><option value="TCDSN">TCDSN</option>
+            <option value="TNCE">TNCE</option><option value="PNOLOAC">PNOLOAC</option><option value="TNIA">TNIA</option>
+            <option value="NSO">NSO</option><option value="NASO">NASO</option><option value="TNIG">TNIG</option>
+            <option value="OESPA">OESPA</option><option value="TNPM">TNPM</option><option value="OTNA">OTNA</option>
+            <option value="PNGADC">PNGADC</option><option value="PNREO">PNREO</option><option value="PNMO">PNMO</option>
+            <option value="ONIA">ONIA</option><option value="FMWC">FMWC</option><option value="PNMCMC">PNMCMC</option>
+          </select>
         </div>
-
-        <div class="nav-link active"><i class="fas fa-layer-group"></i> Fleet Monitor</div>
-        <div class="nav-link" onclick="window.print()"><i class="fas fa-print"></i> Print Report</div>
-        <div class="nav-link" onclick="downloadTemplate()"><i class="fas fa-download"></i> Download Template</div>
-        <div class="nav-link" onclick="document.getElementById('excelUpload').click()"><i class="fas fa-upload"></i> Import Excel</div>
-        <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(event)">
-
-        <div class="sb-legend">
-            <div class="sb-legend-title"><i class="fas fa-circle-info"></i> &nbsp;Plate Legend</div>
-            <div class="sb-legend-row">
-                <div class="sb-legend-swatch red"></div>
-                <span class="sb-legend-lbl">Red Plate — PN Transfer</span>
-            </div>
-            <div class="sb-legend-row">
-                <div class="sb-legend-swatch black"></div>
-                <span class="sb-legend-lbl">Black Plate — Civilian</span>
-            </div>
+        <div class="group">
+          <label>Vehicle Model / Type</label>
+          <input type="text" id="vehicle_type" class="field" placeholder="e.g., M35 Truck">
         </div>
-    </nav>
-
-    <!-- ═══ MAIN ═══ -->
-    <main class="content">
-        <header>
-            <h1>Asset Inventory Command</h1>
-            <p class="subtitle">Logistics and Fleet Tracking System | HQ Philippine Navy</p>
-        </header>
-
-        <!-- STAT CARDS -->
-        <section class="stats-grid">
-            <div class="stat-card default">
-                <div>
-                    <div class="stat-label">Total Inventory</div>
-                    <div class="stat-value" id="statTotal">0</div>
-                </div>
-                <i class="fas fa-truck-pickup"></i>
-            </div>
-            <div class="stat-card default">
-                <div>
-                    <div class="stat-label">Offices / Units</div>
-                    <div class="stat-value" id="statOffices">0</div>
-                </div>
-                <i class="fas fa-building"></i>
-            </div>
-            <div class="stat-card red-card">
-                <div>
-                    <div class="stat-label">🔴 Red Plates (PN)</div>
-                    <div class="stat-value" id="statRedPlates">0</div>
-                    <div class="stat-note">Transferred to Philippine Navy</div>
-                </div>
-                <i class="fas fa-id-card"></i>
-            </div>
-            <div class="stat-card black-card">
-                <div>
-                    <div class="stat-label">⚫ Black Plates</div>
-                    <div class="stat-value" id="statBlackPlates">0</div>
-                    <div class="stat-note">Civilian / Not yet transferred</div>
-                </div>
-                <i class="fas fa-car"></i>
-            </div>
-            <div class="stat-card cta badge-print-hide" onclick="window.print()">
-                <div>
-                    <div class="stat-label">Reports</div>
-                    <div class="stat-value">Generate PDF</div>
-                </div>
-                <i class="fas fa-file-pdf"></i>
-            </div>
-        </section>
-
-        <div class="main-grid">
-
-            <!-- ── REGISTER FORM ── -->
-            <div class="card">
-                <div class="card-header"><i class="fas fa-plus-circle"></i> &nbsp;Register New Asset</div>
-                <div class="form-container">
-                    <input type="hidden" id="edit_id">
-
-                    <div class="group">
-                        <label>Assigned Office</label>
-                        <select id="office" class="field">
-                            <option value="FOIC">FOIC</option><option value="VCOM">VCOM</option><option value="CNS">CNS</option>
-                            <option value="N1">N1</option><option value="N2">N2</option><option value="N3">N3</option>
-                            <option value="N4">N4</option><option value="N5">N5</option><option value="N6">N6</option>
-                            <option value="N7">N7</option><option value="N8">N8</option><option value="N9">N9</option>
-                            <option value="N10">N10</option><option value="N11">N11</option><option value="HSG">HSG</option>
-                            <option value="NIOFC">NIOFC</option><option value="CMCPO">CMCPO</option><option value="CRDO">CRDO</option>
-                            <option value="CNLE">CNLE</option><option value="NSPAO">NSPAO</option><option value="NPAO">NPAO</option>
-                            <option value="ONSSSM">ONSSSM</option><option value="TNJA">TNJA</option><option value="TNCH">TNCH</option>
-                            <option value="TCSN">TCSN</option><option value="TCNN">TCNN</option><option value="TCDSN">TCDSN</option>
-                            <option value="TNCE">TNCE</option><option value="PNOLOAC">PNOLOAC</option><option value="TNIA">TNIA</option>
-                            <option value="NSO">NSO</option><option value="NASO">NASO</option><option value="TNIG">TNIG</option>
-                            <option value="OESPA">OESPA</option><option value="TNPM">TNPM</option><option value="OTNA">OTNA</option>
-                            <option value="PNGADC">PNGADC</option><option value="PNREO">PNREO</option><option value="PNMO">PNMO</option>
-                            <option value="ONIA">ONIA</option><option value="FMWC">FMWC</option><option value="PNMCMC">PNMCMC</option>
-                        </select>
-                    </div>
-
-                    <div class="group">
-                        <label>Vehicle Model / Type</label>
-                        <input type="text" id="vehicle_type" class="field" placeholder="e.g., M35 Truck">
-                    </div>
-
-                    <!-- Plate Type Toggle -->
-                    <div class="plate-type-group">
-                        <label>Plate Type</label>
-                        <div class="plate-toggle">
-                            <input type="radio" name="plate_type" id="plate_red" value="red" checked onchange="updatePlatePreview()">
-                            <label for="plate_red">
-                                <span style="width:9px;height:9px;border-radius:50%;background:#991b1b;display:inline-block;flex-shrink:0;"></span>
-                                🔴 Red Plate (PN)
-                            </label>
-                            <input type="radio" name="plate_type" id="plate_black" value="black" onchange="updatePlatePreview()">
-                            <label for="plate_black">
-                                <span style="width:9px;height:9px;border-radius:50%;background:#f8fafc;border:1px solid #94a3b8;display:inline-block;flex-shrink:0;"></span>
-                                ⚫ Black Plate
-                            </label>
-                        </div>
-                        <div id="plateTypeHint" class="plate-preview red" style="margin-top:8px;">
-                            <i class="fas fa-circle-info"></i> Transferred to Philippine Navy
-                        </div>
-                    </div>
-
-                    <div class="group">
-                        <label>Plate Number</label>
-                        <input type="text" id="plate_number" class="field" placeholder="SJN-123" oninput="updatePlatePreview()">
-                    </div>
-
-                    <div style="display:flex;gap:12px;">
-                        <div class="group" style="flex:1">
-                            <label>Official Receipt No.</label>
-                            <input type="text" id="or_number" class="field" placeholder="OR-XXXXXXX">
-                        </div>
-                        <div class="group" style="flex:1">
-                            <label>Certificate of Registration No.</label>
-                            <input type="text" id="cr_number" class="field" placeholder="CR-XXXXXXX">
-                        </div>
-                    </div>
-
-                    <div class="group"><label>Status / Remarks</label><input type="text" id="remarks" class="field"></div>
-
-                    <!-- ── NEW: Insurance field ── -->
-                    <div class="group">
-                        <label><i class="fas fa-shield-check" style="color:var(--blue2);margin-right:4px;"></i>Insurance Type</label>
-                        <select id="insurance" class="field">
-                            <option value="">— Select Insurance —</option>
-                            <option value="Comprehensive">Comprehensive</option>
-                            <option value="TPL">TPL (Third Party Liability)</option>
-                        </select>
-                    </div>
-
-                    <div class="group"><label>Registration Date</label><input type="date" id="date_of_registration" class="field"></div>
-
-                    <button class="btn-submit" id="submitBtn" onclick="addData()"><i class="fas fa-plus"></i> &nbsp;Register Asset</button>
-                    <button class="btn-submit" id="updateBtn" onclick="updateData()" style="display:none;background:linear-gradient(135deg,var(--purple),var(--blue2));margin-top:8px;"><i class="fas fa-save"></i> &nbsp;Update Asset</button>
-                    <button class="btn-submit" onclick="cancelEdit()" id="cancelBtn" style="display:none;background:linear-gradient(135deg,#64748b,#475569);margin-top:8px;"><i class="fas fa-times"></i> &nbsp;Cancel</button>
-                </div>
-            </div>
-
-            <!-- ── TABLE CARD ── -->
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-database"></i> &nbsp;Master Fleet Record</span>
-                    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
-                        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Quick search…" onkeyup="filterTable()">
-                        <div class="plate-filter-btns">
-                            <button class="filter-btn all active" onclick="setPlateFilter('all',this)">All</button>
-                            <button class="filter-btn red"   onclick="setPlateFilter('red',this)">🔴 Red</button>
-                            <button class="filter-btn black" onclick="setPlateFilter('black',this)">⚫ Black</button>
-                        </div>
-                        <!-- ✅ NEW: Export to Excel button -->
-                        <button class="btn-excel" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-                        <button class="btn-remove-duplicates" onclick="removeDuplicates()"><i class="fas fa-broom"></i> Dupes</button>
-                        <button class="btn-remove-duplicates" style="background:linear-gradient(135deg,rgba(255,200,200,0.90),rgba(245,170,170,0.80));color:var(--red);" onclick="deleteSelected()"><i class="fas fa-trash"></i> Del</button>
-                    </div>
-                </div>
-
-                <div class="table-wrap">
-                    <table id="mainTable">
-                        <thead>
-                            <tr>
-                                <th class="badge-print-hide" style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                                <th style="width:40px;">#</th>
-                                <th>Office</th>
-                                <th>Vehicle Model</th>
-                                <th>Plate Number</th>
-                                <th>OR No.</th>
-                                <th>CR No.</th>
-                                <th>Remarks</th>
-                                <th>Insurance</th>
-                                <th>Reg. Date</th>
-                                <th class="badge-print-hide">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="vehicleTable"></tbody>
-                    </table>
-                </div>
-
-                <!-- Legend strip -->
-                <div class="plate-legend badge-print-hide">
-                    <span style="font-weight:900;color:var(--text3);">PLATE LEGEND:</span>
-                    <div class="legend-item">
-                        <span class="plate-badge red" style="font-size:0.74rem;padding:3px 10px;"><span class="plate-dot"></span>SJN-123</span>
-                        <span style="color:var(--red-text);font-weight:800;">Red</span>
-                        <span style="color:var(--text3);">— Transferred to PN</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="plate-badge black" style="font-size:0.74rem;padding:3px 10px;"><span class="plate-dot"></span>ABC-456</span>
-                        <span style="color:#334155;font-weight:800;">Black</span>
-                        <span style="color:var(--text3);">— Civilian / Not transferred</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="ins-badge comprehensive" style="font-size:0.74rem;">Comprehensive</span>
-                        <span style="color:var(--text3);">/ </span>
-                        <span class="ins-badge tpl" style="font-size:0.74rem;">TPL</span>
-                        <span style="color:var(--text3);">— Insurance Type</span>
-                    </div>
-                </div>
-            </div>
-
+        <div class="group">
+          <label>Plate Type</label>
+          <div class="plate-toggle">
+            <input type="radio" name="plate_type" id="plate_red" value="red" checked onchange="updatePlatePreview()">
+            <label for="plate_red"><span class="glow-dot red"></span> Red Plate (PN)</label>
+            <input type="radio" name="plate_type" id="plate_black" value="black" onchange="updatePlatePreview()">
+            <label for="plate_black"><span class="glow-dot black"></span> Black Plate</label>
+          </div>
+          <div id="plateTypeHint" class="plate-preview red" style="margin-top:6px;">
+            <i class="fas fa-circle-info"></i> Transferred to Philippine Navy
+          </div>
         </div>
-    </main>
-
-    <!-- ═══ BULK ACTION BAR ═══ -->
-    <div class="bulk-bar badge-print-hide" id="bulkBar">
-        <div class="bulk-bar-count">
-            <i class="fas fa-check-square" style="color:var(--blue2);"></i>
-            <span class="count-num" id="bulkCount">0</span>
-            <span style="color:var(--text2);">selected</span>
+        <div class="group">
+          <label>Plate Number</label>
+          <input type="text" id="plate_number" class="field" placeholder="SJN-123">
         </div>
-        <div class="bulk-sep"></div>
-        <span class="bulk-label">Tag as:</span>
-        <button class="bulk-btn bulk-btn-red" onclick="bulkSetPlateType('red')">
-            <span style="width:9px;height:9px;border-radius:50%;background:#991b1b;display:inline-block;flex-shrink:0;"></span>
-            🔴 Red Plate — PN Transfer
-        </button>
-        <button class="bulk-btn bulk-btn-black" onclick="bulkSetPlateType('black')">
-            <span style="width:9px;height:9px;border-radius:50%;background:#94a3b8;border:1px solid #64748b;display:inline-block;flex-shrink:0;"></span>
-            ⚫ Black Plate — Civilian
-        </button>
-        <div class="bulk-sep"></div>
-        <button class="bulk-btn bulk-btn-cancel" onclick="clearAllSelections()"><i class="fas fa-xmark"></i> Deselect All</button>
+        <div style="display:flex;gap:8px;">
+          <div class="group" style="flex:1"><label>OR Number</label><input type="text" id="or_number" class="field" placeholder="OR-XXXXXXX"></div>
+          <div class="group" style="flex:1"><label>CR Number</label><input type="text" id="cr_number" class="field" placeholder="CR-XXXXXXX"></div>
+        </div>
+        <div class="group">
+          <label>Status / Remarks</label>
+          <input type="text" id="remarks" class="field">
+        </div>
+        <div class="group">
+          <label><i class="fas fa-shield-check" style="color:var(--glow);margin-right:4px;"></i> Insurance Type</label>
+          <select id="insurance" class="field">
+            <option value="">— Select Insurance —</option>
+            <option value="Comprehensive">Comprehensive</option>
+            <option value="TPL">TPL (Third Party Liability)</option>
+          </select>
+        </div>
+        <div class="group">
+          <label>Registration Date</label>
+          <input type="date" id="date_of_registration" class="field">
+        </div>
+        <button class="btn-submit" id="submitBtn" onclick="addData()"><i class="fas fa-plus"></i> Register Asset</button>
+        <button class="btn-submit update" id="updateBtn" onclick="updateData()" style="display:none;"><i class="fas fa-save"></i> Update Asset</button>
+        <button class="btn-submit cancel" onclick="cancelEdit()" id="cancelBtn" style="display:none;"><i class="fas fa-times"></i> Cancel</button>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SB_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-        const db = window.supabase.createClient(SB_URL, SB_KEY);
-
-        let allData = [];
-        let activePlateFilter = 'all';
-
-        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           PLATE TYPE STORE
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        const _plateMemory = {};
-        const SS_KEY = 'pn_pt';
-
-        function _readStore() {
-            try { return JSON.parse(sessionStorage.getItem(SS_KEY) || '{}'); }
-            catch { return {}; }
-        }
-
-        function savePlateType(id, type) {
-            _plateMemory[String(id)] = type;
-            try { const s = _readStore(); s[String(id)] = type; sessionStorage.setItem(SS_KEY, JSON.stringify(s)); }
-            catch { /* blocked */ }
-        }
-
-        function getPlateType(id, dbValue) {
-            if (_plateMemory[String(id)]) return _plateMemory[String(id)];
-            const s = _readStore();
-            if (s[String(id)]) return s[String(id)];
-            if (dbValue && dbValue !== '') return dbValue;
-            return 'black';
-        }
-
-        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           SAFE SUPABASE PAYLOAD
-           ✅ Updated: or_number, cr_number, insurance
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function dbPayload(raw) {
-            const allowed = [
-                'office', 'vehicle_type', 'plate_number',
-                'or_number', 'cr_number',          // ← renamed columns
-                'remarks', 'insurance',             // ← new column
-                'date_of_registration', 'year'
-            ];
-            const out = {};
-            allowed.forEach(k => { if (raw[k] !== undefined) out[k] = raw[k]; });
-            return out;
-        }
-
-        /* ━━━ TOAST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function showToast(message, type='success') {
-            document.querySelectorAll('.toast-clay').forEach(t => t.remove());
-            const icons = {
-                success: 'fas fa-circle-check',
-                error:   'fas fa-circle-xmark',
-                info:    'fas fa-circle-info',
-                warning: 'fas fa-triangle-exclamation'
-            };
-            const toast = document.createElement('div');
-            toast.className = `toast-clay ${type}`;
-            toast.innerHTML = `<i class="${icons[type]||icons.info}" style="font-size:1.05rem;flex-shrink:0;"></i><span>${message}</span>`;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.animation = 'toastOut .3s ease forwards';
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
-        }
-
-        /* ━━━ PLATE PREVIEW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function updatePlatePreview() {
-            const type = document.querySelector('input[name="plate_type"]:checked').value;
-            const hint = document.getElementById('plateTypeHint');
-            hint.className = 'plate-preview ' + type;
-            hint.innerHTML = type === 'red'
-                ? '<i class="fas fa-circle-info"></i> Transferred to Philippine Navy — Red Government Plate'
-                : '<i class="fas fa-circle-info"></i> Civilian vehicle — Not yet transferred to PN';
-        }
-
-        /* ━━━ PLATE FILTER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function setPlateFilter(type, btn) {
-            activePlateFilter = type;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderTable(allData);
-        }
-
-        /* ━━━ INSURANCE BADGE HTML ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function insBadgeHtml(val) {
-            if (!val) return `<span class="ins-badge none">—</span>`;
-            if (val === 'Comprehensive') return `<span class="ins-badge comprehensive"><i class="fas fa-shield-check" style="font-size:0.7rem;"></i>${val}</span>`;
-            if (val === 'TPL') return `<span class="ins-badge tpl"><i class="fas fa-file-shield" style="font-size:0.7rem;"></i>TPL</span>`;
-            return `<span class="ins-badge none">${val}</span>`;
-        }
-
-        /* ━━━ RENDER TABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function renderTable(data) {
-            let filtered = data;
-            if (activePlateFilter !== 'all')
-                filtered = data.filter(v => getPlateType(v.id, v.plate_type) === activePlateFilter);
-
-            const tbody = document.getElementById('vehicleTable');
-            tbody.innerHTML = '';
-            let currentOffice = '', counter = 1;
-
-            filtered.forEach(v => {
-                if (v.office !== currentOffice) {
-                    currentOffice = v.office;
-                    const gr = tbody.insertRow();
-                    gr.className = 'office-group-row';
-                    gr.innerHTML = `<td colspan="11" style="padding:8px 16px;">OFFICE: ${currentOffice}</td>`;
-                }
-
-                const pt = getPlateType(v.id, v.plate_type);
-                const pc = pt === 'red' ? 'red' : 'black';
-                const plateHtml = v.plate_number
-                    ? `<span class="plate-badge ${pc}"><span class="plate-dot"></span>${v.plate_number}</span>`
-                    : `<span class="plate-badge unknown">—</span>`;
-
-                const row = tbody.insertRow();
-                row.dataset.plateType = pt;
-                row.innerHTML = `
-                    <td class="badge-print-hide"><input type="checkbox" class="row-checkbox" data-id="${v.id}"></td>
-                    <td style="font-weight:800;color:var(--text3);">${counter++}</td>
-                    <td class="office-cell">${v.office||''}</td>
-                    <td>${v.vehicle_type||''}</td>
-                    <td>${plateHtml}</td>
-                    <td style="font-size:0.82rem;color:var(--text3);">${v.or_number||'---'}</td>
-                    <td style="font-size:0.82rem;color:var(--text3);">${v.cr_number||'---'}</td>
-                    <td style="font-size:0.82rem;color:var(--text3);">${v.remarks||''}</td>
-                    <td>${insBadgeHtml(v.insurance)}</td>
-                    <td style="font-size:0.82rem;color:var(--text3);">${v.date_of_registration||'---'}</td>
-                    <td class="badge-print-hide">
-                        <button class="btn-edit" onclick="editRecord(${v.id})"><i class="fas fa-edit"></i> Edit</button>
-                    </td>`;
-
-                row.querySelector('.row-checkbox').addEventListener('change', function () {
-                    row.classList.toggle('row-selected', this.checked);
-                    updateBulkBar();
-                });
-            });
-
-            const redCnt = data.filter(v => getPlateType(v.id, v.plate_type) === 'red').length;
-            const blkCnt = data.filter(v => getPlateType(v.id, v.plate_type) === 'black').length;
-            document.getElementById('statTotal').innerText    = data.length;
-            document.getElementById('statOffices').innerText  = [...new Set(data.map(v => v.office))].length;
-            document.getElementById('statRedPlates').innerText   = redCnt;
-            document.getElementById('statBlackPlates').innerText = blkCnt;
-        }
-
-        /* ━━━ REFRESH FROM DB ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        async function refreshData() {
-            const { data, error } = await db
-                .from('vehicles').select('*')
-                .order('office', { ascending: true })
-                .order('vehicle_type', { ascending: true });
-            if (error) { showToast('Failed to load: ' + error.message, 'error'); return; }
-            allData = data || [];
-            renderTable(allData);
-        }
-
-        /* ━━━ SEARCH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function filterTable() {
-            const f = document.getElementById('searchInput').value.toUpperCase();
-            const rows = document.getElementById('vehicleTable').getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                if (rows[i].classList.contains('office-group-row')) {
-                    rows[i].style.display = f === '' ? '' : 'none'; continue;
-                }
-                rows[i].style.display = rows[i].textContent.toUpperCase().includes(f) ? '' : 'none';
-            }
-        }
-
-        /* ━━━ FORM HELPERS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function getSelectedPlateType() {
-            const c = document.querySelector('input[name="plate_type"]:checked');
-            return c ? c.value : 'black';
-        }
-
-        function setPlateTypeInForm(t) {
-            const val = t === 'red' ? 'red' : 'black';
-            const r = document.querySelector(`input[name="plate_type"][value="${val}"]`);
-            if (r) { r.checked = true; updatePlatePreview(); }
-        }
-
-        function readFormFields() {
-            return {
-                office:               document.getElementById('office').value.trim(),
-                vehicle_type:         document.getElementById('vehicle_type').value.trim(),
-                plate_number:         document.getElementById('plate_number').value.trim(),
-                or_number:            document.getElementById('or_number').value.trim(),       // ← renamed
-                cr_number:            document.getElementById('cr_number').value.trim(),       // ← renamed
-                remarks:              document.getElementById('remarks').value.trim(),
-                insurance:            document.getElementById('insurance').value || null,      // ← new
-                date_of_registration: document.getElementById('date_of_registration').value || null,
-                year:                 new Date().getFullYear()
-            };
-        }
-
-        /* ━━━ ADD (Register) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        async function addData() {
-            const plateType = getSelectedPlateType();
-            const fields    = readFormFields();
-
-            if (!fields.office || !fields.vehicle_type) {
-                showToast('Please fill in Office and Vehicle Type.', 'warning'); return;
-            }
-
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> &nbsp;Saving…';
-
-            const payload = dbPayload(fields);
-            const { data: inserted, error } = await db
-                .from('vehicles').insert([payload]).select().single();
-
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-plus"></i> &nbsp;Register Asset';
-
-            if (error) {
-                showToast('Failed to register: ' + error.message, 'error');
-                return;
-            }
-
-            savePlateType(inserted.id, plateType);
-            showToast('✅ Asset registered successfully!', 'success');
-            clearForm();
-            refreshData();
-        }
-
-        /* ━━━ EDIT (load into form) ━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        async function editRecord(id) {
-            const { data, error } = await db.from('vehicles').select('*').eq('id', id).single();
-            if (error) { showToast('Could not load record: ' + error.message, 'error'); return; }
-
-            document.getElementById('edit_id').value              = data.id;
-            document.getElementById('office').value               = data.office || '';
-            document.getElementById('vehicle_type').value         = data.vehicle_type || '';
-            document.getElementById('plate_number').value         = data.plate_number || '';
-            document.getElementById('or_number').value            = data.or_number || '';       // ← renamed
-            document.getElementById('cr_number').value            = data.cr_number || '';       // ← renamed
-            document.getElementById('remarks').value              = data.remarks || '';
-            document.getElementById('insurance').value            = data.insurance || '';       // ← new
-            document.getElementById('date_of_registration').value = data.date_of_registration || '';
-
-            setPlateTypeInForm(getPlateType(data.id, data.plate_type));
-
-            document.getElementById('submitBtn').style.display = 'none';
-            document.getElementById('updateBtn').style.display = 'block';
-            document.getElementById('cancelBtn').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            showToast('Record loaded — make your changes then click Update.', 'info');
-        }
-
-        /* ━━━ UPDATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        async function updateData() {
-            const id = document.getElementById('edit_id').value;
-            if (!id) { showToast('No record selected to update.', 'error'); return; }
-
-            const plateType = getSelectedPlateType();
-            const fields    = readFormFields();
-            const payload   = dbPayload(fields);
-
-            const btn = document.getElementById('updateBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> &nbsp;Saving…';
-
-            const { error } = await db.from('vehicles').update(payload).eq('id', id);
-
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-save"></i> &nbsp;Update Asset';
-
-            if (error) {
-                showToast('Update failed: ' + error.message, 'error'); return;
-            }
-
-            savePlateType(id, plateType);
-            const idx = allData.findIndex(v => String(v.id) === String(id));
-            if (idx !== -1) Object.assign(allData[idx], payload);
-
-            showToast('✅ Record updated successfully!', 'success');
-            cancelEdit();
-            renderTable(allData);
-        }
-
-        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           ✅ EXPORT TO EXCEL — exports all currently visible data
-        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function exportToExcel() {
-            if (!allData.length) { showToast('No data to export.', 'warning'); return; }
-
-            // Determine which rows to export (respects active plate filter)
-            let exportData = allData;
-            if (activePlateFilter !== 'all')
-                exportData = allData.filter(v => getPlateType(v.id, v.plate_type) === activePlateFilter);
-
-            if (!exportData.length) { showToast('No records match the current filter.', 'warning'); return; }
-
-            // Build worksheet rows
-            const header = [
-                '#', 'Office', 'Vehicle Model', 'Plate Type', 'Plate Number',
-                'OR Number (Official Receipt)', 'CR Number (Certificate of Registration)',
-                'Remarks', 'Insurance', 'Registration Date'
-            ];
-
-            const rows = exportData.map((v, idx) => [
-                idx + 1,
-                v.office || '',
-                v.vehicle_type || '',
-                getPlateType(v.id, v.plate_type) === 'red' ? 'Red Plate (PN)' : 'Black Plate (Civilian)',
-                v.plate_number || '',
-                v.or_number || '',
-                v.cr_number || '',
-                v.remarks || '',
-                v.insurance || '',
-                v.date_of_registration || ''
-            ]);
-
-            const wsData = [header, ...rows];
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-            // Column widths
-            ws['!cols'] = [
-                { wch: 5 }, { wch: 12 }, { wch: 22 }, { wch: 22 }, { wch: 14 },
-                { wch: 28 }, { wch: 34 }, { wch: 24 }, { wch: 15 }, { wch: 18 }
-            ];
-
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Fleet Record');
-
-            // Summary sheet
-            const redCount   = allData.filter(v => getPlateType(v.id, v.plate_type) === 'red').length;
-            const blackCount = allData.filter(v => getPlateType(v.id, v.plate_type) === 'black').length;
-            const compCount  = allData.filter(v => v.insurance === 'Comprehensive').length;
-            const tplCount   = allData.filter(v => v.insurance === 'TPL').length;
-            const offices    = [...new Set(allData.map(v => v.office))].length;
-
-            const summaryData = [
-                ['HQ Philippine Navy — Fleet Asset Summary'],
-                ['Generated:', new Date().toLocaleString('en-PH')],
-                [''],
-                ['Metric', 'Count'],
-                ['Total Vehicles', allData.length],
-                ['Offices / Units', offices],
-                ['Red Plates (PN Transfer)', redCount],
-                ['Black Plates (Civilian)', blackCount],
-                ['Comprehensive Insurance', compCount],
-                ['TPL Insurance', tplCount],
-                ['No Insurance Data', allData.length - compCount - tplCount]
-            ];
-
-            const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-            wsSummary['!cols'] = [{ wch: 30 }, { wch: 14 }];
-            XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
-
-            const timestamp = new Date().toISOString().slice(0,10);
-            XLSX.writeFile(wb, `PN_Fleet_Record_${timestamp}.xlsx`);
-            showToast(`✅ Exported ${exportData.length} record(s) to Excel!`, 'success');
-        }
-
-        /* ━━━ SELECTION / BULK ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function toggleSelectAll() {
-            const c = document.getElementById('selectAll').checked;
-            document.querySelectorAll('.row-checkbox').forEach(cb => {
-                cb.checked = c;
-                const r = cb.closest('tr');
-                if (r) r.classList.toggle('row-selected', c);
-            });
-            updateBulkBar();
-        }
-
-        function updateBulkBar() {
-            const sel = document.querySelectorAll('.row-checkbox:checked');
-            document.getElementById('bulkCount').textContent = sel.length;
-            const bar = document.getElementById('bulkBar');
-            sel.length > 0 ? bar.classList.add('visible') : bar.classList.remove('visible');
-            if (!sel.length) document.getElementById('selectAll').checked = false;
-        }
-
-        function clearAllSelections() {
-            document.querySelectorAll('.row-checkbox').forEach(cb => {
-                cb.checked = false;
-                const r = cb.closest('tr');
-                if (r) r.classList.remove('row-selected');
-            });
-            document.getElementById('selectAll').checked = false;
-            updateBulkBar();
-        }
-
-        async function bulkSetPlateType(type) {
-            const checkboxes = Array.from(document.querySelectorAll('.row-checkbox:checked'));
-            if (!checkboxes.length) { showToast('No records selected.', 'warning'); return; }
-            const ids   = checkboxes.map(cb => cb.dataset.id);
-            const label = type === 'red' ? '🔴 Red Plate' : '⚫ Black Plate';
-            if (!confirm(`Tag ${ids.length} vehicle(s) as ${label}?`)) return;
-
-            ids.forEach(id => {
-                savePlateType(id, type);
-                const idx = allData.findIndex(v => String(v.id) === String(id));
-                if (idx !== -1) allData[idx]._clientPlateType = type;
-            });
-
-            clearAllSelections();
-            renderTable(allData);
-            showToast(`✅ ${ids.length} vehicle(s) tagged as ${label}!`, 'success');
-        }
-
-        async function deleteSelected() {
-            const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.dataset.id));
-            if (!ids.length) { showToast('Select at least one record first.', 'warning'); return; }
-            if (!confirm(`Delete ${ids.length} record(s)?`)) return;
-
-            const { error } = await db.from('vehicles').delete().in('id', ids);
-            if (error) { showToast('Delete failed: ' + error.message, 'error'); return; }
-
-            ids.forEach(id => delete _plateMemory[String(id)]);
-            try {
-                const s = _readStore();
-                ids.forEach(id => delete s[String(id)]);
-                sessionStorage.setItem(SS_KEY, JSON.stringify(s));
-            } catch { /* blocked */ }
-
-            showToast(`${ids.length} record(s) deleted.`, 'success');
-            refreshData();
-        }
-
-        async function removeDuplicates() {
-            const { data } = await db.from('vehicles').select('*').order('id', { ascending: true });
-            const seen = new Set(), dups = [];
-            (data || []).forEach(v => {
-                const k = String(v.plate_number || '').toLowerCase().trim();
-                if (seen.has(k)) dups.push(v.id); else seen.add(k);
-            });
-            if (dups.length > 0 && confirm(`Delete ${dups.length} duplicate(s)?`)) {
-                await db.from('vehicles').delete().in('id', dups);
-                showToast(`${dups.length} duplicate(s) removed.`, 'success');
-                refreshData();
-            } else if (!dups.length) {
-                showToast('No duplicates found.', 'info');
-            }
-        }
-
-        function cancelEdit() {
-            clearForm();
-            document.getElementById('submitBtn').style.display = 'block';
-            document.getElementById('updateBtn').style.display = 'none';
-            document.getElementById('cancelBtn').style.display = 'none';
-            document.getElementById('updateBtn').disabled = false;
-            document.getElementById('updateBtn').innerHTML = '<i class="fas fa-save"></i> &nbsp;Update Asset';
-        }
-
-        function clearForm() {
-            ['vehicle_type','plate_number','or_number','cr_number','remarks','date_of_registration']
-                .forEach(id => { document.getElementById(id).value = ''; });
-            document.getElementById('insurance').value = '';
-            setPlateTypeInForm('red');
-        }
-
-        /* ━━━ TEMPLATE DOWNLOAD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        function downloadTemplate() {
-            const t = [[
-                'Office', 'Vehicle Type', 'Plate Number', 'Plate Type (red/black)',
-                'OR Number (Official Receipt)', 'CR Number (Certificate of Registration)',
-                'Remarks', 'Insurance (Comprehensive/TPL)', 'Registration Date (YYYY-MM-DD)'
-            ]];
-            const ws = XLSX.utils.aoa_to_sheet(t);
-            ws['!cols'] = [
-                {wch:12},{wch:20},{wch:14},{wch:22},
-                {wch:28},{wch:34},{wch:24},{wch:28},{wch:26}
-            ];
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Vehicles');
-            XLSX.writeFile(wb, 'PN_Fleet_Template.xlsx');
-        }
-
-        /* ━━━ IMPORT EXCEL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        async function importExcel(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function (e) {
-                const wb   = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-                const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-
-                const vehicles = rows.map(r => ({
-                    office:         (r['Office'] || '').toString().toUpperCase(),
-                    vehicle_type:   (r['Vehicle Type'] || r['Vehicle Model'] || '').toString(),
-                    plate_number:   (r['Plate Number'] || r['Plate ID'] || '').toString(),
-                    or_number:      (r['OR Number (Official Receipt)'] || r['Engine Number'] || '').toString(),
-                    cr_number:      (r['CR Number (Certificate of Registration)'] || r['Chassis Number'] || '').toString(),
-                    remarks:        (r['Remarks'] || '').toString(),
-                    insurance:      (r['Insurance (Comprehensive/TPL)'] || r['Insurance'] || '') || null
-                }));
-
-                const { error } = await db.from('vehicles').insert(vehicles);
-                if (error) { showToast('Import failed: ' + error.message, 'error'); return; }
-                showToast(`${vehicles.length} records imported!`, 'success');
-                refreshData();
-            };
-            reader.readAsArrayBuffer(file);
-            event.target.value = '';
-        }
-
-        /* ━━━ INIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        refreshData();
-    </script>
+    <!-- TABLE -->
+    <div class="ornate-card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-database"></i> Master Fleet Record</span>
+        <div class="table-controls">
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 Quick search…" onkeyup="filterTable()">
+          <div style="display:flex;gap:4px;" class="badge-print-hide">
+            <button class="filter-btn all active" onclick="setPlateFilter('all',this)">All</button>
+            <button class="filter-btn red" onclick="setPlateFilter('red',this)"><span class="glow-dot red" style="width:5px;height:5px;"></span> Red</button>
+            <button class="filter-btn black" onclick="setPlateFilter('black',this)">⬛ Black</button>
+          </div>
+          <button class="btn-util btn-excel badge-print-hide" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+          <button class="btn-util btn-dupe badge-print-hide" onclick="removeDuplicates()"><i class="fas fa-broom"></i> Dupes</button>
+          <button class="btn-util btn-del badge-print-hide" onclick="deleteSelected()"><i class="fas fa-trash"></i> Del</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="mainTable">
+          <colgroup>
+            <col class="col-chk"><col class="col-num"><col class="col-office">
+            <col class="col-model"><col class="col-plate"><col class="col-or">
+            <col class="col-ins"><col class="col-status"><col class="col-date"><col class="col-act">
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="badge-print-hide"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+              <th>#</th>
+              <th>Office</th>
+              <th>Vehicle</th>
+              <th>Plate No.</th>
+              <th>OR / CR</th>
+              <th>Insurance</th>
+              <th>Status</th>
+              <th>Reg. Date</th>
+              <th class="badge-print-hide">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="vehicleTable"></tbody>
+        </table>
+      </div>
+
+      <div class="legend-strip badge-print-hide">
+        <span class="l-label">Legend:</span>
+        <div class="legend-item"><span class="plate-badge red" style="font-size:.70rem;padding:2px 7px;"><span class="plate-dot"></span>SJN-123</span><span style="color:var(--red2);font-size:.70rem;">Red — PN</span></div>
+        <div class="legend-item"><span class="plate-badge black" style="font-size:.70rem;padding:2px 7px;"><span class="plate-dot"></span>ABC-456</span><span style="color:#8aaace;font-size:.70rem;">Black — Civilian</span></div>
+        <div class="legend-item"><span class="ins-badge comprehensive" style="font-size:.62rem;">Comp.</span><span class="ins-badge tpl" style="font-size:.62rem;">TPL</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="auth-footer">Authorized Personnel Only &nbsp;·&nbsp; HSG-LPCC 2023–2024</div>
+
+<!-- BULK BAR -->
+<div class="bulk-bar badge-print-hide" id="bulkBar">
+  <div class="bulk-count"><i class="fas fa-check-square" style="color:var(--glow);"></i> <span class="num" id="bulkCount">0</span> selected</div>
+  <div class="bulk-sep"></div>
+  <span class="bulk-label">Tag as:</span>
+  <button class="bulk-btn red-bulk" onclick="bulkSetPlateType('red')"><span class="glow-dot red" style="width:7px;height:7px;"></span> Red Plate</button>
+  <button class="bulk-btn black-bulk" onclick="bulkSetPlateType('black')"><span class="glow-dot black" style="width:7px;height:7px;"></span> Black Plate</button>
+  <div class="bulk-sep"></div>
+  <button class="bulk-btn cancel-bulk" onclick="clearAllSelections()"><i class="fas fa-xmark"></i> Deselect</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL="https://jdzfxfriydakuqegtahq.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
+const db=window.supabase.createClient(SB_URL,SB_KEY);
+let allData=[],activePlateFilter="all";
+const _pm={};
+const SS_KEY="pn_pt2";
+function _rs(){try{return JSON.parse(sessionStorage.getItem(SS_KEY)||"{}")}catch{return{}}}
+function savePT(id,t){_pm[String(id)]=t;try{const s=_rs();s[String(id)]=t;sessionStorage.setItem(SS_KEY,JSON.stringify(s))}catch{}}
+function getPT(id,dbV){if(_pm[String(id)])return _pm[String(id)];const s=_rs();if(s[String(id)])return s[String(id)];if(dbV&&dbV!=="")return dbV;return"black"}
+function dbPay(raw){const ok=["office","vehicle_type","plate_number","or_number","cr_number","remarks","insurance","date_of_registration","year"];const o={};ok.forEach(k=>{if(raw[k]!==undefined)o[k]=raw[k]});return o}
+function showToast(msg,type="success"){document.querySelectorAll(".toast-rpg").forEach(t=>t.remove());const ic={success:"fas fa-circle-check",error:"fas fa-circle-xmark",info:"fas fa-circle-info",warning:"fas fa-triangle-exclamation"};const t=document.createElement("div");t.className=`toast-rpg ${type}`;t.innerHTML=`<i class="${ic[type]||ic.info}" style="flex-shrink:0;"></i><span>${msg}</span>`;document.body.appendChild(t);setTimeout(()=>{t.style.animation="toastOut .3s ease forwards";setTimeout(()=>t.remove(),300)},3500)}
+function updatePlatePreview(){const tp=document.querySelector("input[name=plate_type]:checked").value;const h=document.getElementById("plateTypeHint");h.className="plate-preview "+tp;h.innerHTML=tp==="red"?'<i class="fas fa-circle-info"></i> Transferred to Philippine Navy — Red Government Plate':'<i class="fas fa-circle-info"></i> Civilian vehicle — Not yet transferred to PN'}
+function setPlateFilter(tp,btn){activePlateFilter=tp;document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderTable(allData)}
+function insBadge(v){if(!v)return'<span class="ins-badge none">—</span>';if(v==="Comprehensive")return'<span class="ins-badge comprehensive"><i class="fas fa-shield-check" style="font-size:.62rem;"></i>Comp.</span>';if(v==="TPL")return'<span class="ins-badge tpl"><i class="fas fa-file-shield" style="font-size:.62rem;"></i>TPL</span>';return`<span class="ins-badge none">${v}</span>`}
+function renderTable(data){
+  let filtered=data;
+  if(activePlateFilter!=="all")filtered=data.filter(v=>getPT(v.id,v.plate_type)===activePlateFilter);
+  const tbody=document.getElementById("vehicleTable");tbody.innerHTML="";
+  let curOff="",ctr=1;
+  filtered.forEach(v=>{
+    if(v.office!==curOff){curOff=v.office;const gr=tbody.insertRow();gr.className="office-group-row";gr.innerHTML=`<td colspan="10">OFFICE: ${curOff}</td>`}
+    const pt=getPT(v.id,v.plate_type),pc=pt==="red"?"red":"black";
+    const plH=v.plate_number?`<span class="plate-badge ${pc}"><span class="plate-dot"></span>${v.plate_number}</span>`:`<span class="plate-badge unknown">—</span>`;
+    const orCr=[(v.or_number||"").trim(),(v.cr_number||"").trim()].filter(Boolean).join(" / ")||"—";
+    const row=tbody.insertRow();
+    row.dataset.plateType=pt;
+    row.innerHTML=`
+      <td class="badge-print-hide" style="max-width:none;overflow:visible;"><input type="checkbox" class="row-checkbox" data-id="${v.id}"></td>
+      <td style="font-weight:800;color:var(--text-dim);">${ctr++}</td>
+      <td class="office-cell">${v.office||""}</td>
+      <td title="${v.vehicle_type||""}">${v.vehicle_type||""}</td>
+      <td>${plH}</td>
+      <td title="${orCr}">${orCr}</td>
+      <td>${insBadge(v.insurance)}</td>
+      <td title="${v.remarks||""}">${v.remarks||""}</td>
+      <td>${v.date_of_registration||"—"}</td>
+      <td class="badge-print-hide" style="max-width:none;overflow:visible;white-space:nowrap;">
+        <button class="btn-edit" onclick="editRecord(${v.id})"><i class="fas fa-edit"></i> Edit</button>
+        <button class="btn-tbl-del" onclick="deleteSingle(${v.id})"><i class="fas fa-trash"></i></button>
+      </td>`;
+    row.querySelector(".row-checkbox").addEventListener("change",function(){row.classList.toggle("row-selected",this.checked);updateBulkBar()});
+  });
+  const redC=data.filter(v=>getPT(v.id,v.plate_type)==="red").length;
+  const blkC=data.filter(v=>getPT(v.id,v.plate_type)==="black").length;
+  document.getElementById("statTotal").innerText=data.length;
+  document.getElementById("statRedPlates").innerText=redC;
+  document.getElementById("statBlackPlates").innerText=blkC;
+}
+async function refreshData(){const{data,error}=await db.from("vehicles").select("*").order("office",{ascending:true}).order("vehicle_type",{ascending:true});if(error){showToast("Failed to load: "+error.message,"error");return}allData=data||[];renderTable(allData)}
+function filterTable(){const f=document.getElementById("searchInput").value.toUpperCase();const rows=document.getElementById("vehicleTable").getElementsByTagName("tr");for(let i=0;i<rows.length;i++){if(rows[i].classList.contains("office-group-row")){rows[i].style.display=f===""?"":"none";continue}rows[i].style.display=rows[i].textContent.toUpperCase().includes(f)?"":"none"}}
+function getSelPT(){const c=document.querySelector("input[name=plate_type]:checked");return c?c.value:"black"}
+function setPlateTypeInForm(t){const r=document.querySelector(`input[name="plate_type"][value="${t==="red"?"red":"black"}"]`);if(r){r.checked=true;updatePlatePreview()}}
+function readForm(){return{office:document.getElementById("office").value.trim(),vehicle_type:document.getElementById("vehicle_type").value.trim(),plate_number:document.getElementById("plate_number").value.trim(),or_number:document.getElementById("or_number").value.trim(),cr_number:document.getElementById("cr_number").value.trim(),remarks:document.getElementById("remarks").value.trim(),insurance:document.getElementById("insurance").value||null,date_of_registration:document.getElementById("date_of_registration").value||null,year:new Date().getFullYear()}}
+async function addData(){const pt=getSelPT(),fields=readForm();if(!fields.office||!fields.vehicle_type){showToast("Please fill in Office and Vehicle Type.","warning");return}const btn=document.getElementById("submitBtn");btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving…';const{data:ins,error}=await db.from("vehicles").insert([dbPay(fields)]).select().single();btn.disabled=false;btn.innerHTML='<i class="fas fa-plus"></i> Register Asset';if(error){showToast("Failed: "+error.message,"error");return}savePT(ins.id,pt);showToast("✅ Asset registered!","success");clearForm();refreshData()}
+async function editRecord(id){const{data,error}=await db.from("vehicles").select("*").eq("id",id).single();if(error){showToast("Could not load: "+error.message,"error");return}document.getElementById("edit_id").value=data.id;document.getElementById("office").value=data.office||"";document.getElementById("vehicle_type").value=data.vehicle_type||"";document.getElementById("plate_number").value=data.plate_number||"";document.getElementById("or_number").value=data.or_number||"";document.getElementById("cr_number").value=data.cr_number||"";document.getElementById("remarks").value=data.remarks||"";document.getElementById("insurance").value=data.insurance||"";document.getElementById("date_of_registration").value=data.date_of_registration||"";setPlateTypeInForm(getPT(data.id,data.plate_type));document.getElementById("submitBtn").style.display="none";document.getElementById("updateBtn").style.display="flex";document.getElementById("cancelBtn").style.display="flex";window.scrollTo({top:0,behavior:"smooth"});showToast("Record loaded — make changes then click Update.","info")}
+async function updateData(){const id=document.getElementById("edit_id").value;if(!id){showToast("No record selected.","error");return}const pt=getSelPT(),fields=readForm(),payload=dbPay(fields);const btn=document.getElementById("updateBtn");btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving…';const{error}=await db.from("vehicles").update(payload).eq("id",id);btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Update Asset';if(error){showToast("Update failed: "+error.message,"error");return}savePT(id,pt);const idx=allData.findIndex(v=>String(v.id)===String(id));if(idx!==-1)Object.assign(allData[idx],payload);showToast("✅ Updated successfully!","success");cancelEdit();renderTable(allData)}
+async function deleteSingle(id){if(!confirm("Delete this record?"))return;const{error}=await db.from("vehicles").delete().eq("id",id);if(error){showToast("Delete failed: "+error.message,"error");return}delete _pm[String(id)];showToast("Record deleted.","success");refreshData()}
+function exportToExcel(){if(!allData.length){showToast("No data to export.","warning");return}let exp=allData;if(activePlateFilter!=="all")exp=allData.filter(v=>getPT(v.id,v.plate_type)===activePlateFilter);if(!exp.length){showToast("No records match filter.","warning");return}const hdr=["#","Office","Vehicle Model","Plate Type","Plate Number","OR Number","CR Number","Remarks","Insurance","Registration Date"];const rows=exp.map((v,i)=>[i+1,v.office||"",v.vehicle_type||"",getPT(v.id,v.plate_type)==="red"?"Red Plate (PN)":"Black Plate (Civilian)",v.plate_number||"",v.or_number||"",v.cr_number||"",v.remarks||"",v.insurance||"",v.date_of_registration||""]);const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);ws["!cols"]=[{wch:5},{wch:12},{wch:22},{wch:22},{wch:14},{wch:22},{wch:22},{wch:24},{wch:15},{wch:18}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Fleet Record");XLSX.writeFile(wb,`PN_Fleet_${new Date().toISOString().slice(0,10)}.xlsx`);showToast(`✅ Exported ${exp.length} records!`,"success")}
+function toggleSelectAll(){const c=document.getElementById("selectAll").checked;document.querySelectorAll(".row-checkbox").forEach(cb=>{cb.checked=c;const r=cb.closest("tr");if(r)r.classList.toggle("row-selected",c)});updateBulkBar()}
+function updateBulkBar(){const sel=document.querySelectorAll(".row-checkbox:checked");document.getElementById("bulkCount").textContent=sel.length;const bar=document.getElementById("bulkBar");sel.length>0?bar.classList.add("visible"):bar.classList.remove("visible");if(!sel.length)document.getElementById("selectAll").checked=false}
+function clearAllSelections(){document.querySelectorAll(".row-checkbox").forEach(cb=>{cb.checked=false;const r=cb.closest("tr");if(r)r.classList.remove("row-selected")});document.getElementById("selectAll").checked=false;updateBulkBar()}
+async function bulkSetPlateType(type){const cbs=Array.from(document.querySelectorAll(".row-checkbox:checked"));if(!cbs.length){showToast("No records selected.","warning");return}const ids=cbs.map(cb=>cb.dataset.id);const lbl=type==="red"?"🔴 Red Plate":"⚫ Black Plate";if(!confirm(`Tag ${ids.length} vehicle(s) as ${lbl}?`))return;ids.forEach(id=>{savePT(id,type)});clearAllSelections();renderTable(allData);showToast(`✅ ${ids.length} vehicle(s) tagged as ${lbl}!`,"success")}
+async function deleteSelected(){const ids=Array.from(document.querySelectorAll(".row-checkbox:checked")).map(cb=>parseInt(cb.dataset.id));if(!ids.length){showToast("Select at least one record.","warning");return}if(!confirm(`Delete ${ids.length} record(s)?`))return;const{error}=await db.from("vehicles").delete().in("id",ids);if(error){showToast("Delete failed: "+error.message,"error");return}ids.forEach(id=>delete _pm[String(id)]);showToast(`${ids.length} record(s) deleted.`,"success");refreshData()}
+async function removeDuplicates(){const{data}=await db.from("vehicles").select("*").order("id",{ascending:true});const seen=new Set(),dups=[];(data||[]).forEach(v=>{const k=String(v.plate_number||"").toLowerCase().trim();if(seen.has(k))dups.push(v.id);else seen.add(k)});if(dups.length>0&&confirm(`Delete ${dups.length} duplicate(s)?`)){await db.from("vehicles").delete().in("id",dups);showToast(`${dups.length} duplicate(s) removed.`,"success");refreshData()}else if(!dups.length)showToast("No duplicates found.","info")}
+function cancelEdit(){clearForm();document.getElementById("submitBtn").style.display="flex";document.getElementById("updateBtn").style.display="none";document.getElementById("cancelBtn").style.display="none";document.getElementById("updateBtn").disabled=false;document.getElementById("updateBtn").innerHTML='<i class="fas fa-save"></i> Update Asset'}
+function clearForm(){["vehicle_type","plate_number","or_number","cr_number","remarks","date_of_registration"].forEach(id=>{document.getElementById(id).value=""});document.getElementById("insurance").value="";setPlateTypeInForm("red")}
+function downloadTemplate(){const t=[["Office","Vehicle Type","Plate Number","Plate Type (red/black)","OR Number","CR Number","Remarks","Insurance (Comprehensive/TPL)","Registration Date (YYYY-MM-DD)"]];const ws=XLSX.utils.aoa_to_sheet(t);ws["!cols"]=[{wch:12},{wch:20},{wch:14},{wch:22},{wch:22},{wch:22},{wch:24},{wch:28},{wch:26}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Vehicles");XLSX.writeFile(wb,"PN_Fleet_Template.xlsx")}
+async function importExcel(event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=async function(e){const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);const vehicles=rows.map(r=>({office:(r["Office"]||"").toString().toUpperCase(),vehicle_type:(r["Vehicle Type"]||r["Vehicle Model"]||"").toString(),plate_number:(r["Plate Number"]||"").toString(),or_number:(r["OR Number"]||"").toString(),cr_number:(r["CR Number"]||"").toString(),remarks:(r["Remarks"]||"").toString(),insurance:(r["Insurance (Comprehensive/TPL)"]||r["Insurance"]||"")||null}));const{error}=await db.from("vehicles").insert(vehicles);if(error){showToast("Import failed: "+error.message,"error");return}showToast(`${vehicles.length} records imported!`,"success");refreshData()};reader.readAsArrayBuffer(file);event.target.value=""}
+refreshData();
+</script>
 </body>
 </html>
