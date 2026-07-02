@@ -3,409 +3,562 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PPBER Documents Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Scanned Documents | Command Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
   <style>
     :root {
-      --clay-amber: #ffbb5c;
-      --clay-orange: #ff9a5c;
-      --clay-blue: #6ba8ff;
-      --clay-green: #5ddcaa;
-      --clay-red: #ff8585;
-      --shadow-clay: 6px 6px 0px rgba(0,0,0,0.07), 0 20px 60px rgba(255,187,92,0.14);
-      --shadow-card: 3px 3px 0px rgba(0,0,0,0.05), 0 10px 35px rgba(255,187,92,0.1);
+      /* Purple Rain palette (matched to HSG Monitoring / MonitorPro / EPA Procurement) */
+      --lilac:      #d8b2ff;
+      --orchid:     #b266ff;
+      --violet:     #4500e2;
+      --indigo:     #3100a2;
+      --royal:      #4c0099;
+
+      --bg-dark:    #f6f4fb;
+      --panel:      #ffffff;
+      --panel2:     #faf8fe;
+      --border:     #ece4f9;
+      --border2:    #ddccf6;
+
+      --green:      #0ca678;
+      --orange:     #d97a06;
+      --red:        #e64980;
+      --yellow:     #b8860b;
+
+      --text:       #221140;
+      --text2:      #6e6086;
+      --muted:      #a298bb;
+      --white:      #ffffff;
+
+      --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-body:    'Inter', -apple-system, sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Nunito', sans-serif;
-      background: linear-gradient(135deg, #fff9ed 0%, #fff5f0 50%, #f0f8ff 100%);
+      font-family: var(--font-body);
       min-height: 100vh;
-      padding: 32px 20px;
-      position: relative;
-      overflow-x: hidden;
+      color: var(--text);
+      padding: 0 18px 60px;
+      background: var(--bg-dark);
+      -webkit-font-smoothing: antialiased;
     }
 
-    body::before, body::after {
-      content: '';
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(90px);
-      opacity: 0.28;
-      pointer-events: none;
-      z-index: 0;
+    .shell { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; }
+
+    /* ── TOP NAV ── */
+    .top-nav { display: flex; align-items: center; gap: 8px; padding: 20px 0 14px; flex-wrap: wrap; }
+    .nav-brand {
+      font-family: var(--font-display); font-size: 0.72rem; font-weight: 800;
+      letter-spacing: 0.14em; color: var(--royal); text-transform: uppercase; margin-right: 16px;
     }
-    body::before {
-      width: 480px; height: 480px;
-      background: radial-gradient(circle, #ffbb5c, #ff9a5c);
-      top: -100px; right: -80px;
+    .nav-btn {
+      padding: 8px 20px; font-family: var(--font-display); font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.01em; text-transform: uppercase; text-decoration: none; color: var(--text2);
+      background: #ffffff; border: 1.5px solid var(--border2); border-radius: 12px;
+      transition: all 0.2s; cursor: pointer;
     }
-    body::after {
-      width: 380px; height: 380px;
-      background: radial-gradient(circle, #6ba8ff, #5ddcaa);
-      bottom: -80px; left: -60px;
+    .nav-btn:hover { color: var(--violet); border-color: var(--violet); box-shadow: 0 6px 16px rgba(76,0,153,0.14); transform: translateY(-1px); }
+    .nav-btn.active {
+      color: #ffffff; background: linear-gradient(100deg, var(--royal), var(--violet));
+      border-color: var(--violet); box-shadow: 0 4px 16px rgba(76,0,153,0.28);
     }
 
-    .page-wrap {
-      max-width: 1050px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
+    /* ── ARENA PANEL ── */
+    .arena-panel {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 20px;
+      box-shadow: 0 2px 20px rgba(76,0,153,0.08); overflow: hidden;
+      animation: arenaIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
     }
+    @keyframes arenaIn { from { opacity: 0; transform: translateY(18px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-    /* Header */
-    .clay-header {
-      background: linear-gradient(160deg, #fff 0%, #fffaf0 100%);
-      border-radius: 28px;
-      padding: 26px 32px;
-      box-shadow: var(--shadow-clay);
-      border: 2.5px solid rgba(255,255,255,0.95);
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: linear-gradient(100deg, var(--royal), var(--violet) 55%, var(--indigo));
+      padding: 1.6rem 2rem; display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 20px; flex-wrap: wrap; box-shadow: 0 6px 28px rgba(76,0,153,0.22); position: relative;
     }
+    .header-eyebrow {
+      font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em;
+      color: var(--lilac); margin-bottom: 6px; display: flex; align-items: center; gap: 10px; text-transform: uppercase;
+    }
+    .header-eyebrow::before, .header-eyebrow::after { content: ''; display: inline-block; width: 22px; height: 1px; background: var(--lilac); opacity: 0.7; }
+    .page-title {
+      font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800;
+      color: #ffffff; letter-spacing: -0.01em; line-height: 1.1;
+    }
+    .page-title span { color: var(--lilac); }
+    .page-subtitle { margin-top: 6px; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.01em; color: rgba(255,255,255,0.82); font-family: var(--font-body); }
+    .header-badge { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .badge-status {
+      display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 0.68rem;
+      font-weight: 700; letter-spacing: 0.06em; color: #ffffff; text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.35); padding: 0.4rem 0.9rem; border-radius: 20px; background: rgba(255,255,255,0.1);
+    }
+    .badge-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #5ce8a0; box-shadow: 0 0 8px #5ce8a0; animation: pulse-dot 2s ease infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.6; transform:scale(0.85); } }
 
-    .header-icon {
-      background: linear-gradient(135deg, var(--clay-amber), var(--clay-orange));
-      width: 52px; height: 52px;
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
-      flex-shrink: 0;
-    }
+    /* ── STAT CARDS ── */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+    .stat-card { padding: 1.15rem 1.5rem; background: #ffffff; position: relative; transition: background 0.2s; }
+    .stat-card:hover { background: var(--panel2); }
+    .stat-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-bottom: 10px; border: 1px solid; }
+    .stat-card--1 .stat-icon { background: rgba(69,0,226,0.1);    color: var(--violet); border-color: rgba(69,0,226,0.22); }
+    .stat-card--2 .stat-icon { background: rgba(178,102,255,0.12); color: var(--orchid); border-color: rgba(178,102,255,0.28); }
+    .stat-card--3 .stat-icon { background: rgba(12,166,120,0.12); color: var(--green);  border-color: rgba(12,166,120,0.28); }
+    .stat-label { font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+    .stat-value { font-family: var(--font-display); font-size: 1.55rem; font-weight: 800; color: var(--violet); line-height: 1; letter-spacing: -0.01em; }
+    .stat-card--2 .stat-value { color: var(--orchid); }
+    .stat-card--3 .stat-value { color: var(--green); }
+    .stat-sub { margin-top: 5px; font-size: 0.72rem; font-weight: 500; color: var(--muted); font-family: var(--font-body); }
 
-    .header-title {
-      font-size: 1.65rem;
-      font-weight: 900;
-      color: #3a2010;
-      letter-spacing: -0.4px;
+    /* ── ACTION BAR / UPLOAD ── */
+    .action-bar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+      padding: 1.25rem 1.5rem; background: var(--panel2); border-bottom: 1px solid var(--border);
     }
+    .upload-input-wrap {
+      flex: 1; min-width: 220px; display: flex; align-items: center; gap: 8px;
+      background: #ffffff; border: 1.5px solid var(--border2); border-radius: 12px; padding: 0.5rem 0.9rem;
+    }
+    .upload-input-wrap i { color: var(--orchid); font-size: 0.9rem; }
+    .upload-input-wrap input[type="file"] {
+      flex: 1; border: none; outline: none; font-family: var(--font-body); font-size: 0.82rem;
+      font-weight: 600; color: var(--text2); background: transparent;
+    }
+    .upload-input-wrap input[type="file"]::file-selector-button {
+      padding: 0.4rem 0.9rem; margin-right: 10px; font-family: var(--font-display); font-weight: 700;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.02em; color: var(--royal);
+      background: rgba(178,102,255,0.1); border: 1px solid var(--border2); border-radius: 8px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-input-wrap input[type="file"]::file-selector-button:hover { background: rgba(178,102,255,0.2); }
 
-    /* Notification toast */
-    .notification {
-      position: fixed;
-      top: 24px; right: 24px;
-      padding: 14px 22px;
-      border-radius: 18px;
-      font-weight: 800;
-      font-size: 0.875rem;
-      z-index: 1000;
-      animation: slideIn 0.3s ease;
-      box-shadow: 4px 4px 0 rgba(0,0,0,0.12), 0 12px 30px rgba(0,0,0,0.12);
-      border: 2px solid rgba(255,255,255,0.3);
-      color: white;
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 0.6rem 1.2rem; font-family: var(--font-display);
+      font-weight: 700; font-size: 0.8rem; letter-spacing: 0.01em; text-transform: uppercase; cursor: pointer;
+      color: var(--text2); background: #ffffff; border: 1.5px solid var(--border2); border-radius: 12px; transition: all 0.2s;
     }
-    .notif-success { background: linear-gradient(135deg, #5ddcaa, #3dbf8a); }
-    .notif-error   { background: linear-gradient(135deg, #ff8585, #e05555); }
-    .notif-info    { background: linear-gradient(135deg, #6ba8ff, #4a80dd); }
-    @keyframes slideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .btn:hover { color: var(--royal); border-color: var(--orchid); box-shadow: 0 6px 16px rgba(76,0,153,0.16); transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn i { font-size: 0.78rem; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-primary { color: #ffffff; background: var(--violet); border-color: var(--violet); }
+    .btn-primary:hover { background: var(--royal); border-color: var(--royal); color: #ffffff; }
+    .btn-download { color: var(--green); border-color: rgba(12,166,120,0.35); background: rgba(12,166,120,0.06); text-decoration: none; padding: 0.5rem 1rem; font-size: 0.72rem; }
+    .btn-download:hover { color: #ffffff; background: var(--green); border-color: var(--green); box-shadow: 0 6px 16px rgba(12,166,120,0.28); }
+    .btn-remove { color: var(--red); border-color: rgba(230,73,128,0.35); background: rgba(230,73,128,0.06); padding: 0.5rem 1rem; font-size: 0.72rem; }
+    .btn-remove:hover:not(:disabled) { color: #ffffff; background: var(--red); border-color: var(--red); box-shadow: 0 6px 16px rgba(230,73,128,0.28); }
 
-    /* Main card */
-    .clay-card {
-      background: linear-gradient(160deg, #fff 0%, #fffaf0 100%);
-      border-radius: 28px;
-      padding: 28px 32px;
-      box-shadow: var(--shadow-clay);
-      border: 2.5px solid rgba(255,255,255,0.95);
-    }
+    /* ── LOADING ── */
+    .loading { text-align: center; padding: 2rem; color: var(--text2); font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .loading .spinner { width: 30px; height: 30px; border-radius: 50%; border: 4px solid rgba(69,0,226,0.15); border-top-color: var(--violet); animation: spin 0.75s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .section-title {
-      font-size: 1.05rem;
-      font-weight: 900;
-      color: #3a2010;
-      margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    /* ── TABLE ── */
+    .table-section { padding: 1rem 1rem 0.25rem; background: var(--panel2); }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0 10px; table-layout: auto; min-width: 640px; }
+    thead th {
+      padding: 0.7rem 0.75rem 0.5rem; font-family: var(--font-display); font-size: 0.66rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.02em; color: var(--text2); text-align: left; white-space: nowrap;
     }
-    .section-title::before {
-      content: '';
-      width: 8px; height: 8px;
-      background: linear-gradient(135deg, var(--clay-amber), var(--clay-orange));
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
+    thead th i { margin-right: 5px; font-size: 0.65rem; opacity: 0.75; color: var(--orchid); }
 
-    /* Upload area */
-    .upload-area {
-      background: linear-gradient(135deg, #fff9ed, #fff5e8);
-      border-radius: 18px;
-      border: 2px dashed #f0c87a;
-      padding: 16px 20px;
-      margin-bottom: 22px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .file-input {
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #3a2010;
-      flex: 1;
-      min-width: 160px;
-    }
-
-    .btn-upload {
-      background: linear-gradient(135deg, var(--clay-amber), var(--clay-orange));
-      color: #3a1a00;
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.875rem;
-      font-weight: 800;
-      padding: 10px 24px;
-      border-radius: 13px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
-      transition: transform 0.15s, box-shadow 0.15s;
-      white-space: nowrap;
-    }
-    .btn-upload:hover { transform: translateY(-2px); box-shadow: 4px 5px 0 rgba(0,0,0,0.13); }
-    .btn-upload:disabled { opacity: 0.6; pointer-events: none; }
-
-    /* Loading */
-    .loading-div {
-      text-align: center;
-      padding: 28px;
-      color: #c09a50;
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-
-    /* Table */
-    .clay-table-wrap {
-      border-radius: 18px;
-      overflow: hidden;
-      box-shadow: var(--shadow-card);
-      border: 2px solid rgba(255,255,255,0.9);
-      overflow-x: auto;
-      margin-top: 8px;
-    }
-
-    table { width: 100%; border-collapse: collapse; }
-
-    th {
-      background: linear-gradient(135deg, #3a2010, #5a3520);
-      color: white;
-      font-size: 0.76rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 14px 16px;
-      text-align: left;
-    }
+    tbody tr { background: #ffffff; box-shadow: 0 1px 4px rgba(76,0,153,0.07); transition: box-shadow 0.18s, transform 0.18s; }
+    tbody tr:hover { box-shadow: 0 6px 18px rgba(178,102,255,0.2); transform: translateY(-1px); }
+    tbody tr.empty-row:hover { box-shadow: 0 1px 4px rgba(76,0,153,0.07); transform: none; }
 
     td {
-      padding: 13px 16px;
-      border-bottom: 1.5px solid #fff7e8;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #3a2010;
-      background: white;
-      vertical-align: middle;
+      padding: 0.7rem 0.9rem; vertical-align: middle; font-size: 0.85rem; font-weight: 600; line-height: 1.4;
+      color: var(--text); font-family: var(--font-body); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      word-wrap: break-word;
     }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fffaf2; }
+    tr td:first-child { border-left: 1px solid var(--border); border-radius: 16px 0 0 16px; }
+    tr td:last-child  { border-right: 1px solid var(--border); border-radius: 0 16px 16px 0; }
 
-    .thumbnail {
-      width: 52px; height: 52px;
-      border-radius: 11px;
-      object-fit: cover;
-      border: 2px solid #f8dfa8;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.06);
+    .col-preview { width: 76px; }
+    .thumbnail { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1.5px solid var(--border2); display: block; }
+    .file-icon { width: 56px; height: 56px; border-radius: 10px; background: var(--panel2); border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--orchid); }
+    .doc-filename { font-family: var(--font-display); font-weight: 700; color: var(--text); }
+    .doc-meta { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+    .col-action { white-space: nowrap; }
+
+    /* ── FOOTER ── */
+    .arena-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.5rem 1.25rem; gap: 20px; flex-wrap: wrap; background: var(--panel2); }
+    .footer-count { font-family: var(--font-display); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.01em; color: var(--text2); text-transform: uppercase; }
+    .footer-count span { color: var(--violet); }
+    .footer-sig { font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+
+    /* ── Toast ── */
+    .notification {
+      position: fixed; top: 20px; right: 20px; padding: 0.85rem 1.15rem; border-radius: 14px;
+      font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; z-index: 1000;
+      animation: slideIn 0.3s ease; box-shadow: 0 10px 30px rgba(76,0,153,0.25);
+      border: 1.5px solid var(--border2); max-width: 380px;
     }
-    .file-icon { font-size: 28px; display: block; text-align: center; width: 52px; }
-    .file-size-text { color: #c09a50; font-size: 0.82rem; font-weight: 700; }
+    .notification.success { background: linear-gradient(100deg, var(--green), #0a8c66); color: #fff; }
+    .notification.error   { background: linear-gradient(100deg, var(--red), #c93268); color: #fff; }
+    .notification.info    { background: linear-gradient(100deg, var(--royal), var(--violet)); color: #fff; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    .btn-download {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--clay-green), #3dbf8a);
-      color: white;
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 800;
-      padding: 7px 15px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
-      transition: transform 0.15s;
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--panel2); }
+    ::-webkit-scrollbar-thumb { background: var(--orchid); border-radius: 6px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--violet); }
+
+    @media (max-width: 768px) {
+      .page-header { padding: 1.25rem; }
+      .action-bar { padding: 0.75rem 1rem; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
     }
-    .btn-download:hover { transform: translateY(-1px); }
-
-    .btn-remove {
-      background: linear-gradient(135deg, var(--clay-red), #e05555);
-      color: white;
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 800;
-      padding: 7px 15px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      margin-left: 6px;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
-      transition: transform 0.15s;
-    }
-    .btn-remove:hover { transform: translateY(-1px); }
-    .btn-remove:disabled { opacity: 0.5; pointer-events: none; }
-
-    .empty-row td { text-align: center; padding: 2.5rem; color: #c09a50; font-weight: 700; }
   </style>
 </head>
 <body>
-  <div class="page-wrap">
 
-    <!-- Header -->
-    <div class="clay-header">
-      <div class="header-icon">📄</div>
-      <div class="header-title">PPBER Documents Dashboard</div>
+<div class="shell">
+
+  <nav class="top-nav">
+    <span class="nav-brand">◆ MLBB · ZEN CORP</span>
+    <a href="#" class="nav-btn">◈ Hub</a>
+    <a href="#" class="nav-btn active">◆ Scanned Documents</a>
+    <a href="#" class="nav-btn">◈ Reports</a>
+  </nav>
+
+  <div class="arena-panel">
+
+    <!-- HEADER -->
+    <header class="page-header">
+      <div class="header-left">
+        <div class="header-eyebrow">◈ Records Archive ◈</div>
+        <h1 class="page-title">PPBER <span>Documents</span> Dashboard</h1>
+        <p class="page-subtitle">Upload, Preview &amp; Manage Scanned Records</p>
+      </div>
+      <div class="header-badge">
+        <div class="badge-status">SYSTEM ONLINE</div>
+      </div>
+    </header>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card stat-card--1">
+        <div class="stat-icon"><i class="fas fa-file-lines"></i></div>
+        <div class="stat-label">Total Documents</div>
+        <div class="stat-value" id="totalDocs">0</div>
+        <div class="stat-sub">Files on record</div>
+      </div>
+      <div class="stat-card stat-card--2">
+        <div class="stat-icon"><i class="fas fa-database"></i></div>
+        <div class="stat-label">Total Size</div>
+        <div class="stat-value" id="totalSize">0 KB</div>
+        <div class="stat-sub">Combined storage used</div>
+      </div>
+      <div class="stat-card stat-card--3">
+        <div class="stat-icon"><i class="fas fa-clock-rotate-left"></i></div>
+        <div class="stat-label">Last Upload</div>
+        <div class="stat-value" id="lastUpload" style="font-size:1.05rem;">—</div>
+        <div class="stat-sub">Most recent activity</div>
+      </div>
     </div>
 
-    <!-- Main Card -->
-    <div class="clay-card">
-      <div class="section-title">Upload Documents</div>
-
-      <div class="upload-area">
-        <input type="file" id="docInput" class="file-input" multiple accept=".pdf,.jpg,.jpeg,.png">
-        <button class="btn-upload" id="uploadBtn">⬆ Upload</button>
+    <!-- UPLOAD / ACTION BAR -->
+    <div class="action-bar">
+      <div class="upload-input-wrap">
+        <i class="fas fa-paperclip"></i>
+        <input type="file" id="docInput" multiple accept=".pdf,.jpg,.jpeg,.png">
       </div>
+      <button type="button" class="btn btn-primary" id="uploadBtn"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
+    </div>
 
-      <div id="loadingDiv" class="loading-div" style="display:none;">⏳ Loading documents...</div>
+    <div id="loadingDiv" class="loading" style="display: none;">
+      <div class="spinner"></div>
+      Loading documents…
+    </div>
 
-      <div class="clay-table-wrap">
+    <!-- TABLE -->
+    <div class="table-section">
+      <div class="table-wrapper">
         <table id="docTable">
           <thead>
             <tr>
-              <th>Preview</th>
-              <th>Filename</th>
-              <th>File Size</th>
-              <th>Date Uploaded</th>
-              <th>Action</th>
+              <th class="col-preview"><i class="fas fa-image"></i>Preview</th>
+              <th><i class="fas fa-file"></i>Filename</th>
+              <th><i class="fas fa-weight-hanging"></i>File Size</th>
+              <th><i class="fas fa-calendar"></i>Date Uploaded</th>
+              <th class="col-action"><i class="fas fa-cog"></i>Action</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
     </div>
+
+    <div class="arena-footer">
+      <div class="footer-count">Documents: <span id="rowCount">0</span></div>
+      <div class="footer-sig">◈ Authorized Personnel Only ◈</div>
+    </div>
   </div>
+</div>
 
-  <script>
-    window.addEventListener('load', function () {
-      const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
-      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
-      if (typeof supabase === 'undefined') { alert('Supabase library not loaded.'); return; }
-      const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      const BUCKET_NAME = 'documents';
+<script>
+  // Wait for Supabase library to load
+  window.addEventListener('load', function() {
+    // ⚠️ REPLACE THESE WITH YOUR ACTUAL SUPABASE CREDENTIALS
+    const SUPABASE_URL = "https://jdzfxfriydakuqegtahq.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U";
 
-      function showNotification(message, type = 'success') {
-        const n = document.createElement('div');
-        const cls = { success: 'notif-success', error: 'notif-error', info: 'notif-info' }[type] || 'notif-info';
-        n.className = 'notification ' + cls;
-        n.textContent = message;
-        document.body.appendChild(n);
-        setTimeout(() => n.remove(), 3500);
+    // Check if Supabase library is loaded
+    if (typeof supabase === 'undefined') {
+      alert('Error: Supabase library not loaded. Please check your internet connection and refresh the page.');
+      return;
+    }
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const BUCKET_NAME = 'documents';
+    let docsCache = [];
+
+    function showNotification(message, type = 'success') {
+      const n = document.createElement('div');
+      n.className = `notification ${type}`;
+      n.textContent = message;
+      document.body.appendChild(n);
+      setTimeout(() => {
+        n.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => n.remove(), 300);
+      }, 3000);
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function updateStats() {
+      const rowCountEl = document.getElementById('rowCount');
+      const totalDocsEl = document.getElementById('totalDocs');
+      const totalSizeEl = document.getElementById('totalSize');
+      const lastUploadEl = document.getElementById('lastUpload');
+
+      totalDocsEl.textContent = docsCache.length;
+      rowCountEl.textContent = docsCache.length;
+
+      const totalBytes = docsCache.reduce((s, f) => s + (f.file_size || 0), 0);
+      totalSizeEl.textContent = formatFileSize(totalBytes);
+
+      if (docsCache.length > 0) {
+        const sorted = [...docsCache].sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
+        lastUploadEl.textContent = new Date(sorted[0].uploaded_at).toLocaleDateString();
+      } else {
+        lastUploadEl.textContent = '—';
+      }
+    }
+
+    async function uploadFiles() {
+      const input = document.getElementById('docInput');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const files = Array.from(input.files);
+
+      if (files.length === 0) {
+        showNotification("Please select at least one file to upload!", 'error');
+        return;
       }
 
-      function formatFileSize(bytes) {
-        if (!bytes) return '—';
-        const k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
-      }
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
 
-      async function uploadFiles() {
-        const input = document.getElementById('docInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const files = Array.from(input.files);
-        if (!files.length) { showNotification("Please select at least one file!", 'error'); return; }
-        uploadBtn.disabled = true; uploadBtn.textContent = 'Uploading...';
-        try {
-          for (const file of files) {
-            const ts = Date.now(), rand = Math.random().toString(36).substring(7);
-            const ext = file.name.split('.').pop();
-            const fileName = `${ts}_${rand}.${ext}`;
-            const { error: sErr } = await db.storage.from(BUCKET_NAME).upload(fileName, file);
-            if (sErr) throw sErr;
-            const { data: urlData } = db.storage.from(BUCKET_NAME).getPublicUrl(fileName);
-            const { data: dbData, error: dErr } = await db.from('documents').insert([{ filename: file.name, file_type: file.type, file_size: file.size, file_url: urlData.publicUrl }]).select();
-            if (dErr) throw dErr;
-            if (dbData?.[0]) addFileRow(dbData[0]);
+      try {
+        for (const file of files) {
+          // Generate unique filename
+          const timestamp = Date.now();
+          const randomStr = Math.random().toString(36).substring(7);
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${timestamp}_${randomStr}.${fileExt}`;
+
+          // Upload file to Supabase Storage
+          const { data: storageData, error: storageError } = await supabaseClient.storage
+            .from(BUCKET_NAME)
+            .upload(fileName, file);
+
+          if (storageError) throw storageError;
+
+          // Get public URL
+          const { data: urlData } = supabaseClient.storage
+            .from(BUCKET_NAME)
+            .getPublicUrl(fileName);
+
+          // Save metadata to database
+          const { data: dbData, error: dbError } = await supabaseClient
+            .from('documents')
+            .insert([{
+              filename: file.name,
+              file_type: file.type,
+              file_size: file.size,
+              file_url: urlData.publicUrl
+            }])
+            .select();
+
+          if (dbError) throw dbError;
+
+          // Add row to table
+          if (dbData && dbData[0]) {
+            docsCache.unshift(dbData[0]);
+            addFileRow(dbData[0], true);
           }
-          showNotification(`✅ Uploaded ${files.length} file(s)!`, 'success');
-          input.value = '';
-        } catch (err) { showNotification('❌ Error: ' + err.message, 'error'); }
-        finally { uploadBtn.disabled = false; uploadBtn.textContent = '⬆ Upload'; }
+        }
+
+        showNotification(`✅ Successfully uploaded ${files.length} file(s)!`, 'success');
+        input.value = "";
+        updateStats();
+      } catch (error) {
+        console.error('Upload error:', error);
+        showNotification(`❌ Error: ${error.message}`, 'error');
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload';
+      }
+    }
+
+    function addFileRow(file, prepend = false) {
+      const tbody = document.querySelector('#docTable tbody');
+      const emptyRow = tbody.querySelector('.empty-row');
+      if (emptyRow) emptyRow.remove();
+
+      const row = document.createElement("tr");
+      row.dataset.id = file.id;
+
+      let preview = '';
+      if (file.file_type && file.file_type.startsWith('image/')) {
+        preview = `<img src="${file.file_url}" class="thumbnail" alt="${file.filename}">`;
+      } else if (file.file_type === 'application/pdf') {
+        preview = `<div class="file-icon"><i class="fas fa-file-pdf"></i></div>`;
+      } else {
+        preview = `<div class="file-icon"><i class="fas fa-paperclip"></i></div>`;
       }
 
-      function addFileRow(file) {
-        const tbody = document.querySelector('#docTable tbody');
-        const row = document.createElement('tr');
-        row.dataset.id = file.id;
-        let preview = file.file_type?.startsWith('image/')
-          ? `<img src="${file.file_url}" class="thumbnail" alt="${file.filename}">`
-          : file.file_type === 'application/pdf'
-          ? `<span class="file-icon">📄</span>`
-          : `<span class="file-icon">📎</span>`;
-        row.innerHTML = `
-          <td>${preview}</td>
-          <td>${file.filename}</td>
-          <td class="file-size-text">${formatFileSize(file.file_size)}</td>
-          <td>${new Date(file.uploaded_at).toLocaleString()}</td>
-          <td>
-            <a href="${file.file_url}" target="_blank" class="btn-download">⬇ Download</a>
-            <button class="btn-remove" data-id="${file.id}" data-url="${file.file_url}">🗑 Remove</button>
-          </td>`;
-        row.querySelector('.btn-remove').addEventListener('click', function () {
-          removeFile(this.dataset.id, this.dataset.url);
-        });
+      const uploadDate = new Date(file.uploaded_at).toLocaleString();
+      const fileSize = formatFileSize(file.file_size);
+
+      row.innerHTML = `
+        <td class="col-preview">${preview}</td>
+        <td><span class="doc-filename">${file.filename}</span></td>
+        <td><span class="doc-meta">${fileSize}</span></td>
+        <td><span class="doc-meta">${uploadDate}</span></td>
+        <td class="col-action">
+          <a href="${file.file_url}" target="_blank" class="btn btn-download"><i class="fas fa-download"></i> Download</a>
+          <button class="btn btn-remove" data-id="${file.id}" data-url="${file.file_url}"><i class="fas fa-trash-alt"></i> Remove</button>
+        </td>
+      `;
+
+      // Add event listener to remove button
+      const removeBtn = row.querySelector('.btn-remove');
+      removeBtn.addEventListener('click', function() {
+        removeFile(this.dataset.id, this.dataset.url, this);
+      });
+
+      if (prepend) {
+        tbody.prepend(row);
+      } else {
         tbody.appendChild(row);
       }
+    }
 
-      async function loadFiles() {
-        const loadingDiv = document.getElementById('loadingDiv');
-        const tbody = document.querySelector('#docTable tbody');
-        loadingDiv.style.display = 'block';
-        tbody.innerHTML = '';
-        try {
-          const { data, error } = await db.from('documents').select('*').order('uploaded_at', { ascending: false });
-          if (error) throw error;
-          if (data?.length) data.forEach(addFileRow);
-          else tbody.innerHTML = '<tr class="empty-row"><td colspan="5">📂 No documents uploaded yet.</td></tr>';
-        } catch (err) { showNotification('❌ Error loading files: ' + err.message, 'error'); }
-        finally { loadingDiv.style.display = 'none'; }
-      }
+    async function loadFiles() {
+      const loadingDiv = document.getElementById('loadingDiv');
+      const tbody = document.querySelector('#docTable tbody');
 
-      async function removeFile(fileId, fileUrl) {
-        if (!confirm('Delete this file?')) return;
-        const btn = document.querySelector(`#docTable tr[data-id='${fileId}'] .btn-remove`);
-        if (btn) { btn.disabled = true; btn.textContent = 'Removing...'; }
-        try {
-          const parts = fileUrl.split('/');
-          const fileName = parts[parts.length - 1];
-          const { error: sErr } = await db.storage.from(BUCKET_NAME).remove([fileName]);
-          if (sErr) throw sErr;
-          const { error: dErr } = await db.from('documents').delete().eq('id', fileId);
-          if (dErr) throw dErr;
-          document.querySelector(`#docTable tr[data-id='${fileId}']`)?.remove();
-          showNotification('✅ File deleted!', 'success');
-        } catch (err) {
-          showNotification('❌ Error: ' + err.message, 'error');
-          if (btn) { btn.disabled = false; btn.textContent = '🗑 Remove'; }
+      loadingDiv.style.display = 'block';
+      tbody.innerHTML = '';
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('documents')
+          .select('*')
+          .order('uploaded_at', { ascending: false });
+
+        if (error) throw error;
+
+        docsCache = data || [];
+
+        if (docsCache.length > 0) {
+          docsCache.forEach(file => addFileRow(file));
+        } else {
+          tbody.innerHTML = '<tr class="empty-row"><td colspan="5" style="text-align: center; color: var(--muted); font-weight:600;">No documents uploaded yet.</td></tr>';
         }
+        updateStats();
+      } catch (error) {
+        console.error('Load error:', error);
+        showNotification(`❌ Error loading files: ${error.message}`, 'error');
+      } finally {
+        loadingDiv.style.display = 'none';
+      }
+    }
+
+    async function removeFile(fileId, fileUrl, btnEl) {
+      if (!confirm('Are you sure you want to delete this file?')) {
+        return;
       }
 
-      loadFiles();
-      document.getElementById('uploadBtn').addEventListener('click', uploadFiles);
-    });
-  </script>
+      btnEl.disabled = true;
+      btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
+
+      try {
+        // Extract filename from URL
+        const urlParts = fileUrl.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+
+        // Delete from storage
+        const { error: storageError } = await supabaseClient.storage
+          .from(BUCKET_NAME)
+          .remove([fileName]);
+
+        if (storageError) throw storageError;
+
+        // Delete from database
+        const { error: dbError } = await supabaseClient
+          .from('documents')
+          .delete()
+          .eq('id', fileId);
+
+        if (dbError) throw dbError;
+
+        // Remove row from table
+        const row = document.querySelector(`#docTable tr[data-id='${fileId}']`);
+        if (row) row.remove();
+
+        docsCache = docsCache.filter(f => f.id != fileId);
+        updateStats();
+
+        const tbody = document.querySelector('#docTable tbody');
+        if (docsCache.length === 0) {
+          tbody.innerHTML = '<tr class="empty-row"><td colspan="5" style="text-align: center; color: var(--muted); font-weight:600;">No documents uploaded yet.</td></tr>';
+        }
+
+        showNotification('✅ File deleted successfully!', 'success');
+      } catch (error) {
+        console.error('Delete error:', error);
+        showNotification(`❌ Error: ${error.message}`, 'error');
+        btnEl.disabled = false;
+        btnEl.innerHTML = '<i class="fas fa-trash-alt"></i> Remove';
+      }
+    }
+
+    // Initialize app
+    loadFiles();
+
+    // Add click event to upload button
+    document.getElementById('uploadBtn').addEventListener('click', uploadFiles);
+  });
+</script>
+
 </body>
 </html>
