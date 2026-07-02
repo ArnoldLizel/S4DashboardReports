@@ -648,175 +648,10 @@ body::after{
 }
 #main-ifr{flex:1;border:none;width:100%}
 
-/* ══ DASHBOARD ══ */
-.dash-body{flex:1;overflow-y:auto;padding:20px 22px 34px;-webkit-overflow-scrolling:touch}
-.dash-body::-webkit-scrollbar{width:3px}
-.dash-body::-webkit-scrollbar-thumb{background:rgba(140,80,220,.15)}
-
-.dp-hdr{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:20px}
-.dp-live{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:.5rem;letter-spacing:.14em;color:#4ade80;background:rgba(0,230,118,.05);border:1px solid rgba(0,230,118,.22);padding:4px 10px;border-radius:4px;margin-bottom:7px}
-.dp-title{font-family:var(--font-display);font-size:clamp(1.6rem,3vw,2.6rem);color:#ffffff;letter-spacing:.12em;line-height:1;text-shadow:0 0 40px rgba(168,85,247,.4);text-transform:uppercase}
-.dp-title span{color:rgba(255,255,255,.50);font-size:60%}
-.dp-sub{font-family:var(--font-mono);font-size:.56rem;color:rgba(255,255,255,.50);margin-top:5px;letter-spacing:.1em;text-transform:uppercase}
-
-.ann-w{display:flex;align-items:center;gap:14px;background:rgba(140,80,220,.06);border:1px solid rgba(140,80,220,.15);padding:13px 16px;border-radius:6px;transition:all .2s}
-.ann-w:hover{border-color:rgba(168,85,247,.3)}
-.ann-lbl{font-family:var(--font-mono);font-size:.44rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.50);margin-bottom:3px}
-.ann-val{font-family:var(--font-display);font-size:1.75rem;letter-spacing:.04em;color:#ffffff;line-height:1}
-.ann-sub{font-family:var(--font-mono);font-size:.46rem;color:rgba(255,255,255,.50);margin-top:3px}
-.ann-rw{position:relative;width:54px;height:54px;flex-shrink:0}
-.ann-rw svg{transform:rotate(-90deg)}
-.art{fill:none;stroke:rgba(140,80,220,.1);stroke-width:6}
-.arf{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)}
-.arc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.48rem;color:#a855f7}
-
-.cmd-widgets{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
-.cmd-widget{padding:13px 15px;background:rgba(10,3,25,.8);border:1px solid rgba(255,255,255,.06);border-radius:6px;position:relative;overflow:hidden;transition:all .2s}
-.cmd-widget:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.1);box-shadow:0 12px 28px rgba(0,0,0,.4)}
-.cmd-widget::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:3px 3px 0 0}
-.cmd-widget.cw-blue::before{background:linear-gradient(90deg,#6d28d9,#8b5cf6)}
-.cmd-widget.cw-green::before{background:linear-gradient(90deg,#059669,#34d399)}
-.cmd-widget.cw-gold::before{background:linear-gradient(90deg,#a855f7,#c084fc)}
-.cw-ico{font-size:1.05rem;margin-bottom:7px;display:block}
-.cw-val{font-family:var(--font-display);font-size:1.6rem;letter-spacing:.04em;color:#ffffff;line-height:1;margin-bottom:2px}
-.cw-lbl{font-family:var(--font-mono);font-size:.46rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:6px}
-.cw-bar{height:2px;background:rgba(255,255,255,.07);overflow:hidden;border-radius:2px}
-.cw-barf{height:100%;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.cw-blue .cw-barf{background:linear-gradient(90deg,#7c3aed,#a855f7)}
-.cw-green .cw-barf{background:linear-gradient(90deg,#059669,#34d399)}
-.cw-gold .cw-barf{background:linear-gradient(90deg,#a855f7,#c084fc)}
-.cw-trend{font-family:var(--font-mono);font-size:.44rem;color:rgba(255,255,255,.40);margin-top:5px;letter-spacing:.06em}
-
-.dp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
-.dsc{padding:14px 13px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.07);border-radius:7px;transition:all .22s;cursor:default}
-.dsc:hover{transform:translateY(-4px)}
-.dsc::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.1),transparent);pointer-events:none}
-.q1{background:linear-gradient(145deg,#7c3aed,#5b21b6);box-shadow:0 6px 0 0 #3b0d8a,0 11px 20px rgba(124,58,237,.3)}
-.q2{background:linear-gradient(145deg,#6d28d9,#4c1d95);box-shadow:0 6px 0 0 #2d1165,0 11px 20px rgba(109,40,217,.3)}
-.q3{background:linear-gradient(145deg,#8b5cf6,#6d28d9);box-shadow:0 6px 0 0 #4c1d95,0 11px 20px rgba(139,92,246,.3)}
-.q4{background:linear-gradient(145deg,#a855f7,#7c3aed);box-shadow:0 6px 0 0 #5b21b6,0 11px 20px rgba(168,85,247,.3)}
-.q1:hover{box-shadow:0 10px 0 0 #3b0d8a,0 18px 28px rgba(124,58,237,.35)}
-.q2:hover{box-shadow:0 10px 0 0 #2d1165,0 18px 28px rgba(109,40,217,.35)}
-.q3:hover{box-shadow:0 10px 0 0 #4c1d95,0 18px 28px rgba(139,92,246,.35)}
-.q4:hover{box-shadow:0 10px 0 0 #5b21b6,0 18px 28px rgba(168,85,247,.35)}
-.dsc-in{position:relative;z-index:1}
-.dsc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
-.dsc-ico{width:32px;height:32px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);border-radius:6px;display:flex;align-items:center;justify-content:center}
-.dsc-rw{position:relative;width:34px;height:34px;flex-shrink:0}
-.dsc-rw svg{transform:rotate(-90deg)}
-.drt{fill:none;stroke:rgba(255,255,255,.14);stroke-width:4}
-.drf{fill:none;stroke:rgba(255,255,255,.8);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1)}
-.drc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.42rem;color:rgba(255,255,255,.85)}
-.dsc-num{font-family:var(--font-display);font-size:1.95rem;letter-spacing:.02em;line-height:1;color:#ffffff}
-.dsc-num sub{font-size:.68rem;opacity:.4;vertical-align:baseline;font-family:var(--font-mono)}
-.dsc-lbl{font-family:var(--font-cond);font-size:.7rem;font-weight:700;opacity:.9;color:#ffffff;margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
-.dsc-mo{font-family:var(--font-mono);font-size:.42rem;opacity:.4;color:#ffffff;margin-top:2px;text-transform:uppercase;letter-spacing:.1em}
-.dsc-bar{margin-top:7px;height:2px;background:rgba(255,255,255,.14);overflow:hidden;border-radius:2px}
-.dsc-barf{height:100%;background:rgba(255,255,255,.7);transition:width .9s cubic-bezier(.4,0,.2,1)}
-
-.dp-mid-row{display:grid;grid-template-columns:2fr 2fr 1.4fr;gap:9px;margin-bottom:14px}
-
-.dpnl{background:rgba(8,2,20,.92);border:1px solid rgba(140,80,220,.09);border-radius:7px;display:flex;flex-direction:column;overflow:hidden;transition:all .22s}
-.dpnl:nth-child(1){border-top:2px solid #7c3aed;box-shadow:0 4px 0 0 #3b0d8a}
-.dpnl:nth-child(2){border-top:2px solid #8b5cf6;box-shadow:0 4px 0 0 #4c1d95}
-.dpnl:nth-child(1):hover,.dpnl:nth-child(2):hover{transform:translateY(-4px)}
-
-.dp-timeline{background:rgba(8,2,20,.92);border:1px solid rgba(140,80,220,.09);border-radius:7px;display:flex;flex-direction:column}
-.tl-hdr{padding:10px 13px 8px;border-bottom:1px solid rgba(140,80,220,.07);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
-.tl-title{font-family:var(--font-cond);font-size:.76rem;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:.06em}
-.tl-badge{font-family:var(--font-mono);font-size:.4rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;background:rgba(140,80,220,.09);border:1px solid rgba(140,80,220,.22);color:rgba(255,255,255,.70);border-radius:3px}
-.tl-body{flex:1;overflow-y:auto;padding:10px 12px;-webkit-overflow-scrolling:touch}
-.tl-body::-webkit-scrollbar{width:2px}
-.tl-body::-webkit-scrollbar-thumb{background:rgba(140,80,220,.1)}
-.tl-item{display:flex;gap:10px;margin-bottom:14px;position:relative}
-.tl-item:not(:last-child)::after{content:'';position:absolute;left:11px;top:24px;bottom:-14px;width:1px;background:linear-gradient(180deg,rgba(140,80,220,.15),transparent)}
-.tl-dot-wrap{flex-shrink:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
-.tl-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.44rem;border:1px solid;flex-shrink:0}
-.tl-dot.done{background:rgba(0,230,118,.1);border-color:#00e676;color:#00e676}
-.tl-dot.pend{background:rgba(140,80,220,.09);border-color:#8b5cf6;color:#8b5cf6}
-.tl-dot.info{background:rgba(74,126,245,.09);border-color:#4a7ef5;color:#4a7ef5}
-.tl-info{flex:1;padding-top:2px}
-.tl-txt{font-family:var(--font-body);font-size:.62rem;color:rgba(255,255,255,.75);line-height:1.45;margin-bottom:2px}
-.tl-meta{display:flex;align-items:center;gap:6px}
-.tl-time{font-family:var(--font-mono);font-size:.42rem;letter-spacing:.06em;color:rgba(255,255,255,.40)}
-.tl-qtag{font-family:var(--font-mono);font-size:.38rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:3px}
-
-.dp-analytics{display:grid;grid-template-columns:5fr 4fr;gap:9px}
-.dp-ap{background:rgba(8,2,20,.92);border:1px solid rgba(140,80,220,.09);border-radius:7px;padding:15px 17px;transition:all .22s}
-.dp-ap:hover{transform:translateY(-2px)}
-.dp-ap-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:13px}
-.dp-ap-title{font-family:var(--font-cond);font-size:.86rem;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:.04em}
-.dp-ap-sub{font-family:var(--font-mono);font-size:.5rem;color:rgba(255,255,255,.50);margin-top:3px;letter-spacing:.06em}
-.dp-ap-badge{font-family:var(--font-mono);font-size:.44rem;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.22);color:#34c97e;border-radius:4px}
-.donut-wrap{display:flex;align-items:center;gap:18px}
-.donut-cont{position:relative;width:116px;height:116px;flex-shrink:0}
-.donut-svg{width:116px;height:116px;transform:rotate(-90deg)}
-.dtr2{fill:none;stroke:rgba(140,80,220,.07);stroke-width:16}
-.dar2{fill:none;stroke-width:16;stroke-linecap:round;transition:stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1)}
-.d-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.d-big{font-family:var(--font-display);font-size:1.52rem;letter-spacing:.04em;color:#a855f7;line-height:1}
-.d-sm{font-family:var(--font-mono);font-size:.44rem;color:rgba(255,255,255,.50);margin-top:3px;text-transform:uppercase;letter-spacing:.1em}
-.legend{flex:1;display:flex;flex-direction:column;gap:9px}
-.lg-row{display:flex;align-items:center;gap:8px}
-.lg-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.lg-name{font-family:var(--font-mono);font-size:.54rem;color:rgba(255,255,255,.55);flex:1;letter-spacing:.06em}
-.lg-cnt{font-family:var(--font-mono);font-size:.56rem;color:#ffffff}
-.lg-pct{font-family:var(--font-mono);font-size:.48rem;color:rgba(255,255,255,.40);min-width:26px;text-align:right}
-.barchart{display:flex;flex-direction:column;gap:13px}
-.bc-lbl{font-family:var(--font-cond);font-size:.76rem;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:.04em}
-.bc-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
-.bc-stat{font-family:var(--font-mono);font-size:.48rem;color:rgba(255,255,255,.50);letter-spacing:.06em}
-.bc-track{height:4px;background:rgba(140,80,220,.06);overflow:hidden;border-radius:2px}
-.bc-fill{height:100%;transition:width .9s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;border-radius:2px}
-.bc-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);animation:shim 2.8s ease infinite}
-@keyframes shim{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
-
-.dp-hd{padding:10px 12px 8px;border-bottom:1px solid rgba(140,80,220,.07);flex-shrink:0}
-.dp-badge{font-family:var(--font-mono);font-size:.44rem;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;display:inline-block;margin-bottom:4px;border-radius:3px}
-.dp-ptitle{font-family:var(--font-cond);font-size:.8rem;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:.04em}
-.dp-prog{display:flex;align-items:center;gap:6px;margin-top:7px}
-.dp-pt{flex:1;height:2px;background:rgba(140,80,220,.07);overflow:hidden;border-radius:2px}
-.dp-pf{height:100%;transition:width .7s cubic-bezier(.4,0,.2,1)}
-.dp-pp{font-family:var(--font-mono);font-size:.46rem;color:rgba(255,255,255,.50);min-width:24px;text-align:right}
-.dp-pc{font-family:var(--font-mono);font-size:.46rem;background:rgba(140,80,220,.06);border:1px solid rgba(140,80,220,.12);color:rgba(255,255,255,.50);padding:2px 5px;border-radius:3px}
-.dp-tlist{flex:1;overflow-y:auto;padding:4px;max-height:160px;-webkit-overflow-scrolling:touch}
-.dp-tlist::-webkit-scrollbar{width:2px}
-.dp-tlist::-webkit-scrollbar-thumb{background:rgba(140,80,220,.1)}
-.dp-trow{display:flex;align-items:center;gap:6px;padding:6px;margin-bottom:2px;border:1px solid transparent;border-radius:4px;transition:all .13s}
-.dp-trow:hover{background:rgba(140,80,220,.05);border-color:rgba(140,80,220,.1)}
-.dp-trow.dn{opacity:.32}
-.dp-tnum{font-family:var(--font-mono);font-size:.4rem;color:rgba(255,255,255,.30);min-width:14px;text-align:right;flex-shrink:0}
-.dp-tcb{width:14px;height:14px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(140,80,220,.04);border:1px solid rgba(140,80,220,.14);transition:all .13s;border-radius:3px}
-.dp-tcb.on{border-color:currentColor;background:rgba(140,80,220,.12)}
-.dp-tcb svg{display:none}
-.dp-tcb.on svg{display:block}
-.dp-tinp{flex:1;background:transparent;border:none;outline:none;font-family:var(--font-body);font-size:.7rem;color:#ffffff;min-width:0;letter-spacing:.01em}
-.dp-tinp::placeholder{color:rgba(255,255,255,.25)}
-.dp-tinp.sx{text-decoration:line-through;color:rgba(255,255,255,.40)}
-.dp-tpill{font-family:var(--font-mono);font-size:.38rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 6px;border:1px solid;cursor:pointer;transition:all .13s;flex-shrink:0;border-radius:3px}
-.dp-tpill.pend{color:rgba(255,255,255,.40);border-color:rgba(140,80,220,.12);background:transparent}
-.dp-tdel{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:none;background:transparent;cursor:pointer;color:rgba(255,255,255,.40);opacity:0;transition:all .11s}
-.dp-trow:hover .dp-tdel{opacity:1}
-.dp-tdel:hover{color:#e84060}
-.dp-tempty{padding:20px 8px;text-align:center;color:rgba(255,255,255,.35);font-family:var(--font-mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em}
-.dp-pft{padding:5px;border-top:1px solid rgba(140,80,220,.06);flex-shrink:0}
-.dp-addbtn{width:100%;padding:7px;border:1px dashed rgba(140,80,220,.18);border-radius:4px;background:transparent;cursor:pointer;font-family:var(--font-mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.50);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px}
-.dp-addbtn:hover{background:rgba(140,80,220,.09);border-color:rgba(168,85,247,.36);color:#ffffff}
-
-.dp-panels-2{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:14px}
-.dpnl2{background:rgba(8,2,20,.92);border:1px solid rgba(140,80,220,.09);border-radius:7px;display:flex;flex-direction:column;overflow:hidden;transition:all .22s}
-.dpnl2:nth-child(1){border-top:2px solid #a855f7;box-shadow:0 4px 0 0 #5b21b6}
-.dpnl2:nth-child(2){border-top:2px solid #c084fc;box-shadow:0 4px 0 0 #7c3aed}
-.dpnl2:nth-child(1):hover,.dpnl2:nth-child(2):hover{transform:translateY(-4px)}
-
 /* ══ RESPONSIVE ══ */
 @media(max-width:1100px){
   :root{--sidebar-w:168px;--right-w:220px}
   #grid{grid-template-columns:repeat(5,1fr)}
-  .dp-mid-row{grid-template-columns:1fr 1fr}
-  .dp-stats{grid-template-columns:repeat(2,1fr)}
-  .dp-analytics{grid-template-columns:1fr}
-  .cmd-widgets{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:768px){
   :root{--hdr-h:50px}
@@ -838,15 +673,6 @@ body::after{
   #center{grid-column:1;width:100%}
   #grid{grid-template-columns:repeat(3,1fr);gap:5px;padding:6px 8px}
   .cb{min-height:42px}
-  .dp-hdr{flex-direction:column;align-items:flex-start}
-  .dp-title{font-size:1.3rem}
-  .dp-stats{grid-template-columns:repeat(2,1fr)}
-  .dp-mid-row{grid-template-columns:1fr}
-  .dp-analytics{grid-template-columns:1fr}
-  .dp-panels-2{grid-template-columns:1fr}
-  .cmd-widgets{grid-template-columns:1fr}
-  .donut-wrap{flex-direction:column;align-items:flex-start}
-  .dash-body{padding:12px 13px 22px}
   .ov-bar{padding:0 10px;height:40px}
   .notif-drop{right:6px;width:285px}
 }
@@ -905,8 +731,7 @@ body::after{
     </div>
 
     <div class="hdr-titles">
-      <div class="hdr-name">HSG Logistics<br>Data Hub</div>
-      <div class="hdr-sub">Logistics &amp; Data Management · Active</div>
+      <div class="hdr-name">HSG Logistics Data Hub</div>
     </div>
 
     <div class="hdr-right">
@@ -1027,15 +852,6 @@ body::after{
   <iframe id="main-ifr" src=""></iframe>
 </div>
 
-<!-- DASHBOARD OVERLAY -->
-<div class="overlay" id="dash-ov">
-  <div class="ov-bar">
-    <button class="bk-btn" id="dash-bk"><i class="fas fa-chevron-left"></i> Return to Hub</button>
-    <div class="ov-lbl"><i class="fas fa-chess-king"></i><span>Command Center — iAPB 2026 Yearly Planner</span></div>
-  </div>
-  <div class="dash-body" id="dash-body"></div>
-</div>
-
 <script type="importmap">{"imports":{"@supabase/supabase-js":"https://esm.sh/@supabase/supabase-js@2"}}</script>
 <script type="module">
 import { createClient } from "@supabase/supabase-js";
@@ -1043,10 +859,6 @@ const sb = createClient(
   "https://jdzfxfriydakuqegtahq.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkemZ4ZnJpeWRha3VxZWd0YWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODU0MTEsImV4cCI6MjA3NjY2MTQxMX0.8uuX1PUSKOg03AuZeJJ5HxSUhM-gqapTclMn2A3tD4U"
 );
-
-const CHK=`<svg width="8"height="8"viewBox="0 0 24 24"fill="none"stroke="currentColor"stroke-width="3.5"stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>`;
-const X=`<svg width="8"height="8"viewBox="0 0 24 24"fill="none"stroke="currentColor"stroke-width="2.5"stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
-const PL=`<svg width="10"height="10"viewBox="0 0 24 24"fill="none"stroke="currentColor"stroke-width="2.5"stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
 
 const MODS=[
   {id:'command',name:'Command Center',rank:'Admiral',role:'Chief Operations Officer',
@@ -1127,21 +939,6 @@ const MODS=[
    page:'DOWNLOAD_CERT',cat:'forms',icon:'fa-certificate',color:'#a855f7',tags:['PSDBM','CERTIFICATE','DOWNLOAD']},
 ];
 
-const QS=[
-  {id:'q1',db:'First Quarter', lb:'Q1',mo:'Jan–Mar',gr:'linear-gradient(90deg,#7c3aed,#8b5cf6)'},
-  {id:'q2',db:'Second Quarter',lb:'Q2',mo:'Apr–Jun',gr:'linear-gradient(90deg,#6d28d9,#a855f7)'},
-  {id:'q3',db:'Third Quarter', lb:'Q3',mo:'Jul–Sep',gr:'linear-gradient(90deg,#8b5cf6,#c084fc)'},
-  {id:'q4',db:'Fourth Quarter',lb:'Q4',mo:'Oct–Dec',gr:'linear-gradient(90deg,#a855f7,#e0d4ff)'},
-];
-const QI=['fa-check-double','fa-chart-bar','fa-clock','fa-file-alt'];
-const QSC=['q1','q2','q3','q4'];
-const PC=[
-  {badge:'rgba(124,58,237,.12)',bt:'#7c3aed',gr:'linear-gradient(90deg,#7c3aed,#8b5cf6)'},
-  {badge:'rgba(109,40,217,.12)',bt:'#6d28d9',gr:'linear-gradient(90deg,#6d28d9,#a855f7)'},
-  {badge:'rgba(139,92,246,.12)',bt:'#8b5cf6',gr:'linear-gradient(90deg,#8b5cf6,#c084fc)'},
-  {badge:'rgba(168,85,247,.12)',bt:'#a855f7',gr:'linear-gradient(90deg,#a855f7,#e0d4ff)'},
-];
-const state={q1:[],q2:[],q3:[],q4:[]};
 const imgs={};
 let selMod=null,pendingId=null,toastTmr;
 
@@ -1291,7 +1088,6 @@ function renderRight(m){
       <div class="rp-div"></div>
       <div class="rp-desc">${m.desc}</div>
       <div class="rp-tags">${m.tags.map(t=>`<span class="rp-tag">${t}</span>`).join('')}</div>
-      ${m.isCmd?cmdStats():''}
       <div class="rp-div" style="margin-top:10px"></div>
       <div class="rp-modlist">
         ${related.map(r=>`<div class="rp-moditem"><div class="rp-moddot" style="background:${r.color};box-shadow:0 0 6px ${r.color}80"></div>${r.name}</div>`).join('')}
@@ -1300,23 +1096,9 @@ function renderRight(m){
   document.getElementById('rp-up-btn').addEventListener('click',()=>{pendingId=m.id;document.getElementById('file-input').click()});
 }
 
-function cmdStats(){
-  const tot=QS.reduce((s,q)=>s+state[q.id].length,0);
-  const dn=QS.reduce((s,q)=>s+state[q.id].filter(a=>a.done).length,0);
-  const pct=tot?Math.round(dn/tot*100):0;
-  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px">
-    ${[['Tasks',tot],['Done',dn],['Progress',pct+'%'],['Quarters','4']].map(([l,v])=>`
-    <div style="background:rgba(140,80,220,.06);border:1px solid rgba(140,80,220,.15);padding:9px;text-align:center;border-radius:5px;transition:all .14s;cursor:default" onmouseover="this.style.background='rgba(140,80,220,.14)'" onmouseout="this.style.background='rgba(140,80,220,.06)'">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.02rem;letter-spacing:.08em;color:#ffffff">${v}</div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:.42rem;color:rgba(255,255,255,.50);text-transform:uppercase;letter-spacing:.1em;margin-top:2px">${l}</div>
-    </div>`).join('')}
-  </div>`;
-}
-
 document.getElementById('dep-btn').addEventListener('click',()=>{
   if(!selMod)return;
-  const{page,name,isCmd}=selMod;
-  if(isCmd){openDash();return}
+  const{page,name}=selMod;
   if(page==='DOWNLOAD_CERT'){
     const a=document.createElement('a');a.href='files/Certificate.docx';a.download='Certificate.docx';
     document.body.appendChild(a);a.click();document.body.removeChild(a);toast('⬇ Downloading Certificate…');return;
@@ -1352,290 +1134,9 @@ document.getElementById('logout-btn').addEventListener('click',()=>{
   if(confirm('Are you sure you want to logout?'))window.location.href='index.html';
 });
 
-/* ════ DASHBOARD ════ */
-function openDash(){document.getElementById('dash-ov').classList.add('show');renderDash()}
-document.getElementById('dash-bk').addEventListener('click',()=>document.getElementById('dash-ov').classList.remove('show'));
-
-function buildTimeline(){
-  const entries=[];
-  QS.forEach((q,qi)=>{
-    state[q.id].slice(0,3).forEach((a,i)=>{
-      entries.push({type:a.done?'done':'pend',txt:a.text||'(untitled activity)',time:`${q.lb}·${q.mo}`,qtag:q.lb,qc:PC[qi].bt,ts:qi*10+i});
-    });
-  });
-  return entries.slice(0,8);
-}
-
-function renderDash(){
-  const sc=document.getElementById('dash-body');
-  const tot=QS.reduce((s,q)=>s+state[q.id].length,0);
-  const dn=QS.reduce((s,q)=>s+state[q.id].filter(a=>a.done).length,0);
-  const pct=tot?Math.round(dn/tot*100):0;
-  const C=2*Math.PI*28;
-  const tlItems=buildTimeline();
-
-  sc.innerHTML=`
-    <div class="dp-hdr">
-      <div>
-        <div class="dp-live"><div class="ldot"></div>Live Database Sync · iAPB 2026</div>
-        <div class="dp-title">Yearly Planner <span>2026</span></div>
-        <div class="dp-sub">Activity Monitoring &amp; Strategic Goal Tracking</div>
-      </div>
-      <div class="ann-w">
-        <div>
-          <div class="ann-lbl">Annual Completion</div>
-          <div class="ann-val">${pct}%</div>
-          <div class="ann-sub">${dn} of ${tot} completed</div>
-        </div>
-        <div class="ann-rw">
-          <svg viewBox="0 0 64 64" width="64" height="64">
-            <defs><linearGradient id="gA"x1="0%"y1="0%"x2="100%"y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>
-            <circle class="art" cx="32"cy="32"r="28"/>
-            <circle class="arf" cx="32"cy="32"r="28" stroke="url(#gA)" stroke-dasharray="${C}" stroke-dashoffset="${C-(pct/100)*C}"/>
-          </svg>
-          <div class="arc">${pct}%</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cmd-widgets">
-      <div class="cmd-widget cw-blue">
-        <span class="cw-ico"><i class="fas fa-tasks" style="color:#8b5cf6"></i></span>
-        <div class="cw-val">${tot}</div>
-        <div class="cw-lbl">Total Activities</div>
-        <div class="cw-bar"><div class="cw-barf" style="width:${Math.min(tot/50*100,100)}%"></div></div>
-        <div class="cw-trend">Across all 4 quarters</div>
-      </div>
-      <div class="cmd-widget cw-green">
-        <span class="cw-ico"><i class="fas fa-check-double" style="color:#34d399"></i></span>
-        <div class="cw-val">${dn}</div>
-        <div class="cw-lbl">Completed</div>
-        <div class="cw-bar"><div class="cw-barf" style="width:${pct}%"></div></div>
-        <div class="cw-trend">${pct}% completion rate</div>
-      </div>
-      <div class="cmd-widget cw-gold">
-        <span class="cw-ico"><i class="fas fa-hourglass-half" style="color:#c084fc"></i></span>
-        <div class="cw-val">${tot-dn}</div>
-        <div class="cw-lbl">Pending</div>
-        <div class="cw-bar"><div class="cw-barf" style="width:${tot?Math.round((tot-dn)/tot*100):0}%"></div></div>
-        <div class="cw-trend">Remaining activities</div>
-      </div>
-    </div>
-
-    <div class="dp-stats">
-      ${QS.map((q,i)=>{
-        const t=state[q.id].length,d=state[q.id].filter(a=>a.done).length,p=t?Math.round(d/t*100):0;
-        const C2=2*Math.PI*15;
-        return`<div class="dsc ${QSC[i]}">
-          <div class="dsc-in">
-            <div class="dsc-top">
-              <div class="dsc-ico"><i class="fas ${QI[i]}" style="color:#fff;font-size:.8rem"></i></div>
-              <div class="dsc-rw"><svg viewBox="0 0 34 34"width="34"height="34"><circle class="drt"cx="17"cy="17"r="15"/><circle class="drf"cx="17"cy="17"r="15" stroke-dasharray="${C2}" stroke-dashoffset="${C2-(p/100)*C2}"/></svg><div class="drc">${p}%</div></div>
-            </div>
-            <div class="dsc-num">${d}<sub>/${t}</sub></div>
-            <div class="dsc-lbl">${['1st','2nd','3rd','4th'][i]} Quarter</div>
-            <div class="dsc-mo">${q.mo}</div>
-            <div class="dsc-bar"><div class="dsc-barf" style="width:${p}%"></div></div>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-
-    <div class="dp-mid-row" id="dp-mid-row">
-      <div id="dpnl-q1-wrap"></div>
-      <div id="dpnl-q2-wrap"></div>
-      <div class="dp-timeline">
-        <div class="tl-hdr">
-          <span class="tl-title">Activity Arnold Timeline</span>
-          <span class="tl-badge">Live</span>
-        </div>
-        <div class="tl-body" id="tl-body">${tlItems.length?tlItems.map(item=>`
-          <div class="tl-item">
-            <div class="tl-dot-wrap"><div class="tl-dot ${item.type}"><i class="fas ${item.type==='done'?'fa-check':item.type==='pend'?'fa-clock':'fa-info'}"></i></div></div>
-            <div class="tl-info">
-              <div class="tl-txt">${esc(item.txt)}</div>
-              <div class="tl-meta">
-                <span class="tl-time">${item.time}</span>
-                <span class="tl-qtag" style="color:${item.qc};background:${item.qc}18;border:1px solid ${item.qc}30">${item.qtag}</span>
-              </div>
-            </div>
-          </div>`).join(''):'<div style="padding:18px;text-align:center;font-family:Share Tech Mono,monospace;font-size:.56rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em">No activities yet</div>'}</div>
-      </div>
-    </div>
-
-    <div class="dp-panels-2" id="dp-panels-2">
-      <div id="dpnl-q3-wrap"></div>
-      <div id="dpnl-q4-wrap"></div>
-    </div>
-
-    <div class="dp-analytics">
-      <div class="dp-ap">
-        <div class="dp-ap-hdr">
-          <div><div class="dp-ap-title">Completion Overview</div><div class="dp-ap-sub">Activity distribution by quarter</div></div>
-          <div class="dp-ap-badge">LIVE</div>
-        </div>
-        <div class="donut-wrap">
-          <div class="donut-cont">
-            <svg class="donut-svg" viewBox="0 0 150 150">
-              <defs>
-                <linearGradient id="dg1"x1="0%"y1="0%"x2="100%"y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
-                <linearGradient id="dg2"x1="0%"y1="0%"x2="100%"y2="100%"><stop offset="0%" stop-color="#6d28d9"/><stop offset="100%" stop-color="#a855f7"/></linearGradient>
-                <linearGradient id="dg3"x1="0%"y1="0%"x2="100%"y2="100%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#c084fc"/></linearGradient>
-                <linearGradient id="dg4"x1="0%"y1="0%"x2="100%"y2="100%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#e0d4ff"/></linearGradient>
-              </defs>
-              <circle class="dtr2" cx="75"cy="75"r="56"/>
-              <circle id="da1" class="dar2" cx="75"cy="75"r="56" stroke="url(#dg1)" stroke-dasharray="351.86" stroke-dashoffset="351.86"/>
-              <circle id="da2" class="dar2" cx="75"cy="75"r="56" stroke="url(#dg2)" stroke-dasharray="351.86" stroke-dashoffset="351.86"/>
-              <circle id="da3" class="dar2" cx="75"cy="75"r="56" stroke="url(#dg3)" stroke-dasharray="351.86" stroke-dashoffset="351.86"/>
-              <circle id="da4" class="dar2" cx="75"cy="75"r="56" stroke="url(#dg4)" stroke-dasharray="351.86" stroke-dashoffset="351.86"/>
-            </svg>
-            <div class="d-center"><div class="d-big" id="d-big">${pct}%</div><div class="d-sm">Complete</div></div>
-          </div>
-          <div class="legend" id="d-legend"></div>
-        </div>
-      </div>
-      <div class="dp-ap">
-        <div class="dp-ap-hdr"><div><div class="dp-ap-title">Quarter Progress</div><div class="dp-ap-sub">Tasks completed per quarter</div></div></div>
-        <div class="barchart" id="d-barchart"></div>
-      </div>
-    </div>`;
-
-  QS.forEach((q,qi)=>{
-    const targetWrap=qi===0?document.getElementById('dpnl-q1-wrap'):
-                     qi===1?document.getElementById('dpnl-q2-wrap'):
-                     qi===2?document.getElementById('dpnl-q3-wrap'):
-                     document.getElementById('dpnl-q4-wrap');
-    if(!targetWrap)return;
-    const pc=PC[qi],t=state[q.id].length,d=state[q.id].filter(a=>a.done).length,p=t?Math.round(d/t*100):0;
-    const pnl=document.createElement('div');
-    pnl.className=`dpnl${qi>=2?' dpnl2':''}`;pnl.id=`dpnl-${q.id}`;
-    pnl.innerHTML=`
-      <div class="dp-hd">
-        <div class="dp-badge" style="color:${pc.bt};background:${pc.badge};border:1px solid ${pc.bt}38;border-radius:3px">${q.lb}·${q.mo}</div>
-        <div class="dp-ptitle">${['1st','2nd','3rd','4th'][qi]} Quarter Activities</div>
-        <div class="dp-prog">
-          <div class="dp-pt"><div class="dp-pf" id="dpf-${q.id}" style="width:${p}%;background:${pc.gr}"></div></div>
-          <span class="dp-pp" id="dpp-${q.id}">${p}%</span>
-          <span class="dp-pc" id="dpc-${q.id}">${d}/${t}</span>
-        </div>
-      </div>
-      <div class="dp-tlist" id="dtl-${q.id}"></div>
-      <div class="dp-pft"><button class="dp-addbtn" id="dadd-${q.id}">${PL} Add Activity</button></div>`;
-    targetWrap.appendChild(pnl);
-    renderDashList(qi,pnl);
-    pnl.querySelector(`#dadd-${q.id}`).addEventListener('click',()=>dashAdd(qi));
-  });
-
-  renderDashAnalytics();
-}
-
-function renderDashList(qi,pnl){
-  const q=QS[qi],pc=PC[qi];
-  const wrap=pnl?pnl.querySelector(`#dtl-${q.id}`):document.getElementById(`dtl-${q.id}`);
-  if(!wrap)return;
-  if(!state[q.id].length){wrap.innerHTML=`<div class="dp-tempty">No activities yet</div>`;return}
-  const ul=document.createElement('ul');ul.style.listStyle='none';
-  state[q.id].forEach((a,i)=>{
-    const li=document.createElement('li');li.className=`dp-trow${a.done?' dn':''}`;
-    li.innerHTML=`
-      <span class="dp-tnum">${String(i+1).padStart(2,'0')}</span>
-      <div class="dp-tcb${a.done?' on':''}" style="${a.done?`color:${pc.bt}`:''}"> ${a.done?CHK:''}</div>
-      <input class="dp-tinp${a.done?' sx':''}" value="${esc(a.text)}" placeholder="Enter activity…"/>
-      <button class="dp-tpill${a.done?'':' pend'}" style="${a.done?`color:${pc.bt};border-color:${pc.bt};background:${pc.badge}`:''}">${a.done?CHK+'Done':'Pending'}</button>
-      <button class="dp-tdel">${X}</button>`;
-    li.querySelector('.dp-tinp').addEventListener('input',e=>dashSaveText(qi,a.id,e.target.value));
-    li.querySelector('.dp-tpill').addEventListener('click',()=>dashToggle(qi,a.id));
-    li.querySelector('.dp-tcb').addEventListener('click',()=>dashToggle(qi,a.id));
-    li.querySelector('.dp-tdel').addEventListener('click',()=>dashRemove(qi,a.id));
-    ul.appendChild(li);
-  });
-  wrap.innerHTML='';wrap.appendChild(ul);dashSyncProg(qi);
-}
-
-function dashSyncProg(qi){
-  const q=QS[qi],t=state[q.id].length,d=state[q.id].filter(a=>a.done).length,p=t?Math.round(d/t*100):0;
-  const pf=document.getElementById(`dpf-${q.id}`),pp=document.getElementById(`dpp-${q.id}`),pc2=document.getElementById(`dpc-${q.id}`);
-  if(pf)pf.style.width=`${p}%`;if(pp)pp.textContent=`${p}%`;if(pc2)pc2.textContent=`${d}/${t}`;
-  renderDashAnalytics();
-}
-
-function renderDashAnalytics(){
-  const GR=['linear-gradient(90deg,#7c3aed,#8b5cf6)','linear-gradient(90deg,#6d28d9,#a855f7)','linear-gradient(90deg,#8b5cf6,#c084fc)','linear-gradient(90deg,#a855f7,#e0d4ff)'];
-  const tot=QS.reduce((s,q)=>s+state[q.id].length,0);
-  const dn=QS.reduce((s,q)=>s+state[q.id].filter(a=>a.done).length,0);
-  const pAll=tot?Math.round(dn/tot*100):0;
-  const dbig=document.getElementById('d-big');if(dbig)dbig.textContent=`${pAll}%`;
-  const C=2*Math.PI*56;let off=0;
-  QS.forEach((q,i)=>{
-    const d=state[q.id].filter(a=>a.done).length,sl=tot?(d/tot)*C:0;
-    const arc=document.getElementById(`da${i+1}`);
-    if(arc){arc.style.strokeDasharray=`${sl} ${C-sl}`;arc.style.strokeDashoffset=-off;off+=sl}
-  });
-  const leg=document.getElementById('d-legend');
-  if(leg)leg.innerHTML=QS.map((q,i)=>{
-    const t=state[q.id].length,d=state[q.id].filter(a=>a.done).length,p=t?Math.round(d/t*100):0;
-    return`<div class="lg-row"><div class="lg-dot" style="background:${['#8b5cf6','#a855f7','#c084fc','#e0d4ff'][i]}"></div><span class="lg-name">${q.lb}·${q.mo}</span><span class="lg-cnt">${d}/${t}</span><span class="lg-pct">${p}%</span></div>`;
-  }).join('');
-  const bc=document.getElementById('d-barchart');
-  if(bc)bc.innerHTML=QS.map((q,i)=>{
-    const t=state[q.id].length,d=state[q.id].filter(a=>a.done).length,p=t?Math.round(d/t*100):0;
-    return`<div><div class="bc-meta"><span class="bc-lbl">${q.lb}·${q.mo}</span><span class="bc-stat">${d}/${t}·${p}%</span></div><div class="bc-track"><div class="bc-fill" style="width:${p}%;background:${GR[i]}"></div></div></div>`;
-  }).join('');
-}
-
-async function dashAdd(qi){
-  const q=QS[qi],tmp='tmp-'+Date.now();
-  state[q.id].push({id:tmp,text:'',done:false});
-  const pnl=document.getElementById(`dpnl-${q.id}`);renderDashList(qi,pnl);
-  setTimeout(()=>{const ins=pnl.querySelectorAll('.dp-tinp');if(ins.length)ins[ins.length-1].focus()},30);
-  const{data,error}=await sb.from('iapb').insert([{activity_title:'',quarter_implementation:q.db,completed:false}]).select().single();
-  if(error){state[q.id]=state[q.id].filter(a=>a.id!==tmp);renderDashList(qi,pnl);return}
-  const idx=state[q.id].findIndex(a=>a.id===tmp);
-  if(idx!==-1)state[q.id][idx]={id:data.id.toString(),text:data.activity_title||'',done:data.completed};
-  renderDashList(qi,pnl);
-}
-
-async function dashToggle(qi,id){
-  const q=QS[qi],a=state[q.id].find(x=>x.id===id);if(!a)return;a.done=!a.done;
-  renderDashList(qi,document.getElementById(`dpnl-${q.id}`));
-  toast(a.done?'◈ Marked as done':'↩ Marked as pending');
-  await sb.from('iapb').update({completed:a.done}).eq('id',id);
-}
-
-async function dashSaveText(qi,id,text){
-  const q=QS[qi],a=state[q.id].find(x=>x.id===id);if(a)a.text=text;
-  await sb.from('iapb').update({activity_title:text}).eq('id',id);
-}
-
-async function dashRemove(qi,id){
-  const q=QS[qi],prev=[...state[q.id]];
-  state[q.id]=state[q.id].filter(a=>a.id!==id);
-  renderDashList(qi,document.getElementById(`dpnl-${q.id}`));
-  toast('Activity removed');
-  const{error}=await sb.from('iapb').delete().eq('id',id);
-  if(error){state[q.id]=prev;renderDashList(qi,document.getElementById(`dpnl-${q.id}`))}
-}
-
-async function fetchAll(){
-  const{data,error}=await sb.from('iapb').select('*').order('id',{ascending:true});
-  if(error){console.error(error);hideLoader();return}
-  QS.forEach(q=>state[q.id]=[]);
-  data.forEach(row=>{
-    const q=QS.find(q=>q.db===row.quarter_implementation);
-    if(q)state[q.id].push({id:row.id.toString(),text:row.activity_title||'',done:row.completed===true});
-  });
-  QS.forEach((q,i)=>{
-    const t=state[q.id].length,d=state[q.id].filter(a=>a.done).length,p=t?Math.round(d/t*100):0;
-    const el=document.getElementById(`drv${i+1}`);if(el)el.textContent=`${p}%`;
-  });
-  hideLoader();if(selMod?.isCmd)renderRight(selMod);
-}
-
 function hideLoader(){
   const ld=document.getElementById('ld');ld.style.opacity='0';setTimeout(()=>ld.style.display='none',700);
 }
-
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
 async function fetchImages(){
   const{data,error}=await sb.from('module_images').select('module_id,image_url');
@@ -1645,7 +1146,8 @@ async function fetchImages(){
 
 async function init(){
   updateBadge();
-  await Promise.all([fetchImages(),fetchAll()]);
+  await fetchImages();
+  hideLoader();
   renderGrid('all');
 }
 
